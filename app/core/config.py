@@ -11,8 +11,6 @@ class Settings(BaseSettings):
     openai_embedding_model: str = "text-embedding-3-small"
     embedding_dimension: int = 1536
 
-    database_url: str = "postgresql+asyncpg://mateon_ai:mateon_ai@localhost:5433/mateon_ai"
-
 
 @lru_cache
 def get_settings() -> Settings:
