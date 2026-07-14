@@ -19,3 +19,19 @@ class ProposalSchema(BaseModel):
 
     summary: str
     message: str
+
+
+class ProposalAssemblyRequest(BaseModel):
+    user_id: int
+    team_id: int
+    contest_id: int | None = None
+    sender_id: int
+    receiver_id: int
+    intent_id: int | None = None
+
+    synergy_score: float
+    portfolio_role_fit_score: float | None = None
+
+    # LLM이 summary/message를 쓸 때 참고할 컨텍스트 — ID/점수를 대신하지 않는다.
+    candidate_summary: str
+    target_summary: str

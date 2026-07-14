@@ -1,12 +1,13 @@
 from app.schemas.llm_output import ProposalTextFields, RecommendationReasonText
 from app.schemas.proposal import ProposalSchema
 from app.schemas.team_extraction import TeamSoftFields
+from app.schemas.user_intent import UserIntentFields
 
 _FORBIDDEN_FIELD_MARKERS = ("_id", "score")
 
 
 def test_llm_output_schemas_never_carry_ids_or_scores() -> None:
-    for schema in (ProposalTextFields, RecommendationReasonText, TeamSoftFields):
+    for schema in (ProposalTextFields, RecommendationReasonText, TeamSoftFields, UserIntentFields):
         for field_name in schema.model_fields:
             assert not any(marker in field_name for marker in _FORBIDDEN_FIELD_MARKERS), (
                 f"{schema.__name__}.{field_name} looks like an ID/score field — "

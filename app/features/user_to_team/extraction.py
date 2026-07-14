@@ -1,0 +1,22 @@
+from app.openai_client.extraction import extract_structured
+from app.schemas.user_intent import UserIntentFields
+
+_SYSTEM_PROMPT = (
+    "너는 자기소개서와 대화 답변에서 희망 역할, 스킬, 관심 분야, 활동 목표, 활동 방식, 경험 "
+    "수준을 추출하는 도우미다. 텍스트에 명시적으로 드러나지 않는 항목은 추측하지 말고 "
+    "null(리스트는 빈 리스트)로 남겨라.\n"
+    "desired_roles는 반드시 다음 코드 중에서만 골라라: BE, FE, Design, PM, Data. 목록에 없는 "
+    "역할이면 가장 가까운 코드를 골라라(예: '백엔드 개발자' → BE, '프론트엔드' → FE).\n"
+    "experience_level은 반드시 beginner, intermediate, advanced 중 하나로만 남겨라. 부가 설명을 "
+    "덧붙이지 마라."
+)
+
+
+async def extract_user_intent_fields(context: str) -> UserIntentFields:
+    return await extract_structured(
+        messages=[
+            {"role": "system", "content": _SYSTEM_PROMPT},
+            {"role": "user", "content": context},
+        ],
+        response_model=UserIntentFields,
+    )
