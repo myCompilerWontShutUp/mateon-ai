@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     openai_embedding_model: str = "text-embedding-3-small"
     embedding_dimension: int = 1536
 
+    internal_shared_secret: str = "change-me"
+
 
 @lru_cache
 def get_settings() -> Settings:
