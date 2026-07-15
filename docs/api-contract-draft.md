@@ -52,15 +52,23 @@ AI 서버는 mateon-backend만 호출하고 프론트엔드가 직접 부르는 
 
 > 추출 프롬프트: [`prompts/user_intent_extraction.txt`](../prompts/user_intent_extraction.txt)
 > (역할 코드/경험 수준 정규화 규칙이 여기 있다).
+> 챗봇 응답 생성 프롬프트: [`prompts/user_intent_chat_reply.txt`](../prompts/user_intent_chat_reply.txt)
+> (재진술/유도 질문/방어 응답 4가지 규칙이 여기 있다).
 
 요청:
 ```json
 {
-  "self_introduction": "백엔드 경험은 없지만 프론트엔드를 1년 해봤고, 이번엔 풀스택 프로젝트에서 성장하고 싶습니다.",
-  "profile": { "school": "OO대학교", "major": "컴퓨터공학" },
-  "conversation_answers": { "activity_goal": "포트폴리오용 프로젝트" }
+  "messages": [
+    { "id": 1, "message": "백엔드 경험은 없지만 프론트엔드를 1년 해봤고, 이번엔 풀스택 프로젝트에서 성장하고 싶습니다. OO대학교 컴퓨터공학과이고, 포트폴리오용 프로젝트를 찾고 있습니다." }
+  ]
 }
 ```
+
+자기소개서든 재질문 답변이든 "사용자가 한 말"이라는 점에서 같은 종류의 데이터라 `messages`
+하나로 통합했다(2026-07-15 변경 — 이전엔 `self_introduction`/`profile`/`conversation_answers`
+세 필드로 나눴는데, AI 서버는 이 값들을 구조적으로 읽지 않고 LLM 프롬프트에 그대로 이어붙이기만
+해서 굳이 나눌 이유가 없었다). 재질문 답변을 받으면 그 답변을 새 메시지로 `messages` 배열에
+append해서(`id`는 순서대로 증가) 통째로 다시 보낸다 — 순서가 배열 순서로 자연히 보존된다.
 
 응답 (필수 항목 미완성 — 재질문 필요):
 ```json
@@ -75,7 +83,8 @@ AI 서버는 mateon-backend만 호출하고 프론트엔드가 직접 부르는 
     "experience_level": null
   },
   "embedding_text": null,
-  "embedding_vector": null
+  "embedding_vector": null,
+  "assistant_message": "포트폴리오용 프로젝트를 찾고 있구나! 혹시 어떤 역할로 참여하고 싶은지 말해줄 수 있어? (백엔드/프론트엔드/기획/디자인/데이터)"
 }
 ```
 
@@ -92,9 +101,18 @@ AI 서버는 mateon-backend만 호출하고 프론트엔드가 직접 부르는 
     "experience_level": "beginner"
   },
   "embedding_text": "...",
-  "embedding_vector": [0.0123, -0.0456, "... 1536개"]
+  "embedding_vector": [0.0123, -0.0456, "... 1536개"],
+  "assistant_message": "너의 관심사는 백엔드구나! 너의 취향을 조금 알 것 같아. 이건 내가 추천해주는 팀 후보야."
 }
 ```
+
+`assistant_message`는 프론트가 그대로 화면에 보여주면 되는 챗봇 문구다(2026-07-15 추가) —
+재진술 + 다음 질문 하나(누락 필드가 있을 때), 또는 재진술 + 추천 시작 안내(다 채워졌을 때),
+또는 응답이 맥락과 전혀 안 맞을 때는 방어 문구로 자동 대체된다. **프론트/백엔드는 더 이상
+`missing_fields`를 보고 질문 문구를 직접 조립할 필요가 없다** — `missing_fields`는 "무엇이
+빠졌는지"를 판단하는 용도로만 쓰면 된다(예: 다 채워졌는지 확인). 한 번에 최대 하나의 필드만
+묻는다 — 여러 개가 비어 있어도 우선순위가 높은 것부터 하나씩, 답변을 받을 때마다 다음 질문으로
+넘어간다.
 
 ---
 
@@ -105,24 +123,25 @@ AI 서버는 mateon-backend만 호출하고 프론트엔드가 직접 부르는 
 없다). `team_id`는 요청/응답 어디에도 없다 — 백엔드가 이 결과를 자기 DB의 해당 `team_id` 행에
 저장한다.
 
-`recruiting_roles`/`required_skills`/`current_members`/`contest_field`는 백엔드가 이미 구조화된
-값으로 가지고 있다고 가정해 그대로 받는다. 반면 `activity_goal`/`activity_style`/
-`activity_intensity`/`beginner_friendly`/팀 분위기처럼 자유 서술로만 표현되는 값은 백엔드가
-보내지 않고, **AI 서버가 `intro_text`에서 GPT-4.1 mini로 직접 추출**한다 — 이미 구조화된 값을
-LLM이 다시 추측하게 하면 환각 위험만 커지기 때문이다.
+`recruiting_roles`/`required_skills`/`contest_field`는 백엔드가 이미 구조화된 값으로 가지고
+있다고 가정해 그대로 받는다. 반면 `activity_goal`/`activity_style`/`activity_intensity`/
+`beginner_friendly`/팀 분위기처럼 자유 서술로만 표현되는 값은 백엔드가 보내지 않고, **AI 서버가
+`intro_text`에서 GPT-4.1 mini로 직접 추출**한다 — 이미 구조화된 값을 LLM이 다시 추측하게 하면
+환각 위험만 커지기 때문이다.
+
+현재 팀 구성(누가 몇 명인지)은 별도 필드가 없다 — `intro_text`에 자연어로 포함시키면 된다
+(2026-07-15 변경 — 이전엔 `current_members: [{role, count}]`로 구조화했는데, 이 값은 스코어링
+계산에 전혀 쓰이지 않고 임베딩 텍스트의 서술 한 줄로만 녹아들었기 때문에 별도 타입을 유지할
+이유가 없었다).
 
 > 추출 프롬프트: [`prompts/team_soft_fields_extraction.txt`](../prompts/team_soft_fields_extraction.txt)
 
 요청:
 ```json
 {
-  "intro_text": "커머스 플랫폼을 만드는 4인 팀입니다. 매주 화, 목요일 저녁 오프라인으로 모이고, 초보자도 편하게 참여할 수 있는 분위기를 지향합니다. 이번 학기 교내 공모전 수상이 목표입니다.",
+  "intro_text": "커머스 플랫폼을 만드는 4인 팀입니다. 현재 FE 2명, Design 1명으로 구성돼 있습니다. 매주 화, 목요일 저녁 오프라인으로 모이고, 초보자도 편하게 참여할 수 있는 분위기를 지향합니다. 이번 학기 교내 공모전 수상이 목표입니다.",
   "recruiting_roles": ["BE"],
   "required_skills": ["Spring Boot", "PostgreSQL"],
-  "current_members": [
-    { "role": "FE", "count": 2 },
-    { "role": "Design", "count": 1 }
-  ],
   "contest_field": "커머스"
 }
 ```
@@ -193,11 +212,16 @@ LLM이 다시 추측하게 하면 환각 위험만 커지기 때문이다.
 ```json
 {
   "recommendations": [
-    { "candidate_id": 17, "score": 0.91, "label": "팀이 필요한 스킬을 갖췄어요" },
-    { "candidate_id": 42, "score": 0.14, "label": "초보자도 편하게 참여할 수 있어요" }
+    { "candidate_id": 17, "score": 0.91, "label": "BE 역할을 모집하고 있어요" },
+    { "candidate_id": 42, "score": 0.14, "label": "초보자도 편하게 참여할 수 있는 팀이에요" }
   ]
 }
 ```
+
+`label`은 가장 점수가 높은 구성요소를 실제 매칭된 값(역할/스킬/활동 방식 등)으로 채워 넣은
+문장이다 — 동점이면 가중치가 높은 구성요소를 우선한다. 모든 구성요소가 0이면(의미 있는 룰
+매칭이 하나도 없으면) "의미적으로 관심사가 잘 맞아요"처럼 유사도만 근거로 삼는 문구로
+대체된다.
 
 ## 4. 역제안 추천 — `POST /recommendations/team-to-user`
 
@@ -256,9 +280,14 @@ AI 서버가 아무것도 저장하지 않으므로, 이유 생성에 필요한 
 {
   "candidate_summary": "React/TypeScript 경험, 초보자, 포트폴리오용 프로젝트 희망",
   "target_summary": "커머스 플랫폼, BE 1명 결핍, 주 2회 오프라인 활동",
-  "score_breakdown": { "similarity": 0.8, "role_match": 1.0, "beginner_fit": 0.9 }
+  "score_context": "유사도 높음, 역할 일치, 초보자 적합도 높음"
 }
 ```
+
+`score_context`는 자유 서술 문자열이다(2026-07-15 변경 — 이전엔 `score_breakdown:
+{구성요소: 점수}` dict였는데, AI 서버는 이 값을 필드별로 읽지 않고 LLM 프롬프트에 그대로
+이어붙이기만 해서 dict 타입을 강제할 이유가 없었다). 백엔드가 원하는 형식의 짧은 서술로 보내면
+된다 — 값을 아예 비워 보내도 된다(기본값 `""`).
 
 응답:
 ```json

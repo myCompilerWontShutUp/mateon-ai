@@ -12,9 +12,9 @@ def compute_missing_fields(fields: UserIntentFields) -> list[str]:
     return missing
 
 
-def render_intent_embedding_text(self_introduction: str, fields: UserIntentFields) -> str:
+def render_intent_embedding_text(conversation_text: str, fields: UserIntentFields) -> str:
     lines = [
-        f"자기소개: {self_introduction}",
+        f"자기소개: {conversation_text}",
         f"희망 역할: {', '.join(fields.desired_roles) or '미정'}",
         f"스킬: {', '.join(fields.skills) or '미정'}",
         f"관심 분야: {', '.join(fields.interests) or '미정'}",

@@ -18,13 +18,12 @@
 다시 보낸다.**
 
 > 추출 프롬프트: [`prompts/user_intent_extraction.txt`](../prompts/user_intent_extraction.txt)
+> 챗봇 응답 생성 프롬프트: [`prompts/user_intent_chat_reply.txt`](../prompts/user_intent_chat_reply.txt)
 
 ```java
-public record IntentExtractionRequest(
-        String selfIntroduction,
-        Map<String, Object> profile,
-        Map<String, Object> conversationAnswers
-) {}
+public record ConversationMessage(int id, String message) {}
+
+public record IntentExtractionRequest(List<ConversationMessage> messages) {}
 
 public record ExtractedIntentFields(
         List<String> desiredRoles, List<String> skills, List<String> interests,
@@ -35,20 +34,29 @@ public record IntentExtractionResponse(
         List<String> missingFields,
         ExtractedIntentFields extracted,
         String embeddingText,
-        List<Double> embeddingVector
+        List<Double> embeddingVector,
+        String assistantMessage
 ) {}
 ```
 
 ```java
+// 자기소개서든 재질문 답변이든 "사용자가 한 말"이라는 점에서 같은 종류라 messages 하나로
+// 누적한다 — 세션에 지금까지의 메시지 리스트를 들고 있다가 매번 통째로 다시 보낸다.
+List<ConversationMessage> messages = new ArrayList<>();
+messages.add(new ConversationMessage(1, selfIntroductionText));
+
 var response = mateonAiRestClient.post()
         .uri("/intents/extract")
-        .body(new IntentExtractionRequest(selfIntroduction, profile, conversationAnswers))
+        .body(new IntentExtractionRequest(messages))
         .retrieve()
         .body(IntentExtractionResponse.class);
 
+// assistantMessage를 화면에 그대로 보여주면 된다 — 재진술 + 다음 질문(하나만) 또는 추천 시작
+// 안내가 이미 자연어로 완성돼 있다. 백엔드/프론트가 missingFields를 보고 질문 문구를 직접
+// 조립할 필요는 없다.
 if (!response.missingFields().isEmpty()) {
-    // 프론트에 missingFields를 보여주고 답변을 받는다.
-    // 사용자가 답하면 이전 답변 + 새 답변을 합쳐 다시 /intents/extract를 호출한다.
+    // 사용자가 답하면 그 답변을 새 ConversationMessage로 messages에 append하고
+    // (id는 messages.size() + 1) 다시 /intents/extract를 호출한다.
     return;
 }
 
@@ -104,8 +112,9 @@ var response = mateonAiRestClient.post()
 ## 2-3. 상세 이유 (lazy, 선택) — `POST /recommendations/reason`
 
 사용자가 추천 목록에서 특정 팀을 클릭했을 때만 호출한다(목록 전체에 대해 미리 호출하지 않는다
-— 비용 낭비). `candidate_summary`(지원자 요약), `target_summary`(팀 요약),
-`score_breakdown`(2-2에서 나온 점수 구성요소)을 실어 보내면 이유 텍스트 한두 문장을 받는다.
+— 비용 낭비). `candidate_summary`(지원자 요약), `target_summary`(팀 요약), `score_context`
+(점수 구성요소를 짧은 서술로 요약한 문자열, 예: "유사도 높음, 역할 일치")를 실어 보내면 이유
+텍스트 한두 문장을 받는다.
 
 > 생성 프롬프트: [`prompts/recommendation_reason.txt`](../prompts/recommendation_reason.txt)
 
@@ -121,8 +130,7 @@ var response = mateonAiRestClient.post()
 ```java
 public record ProposalAssemblyRequest(
         Long userId, Long teamId, Long contestId, Long senderId, Long receiverId, Long intentId,
-        double synergyScore, Double portfolioRoleFitScore,
-        String candidateSummary, String targetSummary
+        double synergyScore, String candidateSummary, String targetSummary
 ) {}
 
 public record ProposalSchema(
@@ -131,12 +139,15 @@ public record ProposalSchema(
 ) {}
 ```
 
+`portfolioRoleFitScore`는 응답(`ProposalSchema`)에만 있고 요청에는 없다 — 항상 `null`로
+돌아오는 예약 필드다(자세한 이유는 `docs/backend-integration-team-to-user.md` 참고).
+
 ```java
 var response = mateonAiRestClient.post()
         .uri("/proposals/user-to-team")
         .body(new ProposalAssemblyRequest(
                 user.getId(), team.getId(), contestId, user.getId(), team.getId(), slot.getId(),
-                selectedRecommendation.score(), null, candidateSummary, targetSummary))
+                selectedRecommendation.score(), candidateSummary, targetSummary))
         .retrieve()
         .body(ProposalSchema.class);
 

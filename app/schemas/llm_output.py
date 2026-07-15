@@ -9,3 +9,7 @@ class ProposalTextFields(BaseModel):
 
 class RecommendationReasonText(BaseModel):
     reason: str
+
+
+class UserIntentChatReply(BaseModel):
+    message: str

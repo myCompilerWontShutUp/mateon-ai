@@ -30,7 +30,10 @@ class RecommendationResponse(BaseModel):
 class RecommendationReasonRequest(BaseModel):
     candidate_summary: str
     target_summary: str
-    score_breakdown: dict[str, float] = Field(default_factory=dict)
+    # 점수 구성요소는 LLM 프롬프트에 그대로 문자열로 들어갈 뿐 코드가 필드별로 읽지 않으므로,
+    # dict 타입을 강제할 이유가 없다 — 백엔드가 원하는 형식의 짧은 서술로 보내면 된다
+    # (예: "유사도 높음, 역할 일치, 결핍 보완 낮음").
+    score_context: str = ""
 
 
 class RecommendationReason(BaseModel):

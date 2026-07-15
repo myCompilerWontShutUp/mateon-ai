@@ -47,8 +47,12 @@ def show_result(resp: httpx.Response) -> dict | None:
 for key, default in [
     ("teams", {}),  # {label: {candidate_id, embedding_vector, metadata}}
     ("users", {}),  # {label: {candidate_id, embedding_vector, extracted}}
-    ("conversation_answers", {}),
+    ("messages", []),  # [{id, message}, ...] — /intents/extract에 누적해서 통째로 다시 보낸다
     ("intent_result", None),
+    ("chat_started", False),
+    ("chat_history", []),  # [{role, content}, ...] — 화면 표시 전용 (API에는 안 실어 보낸다)
+    ("chat_user_label", "user-203"),
+    ("chat_user_id", 203),
 ]:
     st.session_state.setdefault(key, default)
 
@@ -69,34 +73,24 @@ with tab_team:
         team_label = st.text_input("로컬 라벨", value="team-17")
         team_id = st.number_input("team_id (임의 지정, 백엔드 채번 흉내)", value=17, step=1)
         intro_text = st.text_area(
-            "팀 소개글",
+            "팀 소개글 (현재 팀 구성도 문장으로 포함시키면 된다 — 별도 필드 없음)",
             value=(
-                "커머스 플랫폼을 만드는 4인 팀입니다. 매주 화, 목요일 저녁 오프라인으로 "
-                "모이고, 초보자도 편하게 참여할 수 있는 분위기를 지향합니다. 이번 학기 "
-                "교내 공모전 수상이 목표입니다."
+                "커머스 플랫폼을 만드는 4인 팀입니다. 현재 FE 2명, Design 1명으로 구성돼 "
+                "있습니다. 매주 화, 목요일 저녁 오프라인으로 모이고, 초보자도 편하게 참여할 수 "
+                "있는 분위기를 지향합니다. 이번 학기 교내 공모전 수상이 목표입니다."
             ),
             height=100,
         )
         recruiting_roles = st.text_input("모집 역할 (쉼표 구분, BE/FE/Design/PM/Data)", value="BE")
         required_skills = st.text_input("요구 스킬 (쉼표 구분)", value="Spring Boot, PostgreSQL")
-        members_raw = st.text_input("현재 구성 (role:count, 쉼표 구분)", value="FE:2, Design:1")
         contest_field = st.text_input("공모전 분야 (선택)", value="커머스")
         team_submitted = st.form_submit_button("임베딩 계산 요청")
 
     if team_submitted:
-        members = []
-        for part in members_raw.split(","):
-            part = part.strip()
-            if not part:
-                continue
-            role, _, count = part.partition(":")
-            members.append({"role": role.strip(), "count": int(count.strip() or "1")})
-
         payload = {
             "intro_text": intro_text,
             "recruiting_roles": [r.strip() for r in recruiting_roles.split(",") if r.strip()],
             "required_skills": [s.strip() for s in required_skills.split(",") if s.strip()],
-            "current_members": members,
             "contest_field": contest_field or None,
         }
         resp = call("POST", "/internal/teams/embedding:refresh", payload)
@@ -105,81 +99,89 @@ with tab_team:
             st.session_state.teams[team_label] = {"candidate_id": int(team_id), **data}
             st.success(f"'{team_label}' (team_id={team_id}) 저장 완료")
 
-# ── 2. 유저 의도 추출 (재질문 stateless 루프) ───────────────────────────
+# ── 2. 유저 의도 추출 챗봇 시뮬레이터 (프롬프트 엔지니어링 파트 전용) ──
 with tab_intent:
-    st.subheader("POST /intents/extract — 재질문은 필드명만 알려주고, 질문 문구는 이 화면이 만든다")
-    user_label = st.text_input("로컬 라벨", value="user-203", key="user_label")
-    user_id = st.number_input("user_id (임의 지정)", value=203, step=1, key="user_id")
-    self_intro = st.text_area(
-        "자기소개서",
-        value=(
-            "백엔드 경험은 없지만 프론트엔드를 1년 해봤고, 이번엔 풀스택 프로젝트에서 "
-            "성장하고 싶습니다."
-        ),
-        height=80,
-        key="self_intro",
+    st.subheader("채팅 시뮬레이터 — POST /intents/extract")
+    st.caption(
+        "재진술 + 유도 질문(1개씩) / 추천 시작 안내 / 맥락 이탈 방어 문구까지 전부 "
+        "`assistant_message`로 AI가 생성한다(`prompts/user_intent_chat_reply.txt`). "
+        "이 화면은 그 응답을 실제 채팅처럼 보여준다."
     )
 
-    if st.button("추출 요청 (처음 호출)"):
-        st.session_state.conversation_answers = {"activity_goal": "포트폴리오용 프로젝트"}
-        resp = call(
-            "POST",
-            "/intents/extract",
-            {
-                "self_introduction": self_intro,
-                "profile": {"school": "OO대학교", "major": "컴퓨터공학"},
-                "conversation_answers": st.session_state.conversation_answers,
-            },
+    if not st.session_state.chat_started:
+        # ── 입력 폼: 사용자 정보를 먼저 채우고 "채팅 시작"을 누르면 대화가 시작된다 ──
+        user_label = st.text_input("로컬 라벨", value="user-203", key="user_label")
+        user_id = st.number_input("user_id (임의 지정)", value=203, step=1, key="user_id")
+        self_intro = st.text_area(
+            "자기소개 (첫 메시지로 들어간다)",
+            value=(
+                "백엔드 경험은 없지만 프론트엔드를 1년 해봤고, 이번엔 풀스택 프로젝트에서 "
+                "성장하고 싶습니다."
+            ),
+            height=80,
+            key="self_intro",
         )
-        st.session_state.intent_result = show_result(resp) if resp.status_code == 200 else None
-        if resp.status_code != 200:
-            show_result(resp)
 
-    result = st.session_state.intent_result
-    if result:
+        if st.button("채팅 시작", type="primary"):
+            st.session_state.chat_user_label = user_label
+            st.session_state.chat_user_id = int(user_id)
+            st.session_state.messages = [{"id": 1, "message": self_intro}]
+            st.session_state.chat_history = [{"role": "user", "content": self_intro}]
+
+            resp = call("POST", "/intents/extract", {"messages": st.session_state.messages})
+            if resp.status_code == 200:
+                data = resp.json()
+                st.session_state.intent_result = data
+                st.session_state.chat_history.append(
+                    {"role": "assistant", "content": data["assistant_message"]}
+                )
+                st.session_state.chat_started = True
+                st.rerun()
+            else:
+                show_result(resp)
+    else:
+        # ── 채팅 화면: 지금까지의 대화를 그대로 렌더링하고, 하단 입력창으로 계속 이어간다 ──
+        for turn in st.session_state.chat_history:
+            st.chat_message(turn["role"]).write(turn["content"])
+
+        result = st.session_state.intent_result
+        with st.expander("가장 최근 응답 원본 JSON"):
+            preview = {k: v for k, v in result.items() if k != "embedding_vector"}
+            if result.get("embedding_vector") is not None:
+                preview["embedding_vector"] = f"(float {len(result['embedding_vector'])}개, 생략)"
+            st.json(preview)
+
         if result["missing_fields"]:
-            st.warning(
-                f"missing_fields = {result['missing_fields']} — AI 서버는 필드명만 알려줄 뿐, "
-                "질문 문구는 만들지 않는다. 아래는 그 필드명을 실제 질문으로 바꾼 예시다."
-            )
-            question_map = {
-                "desired_roles": "희망하시는 역할이 무엇인가요? (BE/FE/Design/PM/Data)",
-                "experience_level": "지금까지의 개발 경험은 어느 정도이신가요?",
-                "activity_style": "선호하는 활동 방식이 있으신가요?",
-                "activity_goal": "이번 활동으로 이루고 싶은 목표가 있으신가요?",
-            }
-            for field in result["missing_fields"]:
-                st.text_input(
-                    question_map.get(field, f"'{field}'에 대한 답변"),
-                    key=f"answer_{field}",
-                )
+            reply = st.chat_input("답장하기")
+            if reply:
+                st.session_state.chat_history.append({"role": "user", "content": reply})
+                next_id = len(st.session_state.messages) + 1
+                st.session_state.messages.append({"id": next_id, "message": reply})
 
-            if st.button("답변 반영해서 다시 추출"):
-                for field in result["missing_fields"]:
-                    answer = st.session_state.get(f"answer_{field}", "")
-                    if answer:
-                        st.session_state.conversation_answers[field] = answer
-                resp = call(
-                    "POST",
-                    "/intents/extract",
-                    {
-                        "self_introduction": self_intro,
-                        "profile": {"school": "OO대학교", "major": "컴퓨터공학"},
-                        "conversation_answers": st.session_state.conversation_answers,
-                    },
-                )
-                st.session_state.intent_result = (
-                    show_result(resp) if resp.status_code == 200 else None
-                )
+                resp = call("POST", "/intents/extract", {"messages": st.session_state.messages})
+                if resp.status_code == 200:
+                    data = resp.json()
+                    st.session_state.intent_result = data
+                    st.session_state.chat_history.append(
+                        {"role": "assistant", "content": data["assistant_message"]}
+                    )
+                else:
+                    show_result(resp)
                 st.rerun()
         else:
-            st.success("완성됨 — embedding_vector까지 채워졌다.")
-            if st.button(f"'{user_label}' (user_id={user_id})로 저장"):
-                st.session_state.users[user_label] = {
-                    "candidate_id": int(user_id),
-                    **result,
-                }
-                st.success(f"'{user_label}' 저장 완료")
+            st.success("필수 정보가 모두 채워졌다 — embedding_vector까지 포함된 상태.")
+            label = st.session_state.chat_user_label
+            uid = st.session_state.chat_user_id
+            if st.button(f"'{label}' (user_id={uid})로 저장"):
+                st.session_state.users[label] = {"candidate_id": uid, **result}
+                st.success(f"'{label}' 저장 완료")
+
+        if st.button("새 대화 시작"):
+            st.session_state.chat_started = False
+            st.session_state.chat_history = []
+            st.session_state.messages = []
+            st.session_state.intent_result = None
+            st.rerun()
 
 # ── 3. 제안: 추천 → 이유 → 최종 조립 ────────────────────────────────────
 with tab_u2t:
@@ -236,7 +238,7 @@ with tab_u2t:
                     {
                         "candidate_summary": candidate_summary,
                         "target_summary": target_summary,
-                        "score_breakdown": {"similarity": 0.8, "role_match": 1.0, "beginner_fit": 0.9},
+                        "score_context": "유사도 높음, 역할 일치, 초보자 적합도 높음",
                     },
                 )
                 show_result(resp)

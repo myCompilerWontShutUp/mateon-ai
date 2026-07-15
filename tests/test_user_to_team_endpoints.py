@@ -17,7 +17,7 @@ def _mock_services(monkeypatch: pytest.MonkeyPatch) -> None:
     async def fake_compute_user_intent(request) -> UserIntentExtractionResult:
         return UserIntentExtractionResult(
             missing_fields=[], extracted=UserIntentFields(desired_roles=["BE"]), embedding_text="...",
-            embedding_vector=[0.1] * 1536,
+            embedding_vector=[0.1] * 1536, assistant_message="너의 관심사는 백엔드구나! 이건 추천 팀이야.",
         )
 
     def fake_recommend_teams(request) -> RecommendationResponse:
@@ -49,7 +49,7 @@ def _mock_services(monkeypatch: pytest.MonkeyPatch) -> None:
 async def test_extract_intent_endpoint(client: AsyncClient) -> None:
     response = await client.post(
         "/intents/extract",
-        json={"self_introduction": "백엔드를 해보고 싶습니다."},
+        json={"messages": [{"id": 1, "message": "백엔드를 해보고 싶습니다."}]},
         headers=_AUTH_HEADERS,
     )
     assert response.status_code == 200
@@ -59,7 +59,7 @@ async def test_extract_intent_endpoint(client: AsyncClient) -> None:
 async def test_extract_intent_endpoint_rejects_wrong_secret(client: AsyncClient) -> None:
     response = await client.post(
         "/intents/extract",
-        json={"self_introduction": "..."},
+        json={"messages": [{"id": 1, "message": "..."}]},
         headers={"X-Internal-Secret": "wrong"},
     )
     assert response.status_code == 401

@@ -10,7 +10,6 @@ def compute_missing_fields(soft_fields: TeamSoftFields) -> list[str]:
 def render_team_embedding_text(
     request: TeamEmbeddingRefreshRequest, soft_fields: TeamSoftFields
 ) -> str:
-    members_desc = ", ".join(f"{m.role} {m.count}명" for m in request.current_members) or "미정"
     beginner_desc = (
         "초보자 환영" if soft_fields.beginner_friendly else "경험자 우대"
         if soft_fields.beginner_friendly is not None
@@ -21,7 +20,6 @@ def render_team_embedding_text(
         f"팀 소개: {request.intro_text}",
         f"모집 역할: {', '.join(request.recruiting_roles) or '미정'}",
         f"요구 스킬: {', '.join(request.required_skills) or '미정'}",
-        f"현재 구성: {members_desc}",
         f"활동 목표: {soft_fields.activity_goal or '미정'}",
         f"활동 방식: {soft_fields.activity_style or '미정'}",
         f"활동 강도: {soft_fields.activity_intensity or '미정'}",

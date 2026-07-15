@@ -1,13 +1,12 @@
 from app.features.team_embedding.template import compute_missing_fields, render_team_embedding_text
-from app.schemas.team_extraction import TeamEmbeddingRefreshRequest, TeamMember, TeamSoftFields
+from app.schemas.team_extraction import TeamEmbeddingRefreshRequest, TeamSoftFields
 
 
 def _request(**overrides) -> TeamEmbeddingRefreshRequest:
     defaults = {
-        "intro_text": "커머스 플랫폼을 만드는 4인 팀입니다.",
+        "intro_text": "커머스 플랫폼을 만드는 4인 팀입니다. 현재 FE 2명, Design 1명으로 구성돼 있습니다.",
         "recruiting_roles": ["BE"],
         "required_skills": ["Spring Boot", "PostgreSQL"],
-        "current_members": [TeamMember(role="FE", count=2), TeamMember(role="Design", count=1)],
         "contest_field": "커머스",
     }
     defaults.update(overrides)
