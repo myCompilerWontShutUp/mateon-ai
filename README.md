@@ -112,6 +112,19 @@ docs/              # 백엔드 연동용 API 계약 문서
 - `docs/backend-integration-team-embedding.md`, `docs/backend-integration-user-to-team.md`,
   `docs/backend-integration-team-to-user.md` — 백엔드(Java/Spring Boot) 기준 실제 연동 코드 예시
 
+## 시뮬레이션 UI
+
+배포된(또는 로컬) 서버를 실제로 호출하면서 팀 임베딩 → 제안 → 역제안 전체 흐름을 눈으로 확인할
+수 있는 Streamlit 앱이다. `docs/api-contract-draft.md`의 예시 값을 기본값으로 채워뒀다.
+
+```bash
+uv run streamlit run demo/app.py
+```
+
+브라우저가 열리면 사이드바에 Base URL과 `X-Internal-Secret`을 입력하고, 탭 순서(팀 임베딩 →
+유저 의도 추출 → 제안/역제안)대로 버튼을 눌러보면 된다. AI 서버는 무상태라 이 화면이 "백엔드"
+역할을 대신해서 계산된 임베딩 벡터를 세션 동안만 들고 있는다.
+
 ## 프롬프트 & 품질 검증
 
 LLM 시스템 프롬프트는 코드에 하드코딩하지 않고 `prompts/*.txt`로 분리해 `app.core.prompts.
