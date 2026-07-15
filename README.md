@@ -72,7 +72,12 @@ uv run pytest
 ```
 
 기본 실행은 OpenAI 호출을 mock으로 대체한 단위 테스트만 돈다. 실제 API를 호출하는 e2e 테스트는
-`@pytest.mark.live`로 분리되어 있어 기본 실행에서 제외된다.
+`@pytest.mark.live`로 분리되어 있어 기본 실행에서 제외된다. 역할 코드 정규화, LLM-as-judge
+판별력, 임베딩 유사도가 실제로 말이 되는지는 아래로 따로 확인한다(비용 발생, 가끔만 실행):
+
+```bash
+uv run pytest -m live
+```
 
 ### 린트
 
@@ -125,4 +130,26 @@ uv run python scripts/judge_outputs.py
 ```bash
 uv run python scripts/generate_team_fixtures.py
 uv run python scripts/generate_user_fixtures.py
+```
+
+## 배포
+
+이 서비스는 DB가 없는 완전 무상태 서버라, 어딘가에서 프로세스가 계속 떠 있고 환경변수만
+안전하게 주입되면 배포가 끝난다. `Procfile`이 이미 있어 Railway/Render 같은 PaaS에 GitHub
+저장소를 연결하기만 하면 자동으로 인식한다.
+
+1. [Railway](https://railway.app) 또는 [Render](https://render.com)에서 GitHub 저장소
+   (`mateon-ai`)를 연결한다.
+2. 환경변수를 설정한다: `OPENAI_API_KEY`, `OPENAI_LLM_MODEL`, `OPENAI_EMBEDDING_MODEL`,
+   `INTERNAL_SHARED_SECRET`(운영용으로 새로 생성 — 로컬 `.env` 값과 다르게 유지 권장).
+3. 배포하면 **재시작해도 바뀌지 않는 영구 URL**이 발급된다 (예:
+   `https://mateon-ai-production.up.railway.app`). 이 URL과 `INTERNAL_SHARED_SECRET`을
+   백엔드 팀에 전달하면 된다.
+
+로컬 개발 중 임시로 외부에 노출해서 테스트하고 싶을 때는 (URL이 재시작마다 바뀌어도 괜찮다면)
+[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/)의
+quick tunnel도 계정 없이 바로 쓸 수 있다:
+
+```bash
+cloudflared tunnel --url http://localhost:8000
 ```

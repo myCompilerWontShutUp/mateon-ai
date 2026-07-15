@@ -11,7 +11,9 @@ class Settings(BaseSettings):
     openai_embedding_model: str = "text-embedding-3-small"
     embedding_dimension: int = 1536
 
-    internal_shared_secret: str = "change-me"
+    # 기본값을 두지 않는다 — 배포 시 설정을 깜빡하면 다 아는 값으로 조용히 동작하는 대신
+    # 시작 시점에 명확히 실패해야 한다.
+    internal_shared_secret: str
 
 
 @lru_cache
