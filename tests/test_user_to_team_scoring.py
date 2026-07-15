@@ -1,4 +1,5 @@
 from app.features.user_to_team.scoring import (
+    PENALTY_RULES,
     WEIGHTS,
     deficit_fit_score,
     label_for,
@@ -101,6 +102,7 @@ def test_beginner_unfriendly_team_cannot_beat_beginner_friendly_at_half_similari
             "role_match": 1.0, "deficit_fit": 1.0, "activity_style_match": 1.0, "beginner_fit": 0.0,
         },
         weights=WEIGHTS,
+        penalty_rules=PENALTY_RULES,
     )
     beginner_friendly_half_similarity = combine_score(
         similarity=0.5,
@@ -108,5 +110,36 @@ def test_beginner_unfriendly_team_cannot_beat_beginner_friendly_at_half_similari
             "role_match": 1.0, "deficit_fit": 1.0, "activity_style_match": 1.0, "beginner_fit": 1.0,
         },
         weights=WEIGHTS,
+        penalty_rules=PENALTY_RULES,
     )
     assert beginner_friendly_half_similarity >= anti_beginner_full_match
+
+
+def test_beginner_unfriendly_team_loses_even_with_full_similarity_swing() -> None:
+    # 실제로 재현된 사례(2026-07-15): 팀 소개 텍스트 두 개가 "초보자는 정중히 지양합니다" vs
+    # "초보자도 편하게 참여할 수 있는 분위기를 지향합니다"만 다르고 나머지는 거의 동일했는데,
+    # 원시 코사인 유사도 차이가 0.015에 불과했음에도 후보가 2개뿐이라 min-max 정규화가 이를
+    # 1.0 vs 0.0으로 최대치까지 벌려버려서, 그것만으로 beginner_fit(가중치 0.2)의 불리함을
+    # 뒤집고 "초보자 지양" 팀이 1위로 나왔다. 나머지 구성요소가 전부 동점이고 유사도가 완전히
+    # 극단(1.0 vs 0.0)으로 갈리는 최악의 경우에도, 초보자 친화 팀이 이겨야 한다.
+    from app.scoring.engine import combine_score
+
+    anti_beginner = combine_score(
+        similarity=1.0,
+        metadata_scores={
+            "role_match": 1.0, "deficit_fit": 0.0, "activity_style_match": 0.5, "beginner_fit": 0.0,
+        },
+        weights=WEIGHTS,
+        penalty_rules=PENALTY_RULES,
+    )
+    beginner_friendly = combine_score(
+        similarity=0.0,
+        metadata_scores={
+            "role_match": 1.0, "deficit_fit": 0.0, "activity_style_match": 0.5, "beginner_fit": 1.0,
+        },
+        weights=WEIGHTS,
+        penalty_rules=PENALTY_RULES,
+    )
+    assert beginner_friendly > anti_beginner, (
+        f"beginner_friendly={beginner_friendly} anti_beginner={anti_beginner}"
+    )
