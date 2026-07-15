@@ -1,12 +1,9 @@
+from app.core.prompts import load_prompt
 from app.openai_client.extraction import extract_structured
 from app.schemas.llm_output import RecommendationReasonText
 from app.schemas.recommendation import RecommendationReason, RecommendationReasonRequest
 
-_SYSTEM_PROMPT = (
-    "너는 매칭 추천 이유를 한두 문장으로 설명하는 도우미다. 사람에 대한 절대적 평가(훌륭하다/"
-    "부족하다 등)를 하지 말고, 두 대상이 왜 서로 적합한지, 즉 '이 팀/역할에 대한 적합도' "
-    "관점으로만 설명해라."
-)
+_SYSTEM_PROMPT = load_prompt("recommendation_reason")
 
 
 async def generate_recommendation_reason(request: RecommendationReasonRequest) -> RecommendationReason:
