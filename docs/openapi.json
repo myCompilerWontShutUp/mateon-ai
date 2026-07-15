@@ -429,6 +429,15 @@
             "type": "integer",
             "title": "Id"
           },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role",
+            "default": "user"
+          },
           "message": {
             "type": "string",
             "title": "Message"

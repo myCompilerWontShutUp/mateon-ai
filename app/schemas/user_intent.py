@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 from app.schemas.common import EmbeddingVector
@@ -5,6 +7,12 @@ from app.schemas.common import EmbeddingVector
 
 class ConversationMessage(BaseModel):
     id: int
+    # 추출 LLM이 짧고 모호한 답변(예: "없는거같아", "평범한거같은데")을 해석하려면 그 답이 어떤
+    # 질문에 대한 것인지가 필요하다 — AI의 질문을 빼고 사용자 발화만 보내면 문맥이 사라져서
+    # missing_fields가 영영 안 비는 문제가 실제로 있었다(2026-07-15). role을 넣어 AI의
+    # assistant_message도 함께 재전송하게 한다. 기본값 user — 한 번에 끝나는 단문 자기소개처럼
+    # 왕복이 없는 흔한 경우엔 매번 명시할 필요가 없다.
+    role: Literal["user", "assistant"] = "user"
     message: str
 
 

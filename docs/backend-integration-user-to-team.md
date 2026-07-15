@@ -20,8 +20,23 @@
 > 추출 프롬프트: [`prompts/user_intent_extraction.txt`](../prompts/user_intent_extraction.txt)
 > 챗봇 응답 생성 프롬프트: [`prompts/user_intent_chat_reply.txt`](../prompts/user_intent_chat_reply.txt)
 
+**첫 API 호출 전에 프론트가 먼저 인사말을 보여줘야 한다.** `messages`는 최소 1개가 필요해서
+(비우면 422), 사용자가 아직 아무 말도 안 한 시점엔 API를 호출하지 않고 고정 문구를 그대로
+표시한다 — AI 이름은 "드림이"로 고정:
+
 ```java
-public record ConversationMessage(int id, String message) {}
+public static final String AI_PERSONA_NAME = "드림이";
+public static final String OPENING_GREETING =
+        "안녕! 나는 드림이야, 너한테 딱 맞는 팀을 찾아주는 도우미야. 먼저 너에 대해 간단히 "
+        + "소개해줄래? 어떤 역할을 하고 싶은지, 관심 분야나 경험이 있다면 편하게 말해줘!";
+```
+
+사용자가 이 인사말에 답하면 그 답변이 `messages`의 두 번째 항목이 된다(첫 번째는 인사말
+자체) — `missingFields`가 곧바로 빈 상태가 되든(즉시 추천 가능) 아니든 상관없이, 이 인사말은
+항상 먼저 나온다.
+
+```java
+public record ConversationMessage(int id, String role, String message) {}  // role: "user" | "assistant"
 
 public record IntentExtractionRequest(List<ConversationMessage> messages) {}
 
@@ -39,11 +54,16 @@ public record IntentExtractionResponse(
 ) {}
 ```
 
+**AI의 질문(`assistantMessage`)도 반드시 `messages`에 같이 재전송해야 한다** (2026-07-15
+추가 — 실제 시뮬레이션에서 발견된 버그를 고치며 추가된 규칙). 이걸 빼고 사용자 발화만 보내면
+"없는거같아"/"평범한거같은데" 같은 짧고 모호한 답변이 무엇에 대한 답인지 알 길이 없어서
+`missingFields`가 영영 안 비고 같은 질문이 반복된다.
+
 ```java
-// 자기소개서든 재질문 답변이든 "사용자가 한 말"이라는 점에서 같은 종류라 messages 하나로
-// 누적한다 — 세션에 지금까지의 메시지 리스트를 들고 있다가 매번 통째로 다시 보낸다.
+// 세션에 지금까지의 메시지 리스트를 들고 있다가(user/assistant 둘 다) 매번 통째로 다시 보낸다.
 List<ConversationMessage> messages = new ArrayList<>();
-messages.add(new ConversationMessage(1, selfIntroductionText));
+messages.add(new ConversationMessage(1, "assistant", openingGreetingText));
+messages.add(new ConversationMessage(2, "user", selfIntroductionText));
 
 var response = mateonAiRestClient.post()
         .uri("/intents/extract")
@@ -51,11 +71,13 @@ var response = mateonAiRestClient.post()
         .retrieve()
         .body(IntentExtractionResponse.class);
 
-// assistantMessage를 화면에 그대로 보여주면 된다 — 재진술 + 다음 질문(하나만) 또는 추천 시작
-// 안내가 이미 자연어로 완성돼 있다. 백엔드/프론트가 missingFields를 보고 질문 문구를 직접
-// 조립할 필요는 없다.
+// assistantMessage를 화면에 그대로 보여주고, 동시에 messages에도 append해야 다음 호출에서
+// 맥락으로 쓰인다. 재진술 + 다음 질문(하나만) 또는 추천 시작 안내가 이미 자연어로 완성돼
+// 있다 — 백엔드/프론트가 missingFields를 보고 질문 문구를 직접 조립할 필요는 없다.
+messages.add(new ConversationMessage(messages.size() + 1, "assistant", response.assistantMessage()));
+
 if (!response.missingFields().isEmpty()) {
-    // 사용자가 답하면 그 답변을 새 ConversationMessage로 messages에 append하고
+    // 사용자가 답하면 그 답변도 새 ConversationMessage(role: "user")로 messages에 append하고
     // (id는 messages.size() + 1) 다시 /intents/extract를 호출한다.
     return;
 }
