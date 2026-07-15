@@ -5,16 +5,20 @@ CI에는 연결되어 있지 않다 — 필요할 때 수동으로 실행한다:
 """
 
 import asyncio
+import sys
+from pathlib import Path
 
-from pydantic import BaseModel
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app.core.prompts import load_prompt
-from app.features.recommendation.reason import generate_recommendation_reason
-from app.features.team_to_user.proposal import assemble_team_to_user_proposal
-from app.features.user_to_team.proposal import assemble_user_to_team_proposal
-from app.openai_client.extraction import extract_structured
-from app.schemas.proposal import ProposalAssemblyRequest
-from app.schemas.recommendation import RecommendationReasonRequest
+from pydantic import BaseModel  # noqa: E402
+
+from app.core.prompts import load_prompt  # noqa: E402
+from app.features.recommendation.reason import generate_recommendation_reason  # noqa: E402
+from app.features.team_to_user.proposal import assemble_team_to_user_proposal  # noqa: E402
+from app.features.user_to_team.proposal import assemble_user_to_team_proposal  # noqa: E402
+from app.openai_client.extraction import extract_structured  # noqa: E402
+from app.schemas.proposal import ProposalAssemblyRequest  # noqa: E402
+from app.schemas.recommendation import RecommendationReasonRequest  # noqa: E402
 
 
 class JudgeVerdict(BaseModel):

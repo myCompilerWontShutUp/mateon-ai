@@ -1,9 +1,12 @@
 import asyncio
 import json
+import sys
 from pathlib import Path
 
-from app.features.user_to_team.intent import compute_user_intent
-from tests.fixtures.user_intent_definitions import USER_INTENT_FIXTURES
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from app.features.user_to_team.intent import compute_user_intent  # noqa: E402
+from tests.fixtures.user_intent_definitions import USER_INTENT_FIXTURES  # noqa: E402
 
 OUTPUT_PATH = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "users.json"
 
