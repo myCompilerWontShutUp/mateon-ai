@@ -24,11 +24,11 @@ def beginner_fit_score(experience_level: str | None, beginner_friendly: bool | N
 
 
 WEIGHTS = {
-    "similarity": 0.35,
-    "role_match": 0.25,
-    "deficit_fit": 0.2,
-    "activity_style_match": 0.1,
-    "beginner_fit": 0.1,
+    "similarity": 0.5,
+    "role_match": 0.2,
+    "deficit_fit": 0.15,
+    "activity_style_match": 0.075,
+    "beginner_fit": 0.075,
 }
 
 _LABELS = {

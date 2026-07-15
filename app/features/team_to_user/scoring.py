@@ -26,11 +26,11 @@ def activity_goal_match_score(team_goal: str | None, candidate_goal: str | None)
 
 
 WEIGHTS = {
-    "similarity": 0.3,
-    "role_match": 0.25,
-    "deficit_fit": 0.2,
-    "portfolio_role_fit": 0.15,
-    "activity_goal_match": 0.1,
+    "similarity": 0.5,
+    "role_match": 0.18,
+    "deficit_fit": 0.14,
+    "portfolio_role_fit": 0.11,
+    "activity_goal_match": 0.07,
 }
 
 _LABELS = {
