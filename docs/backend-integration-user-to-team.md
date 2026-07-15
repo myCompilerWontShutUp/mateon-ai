@@ -35,6 +35,22 @@ public static final String OPENING_GREETING =
 자체) — `missingFields`가 곧바로 빈 상태가 되든(즉시 추천 가능) 아니든 상관없이, 이 인사말은
 항상 먼저 나온다.
 
+**이미 등록된 자기소개서/포트폴리오가 있다면 인사말보다 앞에 `role: "user"`로 실어 보낼 수
+있다** — `[자기소개서]`/`[포트폴리오]` 라벨을 붙이면 좋다. 채팅 중 사용자가 이 값과 다른
+내용을 말하면 더 나중에 말한 채팅 답변을 우선해서 필드에 반영한다(`prompts/
+user_intent_extraction.txt`에 명시). 포트폴리오는 선택값이다.
+
+```java
+List<ConversationMessage> messages = new ArrayList<>();
+if (profile.getSelfIntroduction() != null) {
+    messages.add(new ConversationMessage(messages.size() + 1, "user", "[자기소개서]\n" + profile.getSelfIntroduction()));
+}
+if (profile.getPortfolio() != null) {
+    messages.add(new ConversationMessage(messages.size() + 1, "user", "[포트폴리오]\n" + profile.getPortfolio()));
+}
+messages.add(new ConversationMessage(messages.size() + 1, "assistant", openingGreetingText));
+```
+
 ```java
 public record ConversationMessage(int id, String role, String message) {}  // role: "user" | "assistant"
 
