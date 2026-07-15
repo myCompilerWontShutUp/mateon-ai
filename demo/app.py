@@ -122,18 +122,42 @@ with tab_intent:
     )
 
     if not st.session_state.chat_started:
-        # ── 입력 폼: 사용자 정보만 채우면 된다 — 자기소개는 채팅 안에서 받는다 ──
+        # ── 입력 폼: 사용자 정보 + (선택) 미리 등록된 자기소개서/포트폴리오 ──
         user_label = st.text_input("로컬 라벨", value="user-203", key="user_label")
         user_id = st.number_input("user_id (임의 지정)", value=203, step=1, key="user_id")
+        self_intro = st.text_area(
+            "자기소개서 (선택 — 채팅 시작 전 미리 등록된 값이라고 가정, 채팅 첫 답변보다 먼저 반영)",
+            value="",
+            height=80,
+            key="profile_self_intro",
+        )
+        portfolio = st.text_area(
+            "포트폴리오 (선택 — 초보자는 없어도 된다)",
+            value="",
+            height=80,
+            key="profile_portfolio",
+        )
         st.caption(
-            "답장 예시: \"백엔드 경험은 없지만 프론트엔드를 1년 해봤고, 이번엔 풀스택 "
-            "프로젝트에서 성장하고 싶습니다.\""
+            "채팅 첫 답변 예시: \"백엔드 경험은 없지만 프론트엔드를 1년 해봤고, 이번엔 풀스택 "
+            "프로젝트에서 성장하고 싶습니다.\" — 자기소개서/포트폴리오와 채팅 답변 내용이 서로 "
+            "다르면 채팅에 쓴 내용이 우선 반영된다(`prompts/user_intent_extraction.txt`)."
         )
 
         if st.button("채팅 시작", type="primary"):
             st.session_state.chat_user_label = user_label
             st.session_state.chat_user_id = int(user_id)
-            st.session_state.messages = [{"id": 1, "role": "assistant", "message": OPENING_GREETING}]
+
+            profile_messages = []
+            if self_intro.strip():
+                profile_messages.append({"role": "user", "message": f"[자기소개서]\n{self_intro.strip()}"})
+            if portfolio.strip():
+                profile_messages.append({"role": "user", "message": f"[포트폴리오]\n{portfolio.strip()}"})
+
+            st.session_state.messages = [
+                {"id": i + 1, **m} for i, m in enumerate(profile_messages)
+            ] + [
+                {"id": len(profile_messages) + 1, "role": "assistant", "message": OPENING_GREETING}
+            ]
             st.session_state.intent_result = None
             st.session_state.chat_started = True
             st.rerun()

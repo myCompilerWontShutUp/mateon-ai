@@ -50,3 +50,28 @@ async def test_multi_turn_conversation_converges_to_no_missing_fields() -> None:
     )
     assert final.extracted.desired_roles == ["PM"]
     assert final.extracted.experience_level == "beginner"
+
+
+@pytest.mark.live
+async def test_chat_reply_overrides_conflicting_profile_self_introduction() -> None:
+    # 채팅 시작 전 미리 등록된 자기소개서/포트폴리오와, 실제 채팅 첫 답변 내용이 서로 다르면
+    # 채팅 답변을 우선해서 필드를 채워야 한다(prompts/user_intent_extraction.txt). 역할처럼
+    # 이산적인 값으로 충돌을 만들어야 판정이 모호해지지 않는다(경험 수준처럼 정도 차이인
+    # 값은 모델이 "둘 다 반영한 결과"로 판단할 여지가 있어 회귀 신호로 부적합했다).
+    messages = [
+        ConversationMessage(
+            id=1, role="user",
+            message="[자기소개서]\n저는 백엔드 개발에 관심이 있습니다. Spring Boot를 배우고 싶어요.",
+        ),
+        ConversationMessage(id=2, role="assistant", message="안녕! 너에 대해 간단히 소개해줄래?"),
+        ConversationMessage(
+            id=3, role="user",
+            message="사실 다시 생각해보니 백엔드 말고 프론트엔드 쪽으로 하고 싶어요. React를 배우고 있어요.",
+        ),
+    ]
+    result = await compute_user_intent(UserIntentExtractionRequest(messages=messages))
+
+    assert result.extracted.desired_roles == ["FE"], (
+        "자기소개서엔 BE라고 썼지만, 이후 채팅에서 명시적으로 FE로 정정했으니 "
+        f"채팅 내용이 우선 반영돼야 한다: {result.extracted.desired_roles!r}"
+    )
