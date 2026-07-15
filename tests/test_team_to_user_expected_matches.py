@@ -25,7 +25,8 @@ def _build_request(team: EmbeddingResult, users: dict[str, UserIntentExtractionR
         query_metadata={
             "recruiting_roles": team.metadata.get("recruiting_roles", []),
             "required_skills": team.metadata.get("required_skills", []),
-            "activity_goal": team.metadata.get("activity_goal"),
+            "activity_style": team.metadata.get("activity_style"),
+            "beginner_friendly": team.metadata.get("beginner_friendly"),
         },
         candidates=[
             CandidateEmbedding(
@@ -35,7 +36,7 @@ def _build_request(team: EmbeddingResult, users: dict[str, UserIntentExtractionR
                     "desired_roles": user.extracted.desired_roles,
                     "skills": user.extracted.skills,
                     "experience_level": user.extracted.experience_level,
-                    "activity_goal": user.extracted.activity_goal,
+                    "activity_style": user.extracted.activity_style,
                 },
             )
             for idx, user in enumerate(users.values())

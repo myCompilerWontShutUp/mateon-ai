@@ -1,983 +1,972 @@
 {
-    "openapi": "3.1.0",
-    "info": {
-        "title": "mateon-ai",
-        "description": "Mate-On \udced\udc8c\udc80 \uf9cd\u317c\ubb36 \udcec\uaf4c\u936e\uafa9\ub4aa\udcec\uc4fd AI \udcec\uaf4c\u8e30\udc84 \udce2\udc80\udc94 \u81fe\ub301\uae3d\udced\uae6d(stateless), \udcec\uc5eb\u8e30\uc88a\ubd6b\uca0c\udcec\ub4aa\u8084\ubdbf\ubf31\uf9cd\uacb6\ub8fb\ub013\udcec\ub4aa\udced\ub4c3 \udcec\uae6e\udcec\uaf66 \udcec\uc7fe\udceb\ub59e",
-        "version": "0.1.0"
-    },
-    "paths": {
-        "/health": {
-            "get": {
-                "summary": "Health",
-                "operationId": "health_health_get",
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "additionalProperties": {
-                                        "type": "string"
-                                    },
-                                    "type": "object",
-                                    "title": "Response Health Health Get"
-                                }
-                            }
-                        }
-                    }
+  "openapi": "3.1.0",
+  "info": {
+    "title": "mateon-ai",
+    "description": "Mate-On 팀 매칭 서비스의 AI 서버 — 무상태(stateless), 임베딩·스코어링·텍스트 생성 전담",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Health Get"
                 }
+              }
             }
-        },
-        "/internal/teams/embedding:refresh": {
-            "post": {
-                "tags": [
-                    "team-embedding"
-                ],
-                "summary": "\udced\udc8c\udc80 \udcec\uc5eb\u8e30\uc88a\ubd6b \u6028\uafa9\uad9b (\udcec\udca0\udc80\udcec\uc623 \udcec\ubfbe\udcec\uc4ec, \udced\udc8c\udc80 \udcec\uae6e\udcec\uaf66/\udcec\ub2d4\udcec\uc819 \udcec\ub586 \udced\uc0c7\u7570\udc9c)",
-                "operationId": "refresh_team_embedding_internal_teams_embedding_refresh_post",
-                "parameters": [
-                    {
-                        "name": "x-internal-secret",
-                        "in": "header",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "title": "X-Internal-Secret"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/TeamEmbeddingRefreshRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/EmbeddingResult"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/HTTPValidationError"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/intents/extract": {
-            "post": {
-                "tags": [
-                    "user-to-team"
-                ],
-                "summary": "\udcec\uad97\udcec\uc29c\udcec\uc604 \uf9cd\u317c\ubb36 \udcec\uc4fd\udceb\ub8c4 \u7570\ubdbf\ud167 (\udcec\uc631\uf9de\ub348\u0426 \udcec\ub586 stateless \udcec\uc631\udced\uc0c7\u7570\udc9c)",
-                "operationId": "extract_intent_intents_extract_post",
-                "parameters": [
-                    {
-                        "name": "x-internal-secret",
-                        "in": "header",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "title": "X-Internal-Secret"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UserIntentExtractionRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/UserIntentExtractionResult"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/HTTPValidationError"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/recommendations/user-to-team": {
-            "post": {
-                "tags": [
-                    "user-to-team"
-                ],
-                "summary": "\udcec\uc823\udcec\ube1e \u7570\ubdbf\ucfc7 \udce2\udc80\udc94 \udcec\uc440\udcec\udca0\udc80 intent \u6e72\uacd7\udca4\udc80 \udced\udc8c\udc80 Top 10",
-                "operationId": "recommend_user_to_team_recommendations_user_to_team_post",
-                "parameters": [
-                    {
-                        "name": "x-internal-secret",
-                        "in": "header",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "title": "X-Internal-Secret"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RecommendationRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/RecommendationResponse"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/HTTPValidationError"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/proposals/user-to-team": {
-            "post": {
-                "tags": [
-                    "user-to-team"
-                ],
-                "summary": "\udcec\uc823\udcec\ube1e \uf9e4\uc496\uc94c \u8b70\uacd5\u2530 (proposal_id\udceb\ub497 \u8adb\uae46\ubfcf\udceb\ubc76\u5a9b\udc80 \uf9e2\uafa8\ucfb2)",
-                "operationId": "create_user_to_team_proposal_proposals_user_to_team_post",
-                "parameters": [
-                    {
-                        "name": "x-internal-secret",
-                        "in": "header",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "title": "X-Internal-Secret"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ProposalAssemblyRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ProposalSchema"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/HTTPValidationError"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/recommendations/team-to-user": {
-            "post": {
-                "tags": [
-                    "team-to-user"
-                ],
-                "summary": "\udcec\ubfed\udcec\uc823\udcec\ube1e \u7570\ubdbf\ucfc7 \udce2\udc80\udc94 \udced\udc8c\udc80 \u5bc3\uace0\ube24 \u6e72\uacd7\udca4\udc80 \udcec\uc440\udcec\udca0\udc80 Top N",
-                "operationId": "recommend_team_to_user_recommendations_team_to_user_post",
-                "parameters": [
-                    {
-                        "name": "x-internal-secret",
-                        "in": "header",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "title": "X-Internal-Secret"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RecommendationRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/RecommendationResponse"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/HTTPValidationError"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/proposals/team-to-user": {
-            "post": {
-                "tags": [
-                    "team-to-user"
-                ],
-                "summary": "\udcec\ubfed\udcec\uc823\udcec\ube1e \uf9e4\uc496\uc94c \u8b70\uacd5\u2530 (proposal_id\udceb\ub497 \u8adb\uae46\ubfcf\udceb\ubc76\u5a9b\udc80 \uf9e2\uafa8\ucfb2)",
-                "operationId": "create_team_to_user_proposal_proposals_team_to_user_post",
-                "parameters": [
-                    {
-                        "name": "x-internal-secret",
-                        "in": "header",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "title": "X-Internal-Secret"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ProposalAssemblyRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ProposalSchema"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/HTTPValidationError"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/recommendations/reason": {
-            "post": {
-                "tags": [
-                    "recommendation"
-                ],
-                "summary": "\u7570\ubdbf\ucfc7 \udcec\uae3d\udcec\uaf6d \udcec\uc520\udcec\uc440 \udcec\uae6e\udcec\uaf66 (lazy, \u8adb\u247a\ubf22 \u6028\ub4ef\ub13b)",
-                "operationId": "recommend_reason_recommendations_reason_post",
-                "parameters": [
-                    {
-                        "name": "x-internal-secret",
-                        "in": "header",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "title": "X-Internal-Secret"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RecommendationReasonRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/RecommendationReason"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/HTTPValidationError"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+          }
         }
+      }
     },
-    "components": {
-        "schemas": {
-            "CandidateEmbedding": {
-                "properties": {
-                    "candidate_id": {
-                        "type": "integer",
-                        "title": "Candidate Id"
-                    },
-                    "embedding_vector": {
-                        "items": {
-                            "type": "number"
-                        },
-                        "type": "array",
-                        "maxItems": 1536,
-                        "minItems": 1536,
-                        "title": "Embedding Vector"
-                    },
-                    "metadata": {
-                        "additionalProperties": true,
-                        "type": "object",
-                        "title": "Metadata"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "candidate_id",
-                    "embedding_vector"
-                ],
-                "title": "CandidateEmbedding"
-            },
-            "EmbeddingResult": {
-                "properties": {
-                    "embedding_text": {
-                        "type": "string",
-                        "title": "Embedding Text"
-                    },
-                    "embedding_vector": {
-                        "items": {
-                            "type": "number"
-                        },
-                        "type": "array",
-                        "maxItems": 1536,
-                        "minItems": 1536,
-                        "title": "Embedding Vector"
-                    },
-                    "metadata": {
-                        "additionalProperties": true,
-                        "type": "object",
-                        "title": "Metadata"
-                    },
-                    "missing_fields": {
-                        "items": {
-                            "type": "string"
-                        },
-                        "type": "array",
-                        "title": "Missing Fields"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "embedding_text",
-                    "embedding_vector"
-                ],
-                "title": "EmbeddingResult"
-            },
-            "HTTPValidationError": {
-                "properties": {
-                    "detail": {
-                        "items": {
-                            "$ref": "#/components/schemas/ValidationError"
-                        },
-                        "type": "array",
-                        "title": "Detail"
-                    }
-                },
-                "type": "object",
-                "title": "HTTPValidationError"
-            },
-            "MatchDirection": {
-                "type": "string",
-                "enum": [
-                    "USER_TO_TEAM",
-                    "TEAM_TO_USER"
-                ],
-                "title": "MatchDirection"
-            },
-            "ProposalAssemblyRequest": {
-                "properties": {
-                    "user_id": {
-                        "type": "integer",
-                        "title": "User Id"
-                    },
-                    "team_id": {
-                        "type": "integer",
-                        "title": "Team Id"
-                    },
-                    "contest_id": {
-                        "anyOf": [
-                            {
-                                "type": "integer"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Contest Id"
-                    },
-                    "sender_id": {
-                        "type": "integer",
-                        "title": "Sender Id"
-                    },
-                    "receiver_id": {
-                        "type": "integer",
-                        "title": "Receiver Id"
-                    },
-                    "intent_id": {
-                        "anyOf": [
-                            {
-                                "type": "integer"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Intent Id"
-                    },
-                    "synergy_score": {
-                        "type": "number",
-                        "title": "Synergy Score"
-                    },
-                    "portfolio_role_fit_score": {
-                        "anyOf": [
-                            {
-                                "type": "number"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Portfolio Role Fit Score"
-                    },
-                    "candidate_summary": {
-                        "type": "string",
-                        "title": "Candidate Summary"
-                    },
-                    "target_summary": {
-                        "type": "string",
-                        "title": "Target Summary"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "user_id",
-                    "team_id",
-                    "sender_id",
-                    "receiver_id",
-                    "synergy_score",
-                    "candidate_summary",
-                    "target_summary"
-                ],
-                "title": "ProposalAssemblyRequest"
-            },
-            "ProposalSchema": {
-                "properties": {
-                    "direction": {
-                        "$ref": "#/components/schemas/MatchDirection"
-                    },
-                    "user_id": {
-                        "type": "integer",
-                        "title": "User Id"
-                    },
-                    "team_id": {
-                        "type": "integer",
-                        "title": "Team Id"
-                    },
-                    "contest_id": {
-                        "anyOf": [
-                            {
-                                "type": "integer"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Contest Id"
-                    },
-                    "sender_id": {
-                        "type": "integer",
-                        "title": "Sender Id"
-                    },
-                    "receiver_id": {
-                        "type": "integer",
-                        "title": "Receiver Id"
-                    },
-                    "intent_id": {
-                        "anyOf": [
-                            {
-                                "type": "integer"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Intent Id"
-                    },
-                    "synergy_score": {
-                        "type": "number",
-                        "title": "Synergy Score"
-                    },
-                    "portfolio_role_fit_score": {
-                        "anyOf": [
-                            {
-                                "type": "number"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Portfolio Role Fit Score"
-                    },
-                    "summary": {
-                        "type": "string",
-                        "title": "Summary"
-                    },
-                    "message": {
-                        "type": "string",
-                        "title": "Message"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "direction",
-                    "user_id",
-                    "team_id",
-                    "sender_id",
-                    "receiver_id",
-                    "synergy_score",
-                    "summary",
-                    "message"
-                ],
-                "title": "ProposalSchema"
-            },
-            "RecommendationItem": {
-                "properties": {
-                    "candidate_id": {
-                        "type": "integer",
-                        "title": "Candidate Id"
-                    },
-                    "score": {
-                        "type": "number",
-                        "title": "Score"
-                    },
-                    "label": {
-                        "type": "string",
-                        "title": "Label"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "candidate_id",
-                    "score",
-                    "label"
-                ],
-                "title": "RecommendationItem"
-            },
-            "RecommendationReason": {
-                "properties": {
-                    "reason": {
-                        "type": "string",
-                        "title": "Reason"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "reason"
-                ],
-                "title": "RecommendationReason"
-            },
-            "RecommendationReasonRequest": {
-                "properties": {
-                    "candidate_summary": {
-                        "type": "string",
-                        "title": "Candidate Summary"
-                    },
-                    "target_summary": {
-                        "type": "string",
-                        "title": "Target Summary"
-                    },
-                    "score_breakdown": {
-                        "additionalProperties": {
-                            "type": "number"
-                        },
-                        "type": "object",
-                        "title": "Score Breakdown"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "candidate_summary",
-                    "target_summary"
-                ],
-                "title": "RecommendationReasonRequest"
-            },
-            "RecommendationRequest": {
-                "properties": {
-                    "query_embedding_vector": {
-                        "items": {
-                            "type": "number"
-                        },
-                        "type": "array",
-                        "maxItems": 1536,
-                        "minItems": 1536,
-                        "title": "Query Embedding Vector"
-                    },
-                    "query_metadata": {
-                        "additionalProperties": true,
-                        "type": "object",
-                        "title": "Query Metadata"
-                    },
-                    "candidates": {
-                        "items": {
-                            "$ref": "#/components/schemas/CandidateEmbedding"
-                        },
-                        "type": "array",
-                        "title": "Candidates"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "query_embedding_vector",
-                    "candidates"
-                ],
-                "title": "RecommendationRequest"
-            },
-            "RecommendationResponse": {
-                "properties": {
-                    "recommendations": {
-                        "items": {
-                            "$ref": "#/components/schemas/RecommendationItem"
-                        },
-                        "type": "array",
-                        "title": "Recommendations"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "recommendations"
-                ],
-                "title": "RecommendationResponse"
-            },
-            "TeamEmbeddingRefreshRequest": {
-                "properties": {
-                    "intro_text": {
-                        "type": "string",
-                        "title": "Intro Text"
-                    },
-                    "recruiting_roles": {
-                        "items": {
-                            "type": "string"
-                        },
-                        "type": "array",
-                        "title": "Recruiting Roles"
-                    },
-                    "required_skills": {
-                        "items": {
-                            "type": "string"
-                        },
-                        "type": "array",
-                        "title": "Required Skills"
-                    },
-                    "current_members": {
-                        "items": {
-                            "$ref": "#/components/schemas/TeamMember"
-                        },
-                        "type": "array",
-                        "title": "Current Members"
-                    },
-                    "contest_field": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Contest Field"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "intro_text",
-                    "recruiting_roles",
-                    "required_skills"
-                ],
-                "title": "TeamEmbeddingRefreshRequest"
-            },
-            "TeamMember": {
-                "properties": {
-                    "role": {
-                        "type": "string",
-                        "title": "Role"
-                    },
-                    "count": {
-                        "type": "integer",
-                        "title": "Count"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "role",
-                    "count"
-                ],
-                "title": "TeamMember"
-            },
-            "UserIntentExtractionRequest": {
-                "properties": {
-                    "self_introduction": {
-                        "type": "string",
-                        "title": "Self Introduction"
-                    },
-                    "profile": {
-                        "additionalProperties": true,
-                        "type": "object",
-                        "title": "Profile"
-                    },
-                    "conversation_answers": {
-                        "additionalProperties": true,
-                        "type": "object",
-                        "title": "Conversation Answers"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "self_introduction"
-                ],
-                "title": "UserIntentExtractionRequest"
-            },
-            "UserIntentExtractionResult": {
-                "properties": {
-                    "missing_fields": {
-                        "items": {
-                            "type": "string"
-                        },
-                        "type": "array",
-                        "title": "Missing Fields"
-                    },
-                    "extracted": {
-                        "$ref": "#/components/schemas/UserIntentFields"
-                    },
-                    "embedding_text": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Embedding Text"
-                    },
-                    "embedding_vector": {
-                        "anyOf": [
-                            {
-                                "items": {
-                                    "type": "number"
-                                },
-                                "type": "array",
-                                "maxItems": 1536,
-                                "minItems": 1536
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Embedding Vector"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "missing_fields",
-                    "extracted"
-                ],
-                "title": "UserIntentExtractionResult"
-            },
-            "UserIntentFields": {
-                "properties": {
-                    "desired_roles": {
-                        "items": {
-                            "type": "string"
-                        },
-                        "type": "array",
-                        "title": "Desired Roles"
-                    },
-                    "skills": {
-                        "items": {
-                            "type": "string"
-                        },
-                        "type": "array",
-                        "title": "Skills"
-                    },
-                    "interests": {
-                        "items": {
-                            "type": "string"
-                        },
-                        "type": "array",
-                        "title": "Interests"
-                    },
-                    "activity_goal": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Activity Goal"
-                    },
-                    "activity_style": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Activity Style"
-                    },
-                    "experience_level": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Experience Level"
-                    }
-                },
-                "type": "object",
-                "title": "UserIntentFields"
-            },
-            "ValidationError": {
-                "properties": {
-                    "loc": {
-                        "items": {
-                            "anyOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "integer"
-                                }
-                            ]
-                        },
-                        "type": "array",
-                        "title": "Location"
-                    },
-                    "msg": {
-                        "type": "string",
-                        "title": "Message"
-                    },
-                    "type": {
-                        "type": "string",
-                        "title": "Error Type"
-                    },
-                    "input": {
-                        "title": "Input"
-                    },
-                    "ctx": {
-                        "type": "object",
-                        "title": "Context"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "loc",
-                    "msg",
-                    "type"
-                ],
-                "title": "ValidationError"
+    "/internal/teams/embedding:refresh": {
+      "post": {
+        "tags": [
+          "team-embedding"
+        ],
+        "summary": "팀 임베딩 계산 (저장 없음, 팀 생성/수정 시 호출)",
+        "operationId": "refresh_team_embedding_internal_teams_embedding_refresh_post",
+        "parameters": [
+          {
+            "name": "x-internal-secret",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Internal-Secret"
             }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamEmbeddingRefreshRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmbeddingResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
         }
+      }
+    },
+    "/intents/extract": {
+      "post": {
+        "tags": [
+          "user-to-team"
+        ],
+        "summary": "사용자 매칭 의도 추출 (재질문 시 stateless 재호출)",
+        "operationId": "extract_intent_intents_extract_post",
+        "parameters": [
+          {
+            "name": "x-internal-secret",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Internal-Secret"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserIntentExtractionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserIntentExtractionResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recommendations/user-to-team": {
+      "post": {
+        "tags": [
+          "user-to-team"
+        ],
+        "summary": "제안 추천 — 유저 intent 기준 팀 Top 10",
+        "operationId": "recommend_user_to_team_recommendations_user_to_team_post",
+        "parameters": [
+          {
+            "name": "x-internal-secret",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Internal-Secret"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecommendationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecommendationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/proposals/user-to-team": {
+      "post": {
+        "tags": [
+          "user-to-team"
+        ],
+        "summary": "제안 최종 조립 (proposal_id는 백엔드가 채번)",
+        "operationId": "create_user_to_team_proposal_proposals_user_to_team_post",
+        "parameters": [
+          {
+            "name": "x-internal-secret",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Internal-Secret"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProposalAssemblyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProposalSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recommendations/team-to-user": {
+      "post": {
+        "tags": [
+          "team-to-user"
+        ],
+        "summary": "역제안 추천 — 팀 결핍 기준 유저 Top N",
+        "operationId": "recommend_team_to_user_recommendations_team_to_user_post",
+        "parameters": [
+          {
+            "name": "x-internal-secret",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Internal-Secret"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecommendationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecommendationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/proposals/team-to-user": {
+      "post": {
+        "tags": [
+          "team-to-user"
+        ],
+        "summary": "역제안 최종 조립 (proposal_id는 백엔드가 채번)",
+        "operationId": "create_team_to_user_proposal_proposals_team_to_user_post",
+        "parameters": [
+          {
+            "name": "x-internal-secret",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Internal-Secret"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProposalAssemblyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProposalSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recommendations/reason": {
+      "post": {
+        "tags": [
+          "recommendation"
+        ],
+        "summary": "추천 상세 이유 생성 (lazy, 방향 공통)",
+        "operationId": "recommend_reason_recommendations_reason_post",
+        "parameters": [
+          {
+            "name": "x-internal-secret",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Internal-Secret"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecommendationReasonRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecommendationReason"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
+  },
+  "components": {
+    "schemas": {
+      "CandidateEmbedding": {
+        "properties": {
+          "candidate_id": {
+            "type": "integer",
+            "title": "Candidate Id"
+          },
+          "embedding_vector": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 1536,
+            "minItems": 1536,
+            "title": "Embedding Vector"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "embedding_vector"
+        ],
+        "title": "CandidateEmbedding"
+      },
+      "EmbeddingResult": {
+        "properties": {
+          "embedding_text": {
+            "type": "string",
+            "title": "Embedding Text"
+          },
+          "embedding_vector": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 1536,
+            "minItems": 1536,
+            "title": "Embedding Vector"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          },
+          "missing_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Fields"
+          }
+        },
+        "type": "object",
+        "required": [
+          "embedding_text",
+          "embedding_vector"
+        ],
+        "title": "EmbeddingResult"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "MatchDirection": {
+        "type": "string",
+        "enum": [
+          "USER_TO_TEAM",
+          "TEAM_TO_USER"
+        ],
+        "title": "MatchDirection"
+      },
+      "ProposalAssemblyRequest": {
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          },
+          "team_id": {
+            "type": "integer",
+            "title": "Team Id"
+          },
+          "contest_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contest Id"
+          },
+          "sender_id": {
+            "type": "integer",
+            "title": "Sender Id"
+          },
+          "receiver_id": {
+            "type": "integer",
+            "title": "Receiver Id"
+          },
+          "intent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intent Id"
+          },
+          "synergy_score": {
+            "type": "number",
+            "title": "Synergy Score"
+          },
+          "candidate_summary": {
+            "type": "string",
+            "title": "Candidate Summary"
+          },
+          "target_summary": {
+            "type": "string",
+            "title": "Target Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "team_id",
+          "sender_id",
+          "receiver_id",
+          "synergy_score",
+          "candidate_summary",
+          "target_summary"
+        ],
+        "title": "ProposalAssemblyRequest"
+      },
+      "ProposalSchema": {
+        "properties": {
+          "direction": {
+            "$ref": "#/components/schemas/MatchDirection"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          },
+          "team_id": {
+            "type": "integer",
+            "title": "Team Id"
+          },
+          "contest_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contest Id"
+          },
+          "sender_id": {
+            "type": "integer",
+            "title": "Sender Id"
+          },
+          "receiver_id": {
+            "type": "integer",
+            "title": "Receiver Id"
+          },
+          "intent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intent Id"
+          },
+          "synergy_score": {
+            "type": "number",
+            "title": "Synergy Score"
+          },
+          "portfolio_role_fit_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Portfolio Role Fit Score"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "direction",
+          "user_id",
+          "team_id",
+          "sender_id",
+          "receiver_id",
+          "synergy_score",
+          "summary",
+          "message"
+        ],
+        "title": "ProposalSchema"
+      },
+      "RecommendationItem": {
+        "properties": {
+          "candidate_id": {
+            "type": "integer",
+            "title": "Candidate Id"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "score",
+          "label"
+        ],
+        "title": "RecommendationItem"
+      },
+      "RecommendationReason": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "title": "RecommendationReason"
+      },
+      "RecommendationReasonRequest": {
+        "properties": {
+          "candidate_summary": {
+            "type": "string",
+            "title": "Candidate Summary"
+          },
+          "target_summary": {
+            "type": "string",
+            "title": "Target Summary"
+          },
+          "score_breakdown": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Score Breakdown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "candidate_summary",
+          "target_summary"
+        ],
+        "title": "RecommendationReasonRequest"
+      },
+      "RecommendationRequest": {
+        "properties": {
+          "query_embedding_vector": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 1536,
+            "minItems": 1536,
+            "title": "Query Embedding Vector"
+          },
+          "query_metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Query Metadata"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateEmbedding"
+            },
+            "type": "array",
+            "title": "Candidates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query_embedding_vector",
+          "candidates"
+        ],
+        "title": "RecommendationRequest"
+      },
+      "RecommendationResponse": {
+        "properties": {
+          "recommendations": {
+            "items": {
+              "$ref": "#/components/schemas/RecommendationItem"
+            },
+            "type": "array",
+            "title": "Recommendations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recommendations"
+        ],
+        "title": "RecommendationResponse"
+      },
+      "TeamEmbeddingRefreshRequest": {
+        "properties": {
+          "intro_text": {
+            "type": "string",
+            "title": "Intro Text"
+          },
+          "recruiting_roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Recruiting Roles"
+          },
+          "required_skills": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required Skills"
+          },
+          "current_members": {
+            "items": {
+              "$ref": "#/components/schemas/TeamMember"
+            },
+            "type": "array",
+            "title": "Current Members"
+          },
+          "contest_field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contest Field"
+          }
+        },
+        "type": "object",
+        "required": [
+          "intro_text",
+          "recruiting_roles",
+          "required_skills"
+        ],
+        "title": "TeamEmbeddingRefreshRequest"
+      },
+      "TeamMember": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "count"
+        ],
+        "title": "TeamMember"
+      },
+      "UserIntentExtractionRequest": {
+        "properties": {
+          "self_introduction": {
+            "type": "string",
+            "title": "Self Introduction"
+          },
+          "profile": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Profile"
+          },
+          "conversation_answers": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Conversation Answers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "self_introduction"
+        ],
+        "title": "UserIntentExtractionRequest"
+      },
+      "UserIntentExtractionResult": {
+        "properties": {
+          "missing_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Fields"
+          },
+          "extracted": {
+            "$ref": "#/components/schemas/UserIntentFields"
+          },
+          "embedding_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Text"
+          },
+          "embedding_vector": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array",
+                "maxItems": 1536,
+                "minItems": 1536
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Vector"
+          }
+        },
+        "type": "object",
+        "required": [
+          "missing_fields",
+          "extracted"
+        ],
+        "title": "UserIntentExtractionResult"
+      },
+      "UserIntentFields": {
+        "properties": {
+          "desired_roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Desired Roles"
+          },
+          "skills": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Skills"
+          },
+          "interests": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Interests"
+          },
+          "activity_goal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activity Goal"
+          },
+          "activity_style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activity Style"
+          },
+          "experience_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Experience Level"
+          }
+        },
+        "type": "object",
+        "title": "UserIntentFields"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
 }

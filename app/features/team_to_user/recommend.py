@@ -1,13 +1,12 @@
 from app.features.team_to_user.scoring import (
     WEIGHTS,
-    activity_goal_match_score,
     deficit_fit_score,
     label_for,
-    portfolio_role_fit_score,
     role_match_score,
 )
 from app.schemas.recommendation import RecommendationItem, RecommendationRequest, RecommendationResponse
 from app.scoring.engine import CandidateInput, rank
+from app.scoring.rules import activity_style_match_score, beginner_fit_score
 from app.scoring.similarity import cosine_similarity
 
 TOP_N = 10
@@ -16,7 +15,8 @@ TOP_N = 10
 def recommend_users(request: RecommendationRequest) -> RecommendationResponse:
     recruiting_roles = request.query_metadata.get("recruiting_roles", [])
     required_skills = request.query_metadata.get("required_skills", [])
-    team_activity_goal = request.query_metadata.get("activity_goal")
+    team_activity_style = request.query_metadata.get("activity_style")
+    team_beginner_friendly = request.query_metadata.get("beginner_friendly")
 
     candidates = []
     for candidate in request.candidates:
@@ -28,11 +28,11 @@ def recommend_users(request: RecommendationRequest) -> RecommendationResponse:
             "deficit_fit": deficit_fit_score(
                 required_skills, candidate.metadata.get("skills", [])
             ),
-            "portfolio_role_fit": portfolio_role_fit_score(
-                candidate.metadata.get("experience_level")
+            "activity_style_match": activity_style_match_score(
+                team_activity_style, candidate.metadata.get("activity_style")
             ),
-            "activity_goal_match": activity_goal_match_score(
-                team_activity_goal, candidate.metadata.get("activity_goal")
+            "beginner_fit": beginner_fit_score(
+                candidate.metadata.get("experience_level"), team_beginner_friendly
             ),
         }
         candidates.append(

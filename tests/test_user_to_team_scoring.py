@@ -1,10 +1,9 @@
 from app.features.user_to_team.scoring import (
-    activity_style_match_score,
-    beginner_fit_score,
     deficit_fit_score,
     label_for,
     role_match_score,
 )
+from app.scoring.rules import activity_style_match_score, beginner_fit_score
 
 
 def test_role_match_full_overlap() -> None:

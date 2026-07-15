@@ -9,20 +9,6 @@ def deficit_fit_score(skills: list[str], required_skills: list[str]) -> float:
     return overlap_ratio(needed=required_skills, available=skills)
 
 
-def activity_style_match_score(user_style: str | None, team_style: str | None) -> float:
-    if not user_style or not team_style:
-        return 0.5
-    return 1.0 if user_style.strip().lower() == team_style.strip().lower() else 0.0
-
-
-def beginner_fit_score(experience_level: str | None, beginner_friendly: bool | None) -> float:
-    if experience_level != "beginner":
-        return 1.0
-    if beginner_friendly is None:
-        return 0.5
-    return 1.0 if beginner_friendly else 0.0
-
-
 WEIGHTS = {
     "similarity": 0.5,
     "role_match": 0.2,

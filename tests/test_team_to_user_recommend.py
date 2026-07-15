@@ -10,7 +10,8 @@ def test_recommend_users_ranks_better_role_match_higher() -> None:
         query_metadata={
             "recruiting_roles": ["BE"],
             "required_skills": ["Spring Boot"],
-            "activity_goal": "공모전 수상",
+            "activity_style": "오프라인 모임",
+            "beginner_friendly": False,
         },
         candidates=[
             CandidateEmbedding(
@@ -20,7 +21,7 @@ def test_recommend_users_ranks_better_role_match_higher() -> None:
                     "desired_roles": ["BE"],
                     "skills": ["Spring Boot"],
                     "experience_level": "advanced",
-                    "activity_goal": "공모전 수상",
+                    "activity_style": "오프라인 모임",
                 },
             ),
             CandidateEmbedding(
@@ -30,7 +31,7 @@ def test_recommend_users_ranks_better_role_match_higher() -> None:
                     "desired_roles": ["FE"],
                     "skills": ["React"],
                     "experience_level": "beginner",
-                    "activity_goal": "가볍게 참여",
+                    "activity_style": "온라인",
                 },
             ),
         ],
