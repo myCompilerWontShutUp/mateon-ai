@@ -47,10 +47,12 @@ def show_result(resp: httpx.Response) -> dict | None:
 for key, default in [
     ("teams", {}),  # {label: {candidate_id, embedding_vector, metadata}}
     ("users", {}),  # {label: {candidate_id, embedding_vector, extracted}}
-    ("messages", []),  # [{id, message}, ...] — /intents/extract에 누적해서 통째로 다시 보낸다
+    # [{id, role, message}, ...] — /intents/extract에 누적해서 통째로 다시 보낸다.
+    # AI의 질문(role=assistant)도 반드시 같이 재전송해야 한다 — 사용자의 짧은 답변("없어" 등)을
+    # 추출 LLM이 해석하려면 직전 질문이 필요하기 때문이다. 화면 표시도 이 리스트를 그대로 쓴다.
+    ("messages", []),
     ("intent_result", None),
     ("chat_started", False),
-    ("chat_history", []),  # [{role, content}, ...] — 화면 표시 전용 (API에는 안 실어 보낸다)
     ("chat_user_label", "user-203"),
     ("chat_user_id", 203),
 ]:
@@ -100,70 +102,69 @@ with tab_team:
             st.success(f"'{team_label}' (team_id={team_id}) 저장 완료")
 
 # ── 2. 유저 의도 추출 챗봇 시뮬레이터 (프롬프트 엔지니어링 파트 전용) ──
+# AI_PERSONA_NAME/OPENING_GREETING은 app/features/user_to_team/chat_reply.py와 내용을
+# 맞춰야 한다 — 이 인사말은 API 호출 없이 클라이언트가 먼저 보여주는 고정 문구다(아직 추출할
+# 사용자 발화가 없다). missing_fields가 있든 없든(바로 추천 가능하든 아니든) 항상 이 인사말이
+# 먼저 나오고, 그다음 사용자의 첫 답변부터 실제 재질문 흐름(rule 1~4)이 시작된다.
+AI_PERSONA_NAME = "드림이"
+OPENING_GREETING = (
+    f"안녕! 나는 {AI_PERSONA_NAME}야, 너한테 딱 맞는 팀을 찾아주는 도우미야. "
+    "먼저 너에 대해 간단히 소개해줄래? 어떤 역할을 하고 싶은지, 관심 분야나 경험이 있다면 "
+    "편하게 말해줘!"
+)
+
 with tab_intent:
     st.subheader("채팅 시뮬레이터 — POST /intents/extract")
     st.caption(
-        "재진술 + 유도 질문(1개씩) / 추천 시작 안내 / 맥락 이탈 방어 문구까지 전부 "
-        "`assistant_message`로 AI가 생성한다(`prompts/user_intent_chat_reply.txt`). "
-        "이 화면은 그 응답을 실제 채팅처럼 보여준다."
+        f"{AI_PERSONA_NAME}가 먼저 인사하고 자기소개를 부탁한 뒤, 그 답변부터 재진술 + 유도 "
+        "질문(1개씩) / 추천 시작 안내 / 맥락 이탈 방어 문구까지 전부 `assistant_message`로 "
+        "AI가 생성한다(`prompts/user_intent_chat_reply.txt`)."
     )
 
     if not st.session_state.chat_started:
-        # ── 입력 폼: 사용자 정보를 먼저 채우고 "채팅 시작"을 누르면 대화가 시작된다 ──
+        # ── 입력 폼: 사용자 정보만 채우면 된다 — 자기소개는 채팅 안에서 받는다 ──
         user_label = st.text_input("로컬 라벨", value="user-203", key="user_label")
         user_id = st.number_input("user_id (임의 지정)", value=203, step=1, key="user_id")
-        self_intro = st.text_area(
-            "자기소개 (첫 메시지로 들어간다)",
-            value=(
-                "백엔드 경험은 없지만 프론트엔드를 1년 해봤고, 이번엔 풀스택 프로젝트에서 "
-                "성장하고 싶습니다."
-            ),
-            height=80,
-            key="self_intro",
+        st.caption(
+            "답장 예시: \"백엔드 경험은 없지만 프론트엔드를 1년 해봤고, 이번엔 풀스택 "
+            "프로젝트에서 성장하고 싶습니다.\""
         )
 
         if st.button("채팅 시작", type="primary"):
             st.session_state.chat_user_label = user_label
             st.session_state.chat_user_id = int(user_id)
-            st.session_state.messages = [{"id": 1, "message": self_intro}]
-            st.session_state.chat_history = [{"role": "user", "content": self_intro}]
-
-            resp = call("POST", "/intents/extract", {"messages": st.session_state.messages})
-            if resp.status_code == 200:
-                data = resp.json()
-                st.session_state.intent_result = data
-                st.session_state.chat_history.append(
-                    {"role": "assistant", "content": data["assistant_message"]}
-                )
-                st.session_state.chat_started = True
-                st.rerun()
-            else:
-                show_result(resp)
+            st.session_state.messages = [{"id": 1, "role": "assistant", "message": OPENING_GREETING}]
+            st.session_state.intent_result = None
+            st.session_state.chat_started = True
+            st.rerun()
     else:
-        # ── 채팅 화면: 지금까지의 대화를 그대로 렌더링하고, 하단 입력창으로 계속 이어간다 ──
-        for turn in st.session_state.chat_history:
-            st.chat_message(turn["role"]).write(turn["content"])
+        # ── 채팅 화면: messages를 그대로 렌더링하고(표시=전송 상태가 항상 일치), 하단
+        # 입력창으로 계속 이어간다. AI turn도 messages에 쌓여서 다음 호출 때 같이 재전송된다.
+        for turn in st.session_state.messages:
+            st.chat_message(turn["role"]).write(turn["message"])
 
         result = st.session_state.intent_result
-        with st.expander("가장 최근 응답 원본 JSON"):
-            preview = {k: v for k, v in result.items() if k != "embedding_vector"}
-            if result.get("embedding_vector") is not None:
-                preview["embedding_vector"] = f"(float {len(result['embedding_vector'])}개, 생략)"
-            st.json(preview)
+        if result:
+            with st.expander("가장 최근 응답 원본 JSON"):
+                preview = {k: v for k, v in result.items() if k != "embedding_vector"}
+                if result.get("embedding_vector") is not None:
+                    preview["embedding_vector"] = f"(float {len(result['embedding_vector'])}개, 생략)"
+                st.json(preview)
 
-        if result["missing_fields"]:
+        still_needs_reply = result is None or result["missing_fields"]
+        if still_needs_reply:
             reply = st.chat_input("답장하기")
             if reply:
-                st.session_state.chat_history.append({"role": "user", "content": reply})
                 next_id = len(st.session_state.messages) + 1
-                st.session_state.messages.append({"id": next_id, "message": reply})
+                st.session_state.messages.append({"id": next_id, "role": "user", "message": reply})
 
                 resp = call("POST", "/intents/extract", {"messages": st.session_state.messages})
                 if resp.status_code == 200:
                     data = resp.json()
                     st.session_state.intent_result = data
-                    st.session_state.chat_history.append(
-                        {"role": "assistant", "content": data["assistant_message"]}
+                    next_id = len(st.session_state.messages) + 1
+                    st.session_state.messages.append(
+                        {"id": next_id, "role": "assistant", "message": data["assistant_message"]}
                     )
                 else:
                     show_result(resp)
@@ -178,7 +179,6 @@ with tab_intent:
 
         if st.button("새 대화 시작"):
             st.session_state.chat_started = False
-            st.session_state.chat_history = []
             st.session_state.messages = []
             st.session_state.intent_result = None
             st.rerun()
