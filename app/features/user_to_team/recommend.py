@@ -6,7 +6,7 @@ from app.features.user_to_team.scoring import (
 )
 from app.schemas.recommendation import RecommendationItem, RecommendationRequest, RecommendationResponse
 from app.scoring.engine import CandidateInput, rank
-from app.scoring.rules import activity_style_match_score, beginner_fit_score
+from app.scoring.rules import activity_style_match_score, beginner_fit_score, matched_items
 from app.scoring.similarity import cosine_similarity
 
 TOP_N = 10
@@ -19,8 +19,11 @@ def recommend_teams(request: RecommendationRequest) -> RecommendationResponse:
     experience_level = request.query_metadata.get("experience_level")
 
     candidates = []
+    label_context = {}
     for candidate in request.candidates:
         similarity = cosine_similarity(request.query_embedding_vector, candidate.embedding_vector)
+        candidate_style = candidate.metadata.get("activity_style")
+        candidate_beginner_friendly = candidate.metadata.get("beginner_friendly")
         metadata_scores = {
             "role_match": role_match_score(
                 desired_roles, candidate.metadata.get("recruiting_roles", [])
@@ -28,12 +31,8 @@ def recommend_teams(request: RecommendationRequest) -> RecommendationResponse:
             "deficit_fit": deficit_fit_score(
                 skills, candidate.metadata.get("required_skills", [])
             ),
-            "activity_style_match": activity_style_match_score(
-                activity_style, candidate.metadata.get("activity_style")
-            ),
-            "beginner_fit": beginner_fit_score(
-                experience_level, candidate.metadata.get("beginner_friendly")
-            ),
+            "activity_style_match": activity_style_match_score(activity_style, candidate_style),
+            "beginner_fit": beginner_fit_score(experience_level, candidate_beginner_friendly),
         }
         candidates.append(
             CandidateInput(
@@ -42,12 +41,20 @@ def recommend_teams(request: RecommendationRequest) -> RecommendationResponse:
                 metadata_scores=metadata_scores,
             )
         )
+        label_context[candidate.candidate_id] = {
+            "matched_roles": matched_items(desired_roles, candidate.metadata.get("recruiting_roles", [])),
+            "matched_skills": matched_items(candidate.metadata.get("required_skills", []), skills),
+            "activity_style": candidate_style,
+            "beginner_friendly": candidate_beginner_friendly,
+        }
 
     ranked = rank(candidates, WEIGHTS)[:TOP_N]
 
     items = [
         RecommendationItem(
-            candidate_id=c.candidate_id, score=c.total_score, label=label_for(c.metadata_scores)
+            candidate_id=c.candidate_id,
+            score=c.total_score,
+            label=label_for(c.metadata_scores, **label_context[c.candidate_id]),
         )
         for c in ranked
     ]
