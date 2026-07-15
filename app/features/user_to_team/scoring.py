@@ -1,17 +1,12 @@
+from app.scoring.rules import overlap_ratio
+
+
 def role_match_score(desired_roles: list[str], recruiting_roles: list[str]) -> float:
-    if not desired_roles or not recruiting_roles:
-        return 0.0
-    desired = {r.lower() for r in desired_roles}
-    recruiting = {r.lower() for r in recruiting_roles}
-    return len(desired & recruiting) / len(desired)
+    return overlap_ratio(needed=desired_roles, available=recruiting_roles)
 
 
 def deficit_fit_score(skills: list[str], required_skills: list[str]) -> float:
-    if not skills or not required_skills:
-        return 0.0
-    user_skills = {s.lower() for s in skills}
-    required = {s.lower() for s in required_skills}
-    return len(user_skills & required) / len(required)
+    return overlap_ratio(needed=required_skills, available=skills)
 
 
 def activity_style_match_score(user_style: str | None, team_style: str | None) -> float:

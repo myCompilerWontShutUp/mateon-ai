@@ -14,6 +14,7 @@ async def compute_team_embedding(request: TeamEmbeddingRefreshRequest) -> Embedd
     metadata = {
         "recruiting_roles": request.recruiting_roles,
         "required_skills": request.required_skills,
+        "activity_goal": soft_fields.activity_goal,
         "activity_style": soft_fields.activity_style,
         "beginner_friendly": soft_fields.beginner_friendly,
     }
