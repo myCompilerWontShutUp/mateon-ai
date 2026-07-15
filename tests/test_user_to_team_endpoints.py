@@ -1,12 +1,15 @@
 import pytest
 from httpx import AsyncClient
 
+from app.core.config import get_settings
 from app.features.recommendation import router as recommendation_router_module
 from app.features.user_to_team import router as router_module
 from app.schemas.common import MatchDirection
 from app.schemas.proposal import ProposalSchema
 from app.schemas.recommendation import RecommendationItem, RecommendationReason, RecommendationResponse
 from app.schemas.user_intent import UserIntentExtractionResult, UserIntentFields
+
+_AUTH_HEADERS = {"X-Internal-Secret": get_settings().internal_shared_secret}
 
 
 @pytest.fixture(autouse=True)
@@ -45,16 +48,28 @@ def _mock_services(monkeypatch: pytest.MonkeyPatch) -> None:
 
 async def test_extract_intent_endpoint(client: AsyncClient) -> None:
     response = await client.post(
-        "/intents/extract", json={"self_introduction": "백엔드를 해보고 싶습니다."}
+        "/intents/extract",
+        json={"self_introduction": "백엔드를 해보고 싶습니다."},
+        headers=_AUTH_HEADERS,
     )
     assert response.status_code == 200
     assert response.json()["missing_fields"] == []
+
+
+async def test_extract_intent_endpoint_rejects_wrong_secret(client: AsyncClient) -> None:
+    response = await client.post(
+        "/intents/extract",
+        json={"self_introduction": "..."},
+        headers={"X-Internal-Secret": "wrong"},
+    )
+    assert response.status_code == 401
 
 
 async def test_recommend_user_to_team_endpoint(client: AsyncClient) -> None:
     response = await client.post(
         "/recommendations/user-to-team",
         json={"query_embedding_vector": [0.1, 0.2], "candidates": []},
+        headers=_AUTH_HEADERS,
     )
     assert response.status_code == 200
     assert response.json()["recommendations"][0]["candidate_id"] == 17
@@ -72,6 +87,7 @@ async def test_create_proposal_endpoint(client: AsyncClient) -> None:
             "candidate_summary": "...",
             "target_summary": "...",
         },
+        headers=_AUTH_HEADERS,
     )
     assert response.status_code == 200
     body = response.json()
@@ -83,6 +99,14 @@ async def test_recommendation_reason_endpoint(client: AsyncClient) -> None:
     response = await client.post(
         "/recommendations/reason",
         json={"candidate_summary": "...", "target_summary": "..."},
+        headers=_AUTH_HEADERS,
     )
     assert response.status_code == 200
     assert response.json()["reason"] == "적합한 이유입니다."
+
+
+async def test_recommendation_reason_endpoint_requires_secret(client: AsyncClient) -> None:
+    response = await client.post(
+        "/recommendations/reason", json={"candidate_summary": "...", "target_summary": "..."}
+    )
+    assert response.status_code == 422  # missing required header

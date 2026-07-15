@@ -1,5 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.internal_auth import require_internal_secret
 from app.features.user_to_team.intent import compute_user_intent
 from app.features.user_to_team.proposal import assemble_user_to_team_proposal
 from app.features.user_to_team.recommend import recommend_teams
@@ -7,7 +8,7 @@ from app.schemas.proposal import ProposalAssemblyRequest, ProposalSchema
 from app.schemas.recommendation import RecommendationRequest, RecommendationResponse
 from app.schemas.user_intent import UserIntentExtractionRequest, UserIntentExtractionResult
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_internal_secret)])
 
 
 @router.post("/intents/extract")
