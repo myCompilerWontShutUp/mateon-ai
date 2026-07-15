@@ -15,6 +15,8 @@ class ProposalSchema(BaseModel):
     intent_id: int | None = None
 
     synergy_score: float
+    # 실제 포트폴리오 데이터 소스가 생기기 전까지는 항상 None — 협업 온도와 같은 취급으로
+    # 필드만 예약해둔다 (계산에서 제외한 이유는 CLAUDE.md 참고).
     portfolio_role_fit_score: float | None = None
 
     summary: str
@@ -30,7 +32,6 @@ class ProposalAssemblyRequest(BaseModel):
     intent_id: int | None = None
 
     synergy_score: float
-    portfolio_role_fit_score: float | None = None
 
     # LLM이 summary/message를 쓸 때 참고할 컨텍스트 — ID/점수를 대신하지 않는다.
     candidate_summary: str

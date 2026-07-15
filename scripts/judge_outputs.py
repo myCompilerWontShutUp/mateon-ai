@@ -76,7 +76,6 @@ async def main() -> None:
     scout = await assemble_team_to_user_proposal(
         ProposalAssemblyRequest(
             user_id=203, team_id=7, sender_id=7, receiver_id=203, synergy_score=0.88,
-            portfolio_role_fit_score=1.0,
             candidate_summary=candidate_summary, target_summary=target_summary,
         )
     )

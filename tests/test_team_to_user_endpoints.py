@@ -25,7 +25,7 @@ def _mock_services(monkeypatch: pytest.MonkeyPatch) -> None:
             sender_id=request.sender_id,
             receiver_id=request.receiver_id,
             synergy_score=request.synergy_score,
-            portfolio_role_fit_score=request.portfolio_role_fit_score,
+            portfolio_role_fit_score=None,
             summary="요약",
             message="스카우트 메시지",
         )
@@ -61,7 +61,6 @@ async def test_create_team_to_user_proposal_endpoint(client: AsyncClient) -> Non
             "sender_id": 7,
             "receiver_id": 203,
             "synergy_score": 0.83,
-            "portfolio_role_fit_score": 1.0,
             "candidate_summary": "...",
             "target_summary": "...",
         },
@@ -70,5 +69,5 @@ async def test_create_team_to_user_proposal_endpoint(client: AsyncClient) -> Non
     assert response.status_code == 200
     body = response.json()
     assert body["direction"] == "TEAM_TO_USER"
-    assert body["portfolio_role_fit_score"] == 1.0
+    assert body["portfolio_role_fit_score"] is None
     assert "proposal_id" not in body

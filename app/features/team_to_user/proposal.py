@@ -26,7 +26,7 @@ async def assemble_team_to_user_proposal(request: ProposalAssemblyRequest) -> Pr
         receiver_id=request.receiver_id,
         intent_id=request.intent_id,
         synergy_score=request.synergy_score,
-        portfolio_role_fit_score=request.portfolio_role_fit_score,
+        portfolio_role_fit_score=None,
         summary=text_fields.summary,
         message=text_fields.message,
     )

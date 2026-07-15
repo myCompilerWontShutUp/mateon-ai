@@ -40,14 +40,15 @@ var candidates = candidateSlots.stream()
                 "desired_roles", s.getDesiredRoles(),
                 "skills", s.getSkills(),
                 "experience_level", s.getExperienceLevel(),
-                "activity_goal", s.getActivityGoal()
+                "activity_style", s.getActivityStyle()
         )))
         .toList();
 
 var queryMetadata = Map.of(
         "recruiting_roles", team.getRecruitingRoles(),
         "required_skills", team.getRequiredSkills(),
-        "activity_goal", team.getEmbeddingMetadata().get("activity_goal")
+        "activity_style", team.getEmbeddingMetadata().get("activity_style"),
+        "beginner_friendly", team.getEmbeddingMetadata().get("beginner_friendly")
 );
 
 var response = mateonAiRestClient.post()
@@ -68,10 +69,8 @@ var response = mateonAiRestClient.post()
 
 ## 3-3. 최종 역제안 조립 — `POST /proposals/team-to-user`
 
-팀장이 사용자를 선택하면, 3-1에서 받은 `score`를 `synergyScore`로, 같이 계산된 룰 점수 중
-`portfolio_role_fit` 컴포넌트를 `portfolioRoleFitScore`로 재사용해서 호출한다. 요청/응답
-DTO는 제안(USER_TO_TEAM) 쪽과 완전히 동일한 `ProposalAssemblyRequest`/`ProposalSchema`를
-쓰되 `portfolioRoleFitScore`를 채워서 보낸다.
+팀장이 사용자를 선택하면, 3-1에서 받은 `score`를 `synergyScore`로 넘겨서 호출한다. 요청/응답
+DTO는 제안(USER_TO_TEAM) 쪽과 완전히 동일한 `ProposalAssemblyRequest`/`ProposalSchema`를 쓴다.
 
 > 생성 프롬프트: [`prompts/team_to_user_proposal.txt`](../prompts/team_to_user_proposal.txt).
 > summary/message가 설계 원칙을 지키는지는 `scripts/judge_outputs.py`로 점검할 수 있다.
@@ -79,8 +78,7 @@ DTO는 제안(USER_TO_TEAM) 쪽과 완전히 동일한 `ProposalAssemblyRequest`
 ```java
 public record ProposalAssemblyRequest(
         Long userId, Long teamId, Long contestId, Long senderId, Long receiverId, Long intentId,
-        double synergyScore, Double portfolioRoleFitScore,
-        String candidateSummary, String targetSummary
+        double synergyScore, String candidateSummary, String targetSummary
 ) {}
 
 public record ProposalSchema(
@@ -94,7 +92,7 @@ var response = mateonAiRestClient.post()
         .uri("/proposals/team-to-user")
         .body(new ProposalAssemblyRequest(
                 selectedUser.getId(), team.getId(), contestId, team.getId(), selectedUser.getId(), null,
-                selectedRecommendation.score(), portfolioRoleFitScore, candidateSummary, targetSummary))
+                selectedRecommendation.score(), candidateSummary, targetSummary))
         .retrieve()
         .body(ProposalSchema.class);
 
@@ -102,9 +100,11 @@ Proposal proposal = Proposal.from(response); // direction: TEAM_TO_USER
 proposalRepository.save(proposal);
 ```
 
-**주의**: `portfolioRoleFitScore`는 현재 AI 서버가 포트폴리오 데이터 없이 `experience_level`
-(advanced=1.0/intermediate=0.6/beginner=0.3)로 잠정 계산한 값이다. 실제 포트폴리오 데이터
-소스가 백엔드에 생기면 계산 방식이 바뀔 수 있다.
+**주의**: `portfolioRoleFitScore`는 응답에 필드만 남아있고 항상 `null`이다. 포트폴리오
+데이터 없이 `experience_level`을 대리 지표로 쓰던 이전 방식은 신호가 약해 계산에서
+뺐다(스코어링은 유사도/역할 일치도/결핍 보완도/활동 방식 일치도/초보자 적합도만 사용,
+제안(USER_TO_TEAM)과 동일 구조). 실제 포트폴리오 데이터 소스가 백엔드에 생기면 이 필드를
+다시 채우는 방향으로 바뀔 수 있다.
 
 ## 에러 처리
 
