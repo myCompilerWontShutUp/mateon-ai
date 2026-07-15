@@ -423,6 +423,24 @@
         ],
         "title": "CandidateEmbedding"
       },
+      "ConversationMessage": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "message"
+        ],
+        "title": "ConversationMessage"
+      },
       "EmbeddingResult": {
         "properties": {
           "embedding_text": {
@@ -670,12 +688,10 @@
             "type": "string",
             "title": "Target Summary"
           },
-          "score_breakdown": {
-            "additionalProperties": {
-              "type": "number"
-            },
-            "type": "object",
-            "title": "Score Breakdown"
+          "score_context": {
+            "type": "string",
+            "title": "Score Context",
+            "default": ""
           }
         },
         "type": "object",
@@ -752,13 +768,6 @@
             "type": "array",
             "title": "Required Skills"
           },
-          "current_members": {
-            "items": {
-              "$ref": "#/components/schemas/TeamMember"
-            },
-            "type": "array",
-            "title": "Current Members"
-          },
           "contest_field": {
             "anyOf": [
               {
@@ -779,44 +788,20 @@
         ],
         "title": "TeamEmbeddingRefreshRequest"
       },
-      "TeamMember": {
-        "properties": {
-          "role": {
-            "type": "string",
-            "title": "Role"
-          },
-          "count": {
-            "type": "integer",
-            "title": "Count"
-          }
-        },
-        "type": "object",
-        "required": [
-          "role",
-          "count"
-        ],
-        "title": "TeamMember"
-      },
       "UserIntentExtractionRequest": {
         "properties": {
-          "self_introduction": {
-            "type": "string",
-            "title": "Self Introduction"
-          },
-          "profile": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Profile"
-          },
-          "conversation_answers": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Conversation Answers"
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/ConversationMessage"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Messages"
           }
         },
         "type": "object",
         "required": [
-          "self_introduction"
+          "messages"
         ],
         "title": "UserIntentExtractionRequest"
       },
@@ -858,12 +843,17 @@
               }
             ],
             "title": "Embedding Vector"
+          },
+          "assistant_message": {
+            "type": "string",
+            "title": "Assistant Message"
           }
         },
         "type": "object",
         "required": [
           "missing_fields",
-          "extracted"
+          "extracted",
+          "assistant_message"
         ],
         "title": "UserIntentExtractionResult"
       },

@@ -41,6 +41,7 @@ def test_recommend_users_ranks_better_role_match_higher() -> None:
 
     assert [item.candidate_id for item in response.recommendations] == [101, 102]
     assert response.recommendations[0].score > response.recommendations[1].score
+    assert response.recommendations[0].label == "BE 역할에 지원 가능해요"
 
 
 def test_recommend_users_caps_at_top_n() -> None:

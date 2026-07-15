@@ -41,7 +41,7 @@ def test_recommend_teams_ranks_better_role_match_higher() -> None:
 
     assert [item.candidate_id for item in response.recommendations] == [1, 2]
     assert response.recommendations[0].score > response.recommendations[1].score
-    assert response.recommendations[0].label != ""
+    assert response.recommendations[0].label == "BE 역할을 모집하고 있어요"
 
 
 def test_recommend_teams_caps_at_top_n() -> None:

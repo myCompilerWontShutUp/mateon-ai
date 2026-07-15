@@ -10,7 +10,7 @@ async def generate_recommendation_reason(request: RecommendationReasonRequest) -
     prompt = (
         f"후보 요약: {request.candidate_summary}\n"
         f"대상 요약: {request.target_summary}\n"
-        f"점수 구성: {request.score_breakdown}"
+        f"점수 구성: {request.score_context}"
     )
     text = await extract_structured(
         messages=[

@@ -63,7 +63,8 @@ var response = mateonAiRestClient.post()
 ## 3-2. 상세 이유 (lazy, 선택) — `POST /recommendations/reason`
 
 제안 쪽과 완전히 같은 엔드포인트·같은 방식이다. `direction` 구분 없이 `candidate_summary`
-(스카우트 대상 요약), `target_summary`(팀 요약), `score_breakdown`만 넘기면 된다.
+(스카우트 대상 요약), `target_summary`(팀 요약), `score_context`(점수 구성요소를 짧은 서술로
+요약한 문자열)만 넘기면 된다.
 
 > 생성 프롬프트: [`prompts/recommendation_reason.txt`](../prompts/recommendation_reason.txt)
 

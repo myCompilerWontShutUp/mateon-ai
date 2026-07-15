@@ -86,7 +86,7 @@ async def main() -> None:
     reason = await generate_recommendation_reason(
         RecommendationReasonRequest(
             candidate_summary=candidate_summary, target_summary=target_summary,
-            score_breakdown={"similarity": 0.83, "role_match": 1.0, "deficit_fit": 1.0},
+            score_context="유사도 높음, 역할 일치, 결핍 보완 높음",
         )
     )
     context = f"후보 요약: {candidate_summary}\n대상 요약: {target_summary}"

@@ -6,6 +6,11 @@ def overlap_ratio(needed: list[str], available: list[str]) -> float:
     return len(needed_set & available_set) / len(needed_set)
 
 
+def matched_items(needed: list[str], available: list[str]) -> list[str]:
+    available_lower = {a.lower() for a in available}
+    return [n for n in needed if n.lower() in available_lower]
+
+
 # 활동 방식 일치도/초보자 적합도는 "누가 누구를 보는가"와 무관한 대칭적 호환성 체크라서
 # USER_TO_TEAM/TEAM_TO_USER 양쪽에서 인자만 맞춰 그대로 재사용한다.
 

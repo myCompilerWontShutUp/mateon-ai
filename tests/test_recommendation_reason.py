@@ -14,7 +14,7 @@ async def test_generate_recommendation_reason(monkeypatch: pytest.MonkeyPatch) -
     request = RecommendationReasonRequest(
         candidate_summary="React/TypeScript 경험, 초보자",
         target_summary="커머스 플랫폼, BE 1명 결핍",
-        score_breakdown={"similarity": 0.8, "role_match": 1.0},
+        score_context="유사도 높음, 역할 일치",
     )
     result = await reason_module.generate_recommendation_reason(request)
 

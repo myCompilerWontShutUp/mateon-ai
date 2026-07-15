@@ -47,21 +47,18 @@ public class MateonAiClientConfig {
 - 팀 소개글 수정
 - 모집 역할(`recruiting_roles`) 변경
 - 요구 스킬(`required_skills`) 변경
-- **팀원 추가/삭제/역할 변경** — `current_members` 배열이 바뀌었을 때. AI 서버는 현재 구성을
-  보고 "결핍 역할" 뉘앙스를 임베딩에 녹이기 때문에, 팀원이 바뀌면 재호출해야 그 뉘앙스가
-  최신 상태를 반영한다.
+- **팀원 추가/삭제/역할 변경** — 현재 구성은 별도 필드가 아니라 `intro_text` 문장에 녹여
+  보낸다(예: "현재 FE 2명, Design 1명으로 구성돼 있습니다"). 팀원이 바뀌면 그 문장을 갱신해서
+  재호출해야 임베딩에 반영된다.
 - 공모전 분야(`contest_field`) 변경
 
 ## 호출 방식
 
 ```java
-public record TeamMemberPayload(String role, int count) {}
-
 public record TeamEmbeddingRefreshRequest(
         String introText,
         List<String> recruitingRoles,
         List<String> requiredSkills,
-        List<TeamMemberPayload> currentMembers,
         String contestField
 ) {}
 
@@ -82,13 +79,14 @@ public class TeamEmbeddingService {
     private final TeamRepository teamRepository;
 
     public void refreshEmbedding(Team team) {
+        // 현재 팀 구성은 별도 필드가 아니라 introText 문장에 녹여 보낸다 — AI 서버는 이 값을
+        // 스코어링에 쓰지 않고 임베딩 텍스트의 서술 한 줄로만 반영하기 때문이다.
+        String introTextWithMembers = team.getIntroText() + " " + describeMembers(team.getMembers());
+
         var request = new TeamEmbeddingRefreshRequest(
-                team.getIntroText(),
+                introTextWithMembers,
                 team.getRecruitingRoles(),
                 team.getRequiredSkills(),
-                team.getMembers().stream()
-                        .map(m -> new TeamMemberPayload(m.getRole(), m.getCount()))
-                        .toList(),
                 team.getContestField()
         );
 
@@ -104,6 +102,15 @@ public class TeamEmbeddingService {
         team.setMissingFields(response.missingFields());
         team.setLastEmbeddedAt(Instant.now());                // 신선도는 백엔드가 관리
         teamRepository.save(team);
+    }
+
+    private String describeMembers(List<TeamMember> members) {
+        // 예: "현재 FE 2명, Design 1명으로 구성돼 있습니다."
+        if (members.isEmpty()) return "";
+        String parts = members.stream()
+                .map(m -> m.getRole() + " " + m.getCount() + "명")
+                .collect(Collectors.joining(", "));
+        return "현재 " + parts + "으로 구성돼 있습니다.";
     }
 }
 ```

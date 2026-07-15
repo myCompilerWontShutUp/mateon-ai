@@ -15,11 +15,11 @@ def deficit_fit_score(required_skills: list[str], skills: list[str]) -> float:
 # 협업 온도와 같은 취급으로, 실제 포트폴리오 데이터가 생기면 다시 넣는다
 # (`ProposalSchema.portfolio_role_fit_score` 필드는 그대로 예약해둔다).
 WEIGHTS = {
-    "similarity": 0.5,
+    "similarity": 0.4,
     "role_match": 0.2,
     "deficit_fit": 0.15,
-    "activity_style_match": 0.075,
-    "beginner_fit": 0.075,
+    "beginner_fit": 0.2,
+    "activity_style_match": 0.05,
 }
 
 _LABELS = {
@@ -30,6 +30,25 @@ _LABELS = {
 }
 
 
-def label_for(metadata_scores: dict[str, float]) -> str:
+def label_for(
+    metadata_scores: dict[str, float],
+    *,
+    matched_roles: list[str] | None = None,
+    matched_skills: list[str] | None = None,
+    activity_style: str | None = None,
+    beginner_friendly: bool | None = None,
+) -> str:
     top = max(metadata_scores, key=metadata_scores.get)
+    if metadata_scores[top] <= 0:
+        return "의미적으로 결핍과 잘 맞아요"
+
+    if top == "role_match" and matched_roles:
+        return f"{', '.join(matched_roles)} 역할에 지원 가능해요"
+    if top == "deficit_fit" and matched_skills:
+        return f"{', '.join(matched_skills)} 스킬을 갖췄어요"
+    if top == "activity_style_match" and activity_style:
+        return f"'{activity_style}' 방식으로 활동해요"
+    if top == "beginner_fit" and beginner_friendly:
+        return "초보자도 편하게 합류할 수 있어요"
+
     return _LABELS.get(top, "이 팀에 적합해요")
