@@ -43,3 +43,45 @@ def test_rank_orders_by_total_score_descending() -> None:
 
     assert [c.candidate_id for c in ranked] == ["high", "mid", "low"]
     assert ranked[0].total_score > ranked[1].total_score > ranked[2].total_score
+
+
+def test_combine_score_applies_penalty_when_component_hits_trigger_value() -> None:
+    score = combine_score(
+        similarity=1.0,
+        metadata_scores={"gate": 0.0},
+        weights={"similarity": 0.5, "gate": 0.5},
+        penalty_rules={"gate": (0.0, 0.3)},
+    )
+    assert score == pytest.approx((1.0 * 0.5 + 0.0 * 0.5) * 0.3)
+
+
+def test_combine_score_no_penalty_when_component_does_not_hit_trigger_value() -> None:
+    score = combine_score(
+        similarity=1.0,
+        metadata_scores={"gate": 1.0},
+        weights={"similarity": 0.5, "gate": 0.5},
+        penalty_rules={"gate": (0.0, 0.3)},
+    )
+    assert score == pytest.approx(1.0)
+
+
+def test_rank_penalty_can_flip_order_within_a_tiny_candidate_pool() -> None:
+    # 회귀 재현: 후보가 2개뿐이면 min-max 정규화가 사소한 원시 유사도 차이도 0/1 최대치로
+    # 벌린다. penalty_rules 없이는 이 유사도 우위만으로 "게이트에 걸린" 후보가 이겨버린다.
+    candidates = [
+        CandidateInput(
+            candidate_id="gate_open_low_similarity", raw_similarity=0.501,
+            metadata_scores={"gate": 1.0},
+        ),
+        CandidateInput(
+            candidate_id="gate_closed_high_similarity", raw_similarity=0.503,
+            metadata_scores={"gate": 0.0},
+        ),
+    ]
+    weights = {"similarity": 0.5, "gate": 0.5}
+
+    without_penalty = rank(candidates, weights)
+    assert without_penalty[0].candidate_id == "gate_closed_high_similarity"
+
+    with_penalty = rank(candidates, weights, penalty_rules={"gate": (0.0, 0.3)})
+    assert with_penalty[0].candidate_id == "gate_open_low_similarity"

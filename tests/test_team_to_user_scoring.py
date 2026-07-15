@@ -1,4 +1,5 @@
 from app.features.team_to_user.scoring import (
+    PENALTY_RULES,
     WEIGHTS,
     deficit_fit_score,
     label_for,
@@ -64,6 +65,7 @@ def test_beginner_unfriendly_team_cannot_beat_beginner_friendly_at_half_similari
             "role_match": 1.0, "deficit_fit": 1.0, "activity_style_match": 1.0, "beginner_fit": 0.0,
         },
         weights=WEIGHTS,
+        penalty_rules=PENALTY_RULES,
     )
     beginner_friendly_half_similarity = combine_score(
         similarity=0.5,
@@ -71,5 +73,32 @@ def test_beginner_unfriendly_team_cannot_beat_beginner_friendly_at_half_similari
             "role_match": 1.0, "deficit_fit": 1.0, "activity_style_match": 1.0, "beginner_fit": 1.0,
         },
         weights=WEIGHTS,
+        penalty_rules=PENALTY_RULES,
     )
     assert beginner_friendly_half_similarity >= anti_beginner_full_match
+
+
+def test_beginner_unfriendly_team_loses_even_with_full_similarity_swing() -> None:
+    # 실제로 재현된 사례(2026-07-15, USER_TO_TEAM에서 처음 발견 — TEAM_TO_USER는 동일 로직을
+    # 공유하므로 동일 위험이 있어 여기도 고정해둔다): 후보가 2개뿐이면 사소한 원시 유사도
+    # 차이도 min-max 정규화로 1.0 vs 0.0까지 벌어질 수 있다. 나머지 구성요소가 전부 동점이고
+    # 유사도가 완전히 극단으로 갈리는 최악의 경우에도 초보자 친화 팀이 이겨야 한다.
+    from app.scoring.engine import combine_score
+
+    anti_beginner = combine_score(
+        similarity=1.0,
+        metadata_scores={
+            "role_match": 1.0, "deficit_fit": 0.0, "activity_style_match": 0.5, "beginner_fit": 0.0,
+        },
+        weights=WEIGHTS,
+        penalty_rules=PENALTY_RULES,
+    )
+    beginner_friendly = combine_score(
+        similarity=0.0,
+        metadata_scores={
+            "role_match": 1.0, "deficit_fit": 0.0, "activity_style_match": 0.5, "beginner_fit": 1.0,
+        },
+        weights=WEIGHTS,
+        penalty_rules=PENALTY_RULES,
+    )
+    assert beginner_friendly > anti_beginner

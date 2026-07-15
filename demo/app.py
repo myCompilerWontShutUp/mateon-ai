@@ -126,7 +126,8 @@ with tab_intent:
         user_label = st.text_input("로컬 라벨", value="user-203", key="user_label")
         user_id = st.number_input("user_id (임의 지정)", value=203, step=1, key="user_id")
         self_intro = st.text_area(
-            "자기소개서 (선택 — 채팅 시작 전 미리 등록된 값이라고 가정, 채팅 첫 답변보다 먼저 반영)",
+            "자기소개서 (선택 — 채팅 시작 전 미리 등록된 값이라고 가정, 메시지 순서상 채팅보다 "
+            "앞에 전송됨. 우선순위 아님 — 아래 캡션 참고)",
             value="",
             height=80,
             key="profile_self_intro",
@@ -139,8 +140,9 @@ with tab_intent:
         )
         st.caption(
             "채팅 첫 답변 예시: \"백엔드 경험은 없지만 프론트엔드를 1년 해봤고, 이번엔 풀스택 "
-            "프로젝트에서 성장하고 싶습니다.\" — 자기소개서/포트폴리오와 채팅 답변 내용이 서로 "
-            "다르면 채팅에 쓴 내용이 우선 반영된다(`prompts/user_intent_extraction.txt`)."
+            "프로젝트에서 성장하고 싶습니다.\" — **우선순위는 반대다**: 자기소개서/포트폴리오와 "
+            "채팅 답변 내용이 서로 다르면 더 나중에 말한 채팅 답변이 이긴다"
+            "(`prompts/user_intent_extraction.txt`)."
         )
 
         if st.button("채팅 시작", type="primary"):

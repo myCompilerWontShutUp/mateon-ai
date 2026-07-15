@@ -22,6 +22,10 @@ WEIGHTS = {
     "activity_style_match": 0.05,
 }
 
+# USER_TO_TEAM과 동일한 이유로 동일하게 적용한다 — app/features/user_to_team/scoring.py의
+# PENALTY_RULES 주석 참고.
+PENALTY_RULES: dict[str, tuple[float, float]] = {"beginner_fit": (0.0, 0.3)}
+
 _LABELS = {
     "role_match": "팀의 결핍 역할과 일치해요",
     "deficit_fit": "팀이 필요한 스킬을 갖췄어요",

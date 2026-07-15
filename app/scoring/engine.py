@@ -36,17 +36,37 @@ def normalize_similarities(raw_similarities: dict[CandidateId, float]) -> dict[C
 
 
 def combine_score(
-    similarity: float, metadata_scores: dict[str, float], weights: dict[str, float]
+    similarity: float,
+    metadata_scores: dict[str, float],
+    weights: dict[str, float],
+    penalty_rules: dict[str, tuple[float, float]] | None = None,
 ) -> float:
     scores = {_SIMILARITY_KEY: similarity, **metadata_scores}
     missing = weights.keys() - scores.keys()
     if missing:
         raise ValueError(f"no score provided for weighted component(s): {sorted(missing)}")
 
-    return sum(weights[name] * scores[name] for name in weights)
+    total = sum(weights[name] * scores[name] for name in weights)
+
+    # 가중 합만으로는 후보군이 적을 때 유사도의 정규화 스윙(min-max라 후보가 2~3개면 사소한
+    # 원시 유사도 차이도 0~1로 최대치까지 벌어진다)이 명시적 배제 신호(예: 초보자 비친화)를
+    # 항상 뒤집을 수 있다 — 실제로 초보자 유저에게 "초보자는 정중히 지양합니다"라고 쓴 팀이
+    # 1순위로 뜬 사례가 있었다(2026-07-15). 특정 구성요소가 최악값(예: beginner_fit == 0.0)일
+    # 때는 가중치를 더 올리는 대신 최종 점수에 강한 배율(penalty_rules)을 곱해 순위를 확실히
+    # 끌어내린다 — 완전한 하드 필터(후보 제외)는 아니지만, 어지간한 유사도 우위로는 못 뒤집을
+    # 만큼 강하게 만든다.
+    for component, (trigger_value, multiplier) in (penalty_rules or {}).items():
+        if scores.get(component) == trigger_value:
+            total *= multiplier
+
+    return total
 
 
-def rank(candidates: list[CandidateInput], weights: dict[str, float]) -> list[CandidateScore]:
+def rank(
+    candidates: list[CandidateInput],
+    weights: dict[str, float],
+    penalty_rules: dict[str, tuple[float, float]] | None = None,
+) -> list[CandidateScore]:
     normalized = normalize_similarities(
         {candidate.candidate_id: candidate.raw_similarity for candidate in candidates}
     )
@@ -57,7 +77,10 @@ def rank(candidates: list[CandidateInput], weights: dict[str, float]) -> list[Ca
             similarity=normalized[candidate.candidate_id],
             metadata_scores=candidate.metadata_scores,
             total_score=combine_score(
-                normalized[candidate.candidate_id], candidate.metadata_scores, weights
+                normalized[candidate.candidate_id],
+                candidate.metadata_scores,
+                weights,
+                penalty_rules,
             ),
         )
         for candidate in candidates

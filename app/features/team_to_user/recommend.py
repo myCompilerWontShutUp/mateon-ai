@@ -1,4 +1,5 @@
 from app.features.team_to_user.scoring import (
+    PENALTY_RULES,
     WEIGHTS,
     deficit_fit_score,
     label_for,
@@ -49,7 +50,7 @@ def recommend_users(request: RecommendationRequest) -> RecommendationResponse:
             "beginner_friendly": team_beginner_friendly,
         }
 
-    ranked = rank(candidates, WEIGHTS)[:TOP_N]
+    ranked = rank(candidates, WEIGHTS, PENALTY_RULES)[:TOP_N]
 
     items = [
         RecommendationItem(
