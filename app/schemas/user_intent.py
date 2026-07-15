@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field
 
+from app.schemas.common import EmbeddingVector
+
 
 class UserIntentExtractionRequest(BaseModel):
     self_introduction: str
@@ -20,4 +22,4 @@ class UserIntentExtractionResult(BaseModel):
     missing_fields: list[str]
     extracted: UserIntentFields
     embedding_text: str | None = None
-    embedding_vector: list[float] | None = None
+    embedding_vector: EmbeddingVector | None = None
