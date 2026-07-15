@@ -68,7 +68,7 @@ async def test_extract_intent_endpoint_rejects_wrong_secret(client: AsyncClient)
 async def test_recommend_user_to_team_endpoint(client: AsyncClient) -> None:
     response = await client.post(
         "/recommendations/user-to-team",
-        json={"query_embedding_vector": [0.1, 0.2], "candidates": []},
+        json={"query_embedding_vector": [0.1] * 1536, "candidates": []},
         headers=_AUTH_HEADERS,
     )
     assert response.status_code == 200

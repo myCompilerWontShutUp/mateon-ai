@@ -1,9 +1,12 @@
 import asyncio
 import json
+import sys
 from pathlib import Path
 
-from app.features.team_embedding.service import compute_team_embedding
-from tests.fixtures.team_definitions import TEAM_FIXTURES
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from app.features.team_embedding.service import compute_team_embedding  # noqa: E402
+from tests.fixtures.team_definitions import TEAM_FIXTURES  # noqa: E402
 
 OUTPUT_PATH = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "teams.json"
 

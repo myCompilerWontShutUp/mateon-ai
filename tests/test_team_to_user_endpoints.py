@@ -37,7 +37,7 @@ def _mock_services(monkeypatch: pytest.MonkeyPatch) -> None:
 async def test_recommend_team_to_user_endpoint(client: AsyncClient) -> None:
     response = await client.post(
         "/recommendations/team-to-user",
-        json={"query_embedding_vector": [0.1, 0.2], "candidates": []},
+        json={"query_embedding_vector": [0.1] * 1536, "candidates": []},
         headers=_AUTH_HEADERS,
     )
     assert response.status_code == 200
@@ -47,7 +47,7 @@ async def test_recommend_team_to_user_endpoint(client: AsyncClient) -> None:
 async def test_recommend_team_to_user_requires_secret(client: AsyncClient) -> None:
     response = await client.post(
         "/recommendations/team-to-user",
-        json={"query_embedding_vector": [0.1, 0.2], "candidates": []},
+        json={"query_embedding_vector": [0.1] * 1536, "candidates": []},
     )
     assert response.status_code == 422
 

@@ -1,14 +1,16 @@
 from pydantic import BaseModel, Field
 
+from app.schemas.common import EmbeddingVector
+
 
 class CandidateEmbedding(BaseModel):
     candidate_id: int
-    embedding_vector: list[float]
+    embedding_vector: EmbeddingVector
     metadata: dict = Field(default_factory=dict)
 
 
 class RecommendationRequest(BaseModel):
-    query_embedding_vector: list[float]
+    query_embedding_vector: EmbeddingVector
     # 방향별 룰 스코어링에 쓰는 원본 값. USER_TO_TEAM: desired_roles/skills/activity_style/
     # experience_level. TEAM_TO_USER: recruiting_roles/required_skills/activity_goal 등.
     query_metadata: dict = Field(default_factory=dict)
