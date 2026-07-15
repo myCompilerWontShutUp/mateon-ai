@@ -288,7 +288,8 @@ with tab_t2u:
                 "query_metadata": {
                     "recruiting_roles": team["metadata"].get("recruiting_roles", []),
                     "required_skills": team["metadata"].get("required_skills", []),
-                    "activity_goal": team["metadata"].get("activity_goal"),
+                    "activity_style": team["metadata"].get("activity_style"),
+                    "beginner_friendly": team["metadata"].get("beginner_friendly"),
                 },
                 "candidates": [
                     {
@@ -298,7 +299,7 @@ with tab_t2u:
                             "desired_roles": st.session_state.users[u]["extracted"]["desired_roles"],
                             "skills": st.session_state.users[u]["extracted"]["skills"],
                             "experience_level": st.session_state.users[u]["extracted"]["experience_level"],
-                            "activity_goal": st.session_state.users[u]["extracted"]["activity_goal"],
+                            "activity_style": st.session_state.users[u]["extracted"]["activity_style"],
                         },
                     }
                     for u in user_labels
@@ -324,7 +325,6 @@ with tab_t2u:
                 value="커머스 플랫폼, BE 1명 결핍, 주 2회 오프라인 활동",
                 key="t2u_target_summary",
             )
-            portfolio_score = st.number_input("portfolio_role_fit_score (추천 응답엔 없어 수동 입력)", value=0.5)
 
             if st.button("최종 역제안 조립 요청"):
                 team = st.session_state.teams[team_label]
@@ -334,7 +334,6 @@ with tab_t2u:
                     "sender_id": team["candidate_id"],
                     "receiver_id": top["candidate_id"],
                     "synergy_score": float(top["score"]),
-                    "portfolio_role_fit_score": portfolio_score,
                     "candidate_summary": candidate_summary,
                     "target_summary": target_summary,
                 }
