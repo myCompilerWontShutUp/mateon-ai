@@ -63,4 +63,16 @@ def rank(candidates: list[CandidateInput], weights: dict[str, float]) -> list[Ca
         for candidate in candidates
     ]
 
-    return sorted(scored, key=lambda candidate_score: candidate_score.total_score, reverse=True)
+    # 메타데이터 점수 상당수가 0/0.5/1 같은 이산값이라 total_score가 동점으로 묶이기 쉽다.
+    # 동점일 때 입력 순서에 맡기지 않도록, 가중치가 높은 구성요소부터 순서대로 비교해
+    # 결정적인 순위를 만든다.
+    tie_break_order = sorted(weights, key=lambda name: weights[name], reverse=True)
+
+    def sort_key(candidate_score: CandidateScore) -> tuple[float, ...]:
+        component_scores = {_SIMILARITY_KEY: candidate_score.similarity, **candidate_score.metadata_scores}
+        return (
+            candidate_score.total_score,
+            *(component_scores[name] for name in tie_break_order),
+        )
+
+    return sorted(scored, key=sort_key, reverse=True)
