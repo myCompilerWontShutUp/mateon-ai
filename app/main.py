@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 
 from app.api.router import router
+from app.features.contest_extraction.router import router as contest_extraction_router
+from app.features.portfolio_summary.router import router as portfolio_summary_router
 from app.features.recommendation.router import router as recommendation_router
 from app.features.team_embedding.router import router as team_embedding_router
 from app.features.team_to_user.router import router as team_to_user_router
@@ -16,3 +18,5 @@ app.include_router(team_embedding_router)
 app.include_router(user_to_team_router)
 app.include_router(team_to_user_router)
 app.include_router(recommendation_router)
+app.include_router(contest_extraction_router)
+app.include_router(portfolio_summary_router)

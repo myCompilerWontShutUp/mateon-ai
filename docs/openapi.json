@@ -391,10 +391,142 @@
           }
         }
       }
+    },
+    "/contests/extract-image": {
+      "post": {
+        "tags": [
+          "contest-extraction"
+        ],
+        "summary": "공모전 이미지 OCR+LLM 자동 입력",
+        "operationId": "extract_image_to_contest_contests_extract_image_post",
+        "parameters": [
+          {
+            "name": "x-internal-secret",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Internal-Secret"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_extract_image_to_contest_contests_extract_image_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContestExtractionResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/portfolios/summarize": {
+      "post": {
+        "tags": [
+          "portfolio-summary"
+        ],
+        "summary": "포트폴리오 PDF OCR+LLM 경력 요약",
+        "operationId": "summarize_portfolio_portfolios_summarize_post",
+        "parameters": [
+          {
+            "name": "x-internal-secret",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Internal-Secret"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_summarize_portfolio_portfolios_summarize_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioSummaryResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "Body_extract_image_to_contest_contests_extract_image_post": {
+        "properties": {
+          "img_file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Img File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "img_file"
+        ],
+        "title": "Body_extract_image_to_contest_contests_extract_image_post"
+      },
+      "Body_summarize_portfolio_portfolios_summarize_post": {
+        "properties": {
+          "pdf_file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Pdf File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pdf_file"
+        ],
+        "title": "Body_summarize_portfolio_portfolios_summarize_post"
+      },
       "CandidateEmbedding": {
         "properties": {
           "candidate_id": {
@@ -422,6 +554,180 @@
           "embedding_vector"
         ],
         "title": "CandidateEmbedding"
+      },
+      "ContestCategory": {
+        "type": "string",
+        "enum": [
+          "CONTEST",
+          "EXTERNAL",
+          "SCHOOL"
+        ],
+        "title": "ContestCategory"
+      },
+      "ContestExtractionResult": {
+        "properties": {
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Id"
+          },
+          "category": {
+            "$ref": "#/components/schemas/ContestCategory"
+          },
+          "field": {
+            "$ref": "#/components/schemas/ContestField"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Title"
+          },
+          "organizer": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organizer"
+          },
+          "target_school": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target School"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "detail_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail Url"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "summarized_description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summarized Description"
+          },
+          "recommended_targets": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommended Targets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "category",
+          "field",
+          "title"
+        ],
+        "title": "ContestExtractionResult"
+      },
+      "ContestField": {
+        "type": "string",
+        "enum": [
+          "TRAVEL_HOTEL_AIRLINE",
+          "PRESS_MEDIA",
+          "CULTURE_HISTORY",
+          "EVENT_FESTIVAL",
+          "EDUCATION",
+          "DESIGN_PHOTO_ART_VIDEO",
+          "ECONOMY_FINANCE",
+          "MANAGEMENT_CONSULTING_MARKETING",
+          "POLITICS_SOCIETY_LAW",
+          "SPORTS_FITNESS",
+          "MEDICAL_HEALTH",
+          "BEAUTY_COSMETICS",
+          "SCIENCE_ENGINEERING_TECH_IT",
+          "COOKING_FOOD",
+          "STARTUP_SELF_DEVELOPMENT",
+          "ENVIRONMENT_ENERGY",
+          "CONTENTS",
+          "SOCIAL_CONTRIBUTION_EXCHANGE",
+          "DISTRIBUTION_LOGISTICS",
+          "PLANNING_IDEA",
+          "ETC"
+        ],
+        "title": "ContestField"
       },
       "ConversationMessage": {
         "properties": {
@@ -505,6 +811,24 @@
           "TEAM_TO_USER"
         ],
         "title": "MatchDirection"
+      },
+      "PortfolioSummaryResult": {
+        "properties": {
+          "pdf_id": {
+            "type": "string",
+            "title": "Pdf Id"
+          },
+          "response": {
+            "type": "string",
+            "title": "Response"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pdf_id",
+          "response"
+        ],
+        "title": "PortfolioSummaryResult"
       },
       "ProposalAssemblyRequest": {
         "properties": {
