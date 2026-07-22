@@ -385,3 +385,87 @@ AI 서버가 아무것도 저장하지 않으므로, 이유 생성에 필요한 
 스키마에 필드만 남아있고 항상 `null`이다 — 포트폴리오 데이터 없이 `experience_level`을
 대리 지표로 쓰던 이전 방식은 후보군 정보 수준에 따라 결과가 흔들리는 문제가 있어 계산에서
 뺐다(협업 온도와 같은 취급 — 필드는 예약, 실제 포트폴리오 데이터 소스가 생기면 다시 채운다).
+
+---
+
+## 8. 공모전 이미지 자동 입력 — `POST /contests/extract-image`
+
+지금까지의 엔드포인트와 달리 **`multipart/form-data`** 요청이다 (JSON 바디가 아니다) — key
+`img_file`, value는 공모전 포스터/캡처 이미지 파일 (`.jpg`/`.jpeg`/`.png`만 허용, 그 외
+확장자나 빈 파일은 `400`). 다른 엔드포인트와 마찬가지로 `X-Internal-Secret` 헤더가 필요하다.
+
+OCR을 별도 엔진으로 거치지 않고, Vision 입력을 지원하는 `gpt-4.1-mini`(`OPENAI_LLM_MODEL`)에
+이미지를 base64 data URL로 그대로 실어 보내 텍스트 판독과 구조화 추출을 한 번에 수행한다 —
+이미지에 없는 정보는 추측하지 않고 선택 필드는 `null`로 남기도록 프롬프트에 명시했다. AI 서버는
+계산 결과만 반환하고 아무것도 저장하지 않는다 — 다른 엔드포인트와 동일한 무상태 원칙.
+
+> 추출 프롬프트: [`prompts/contest_image_extraction.txt`](../prompts/contest_image_extraction.txt)
+
+요청 (curl 예시):
+```
+curl -X POST https://.../contests/extract-image \
+  -H "X-Internal-Secret: ..." \
+  -F "img_file=@poster.png;type=image/png"
+```
+
+응답:
+```json
+{
+  "external_id": null,
+  "category": "CONTEST",
+  "field": "PLANNING_IDEA",
+  "title": "2026 제10회 <051영화제> 51초 영화 공모전",
+  "organizer": "부산시사회복지협의회",
+  "target_school": null,
+  "start_date": "2026-07-01",
+  "end_date": "2026-07-31",
+  "detail_url": null,
+  "image_url": null,
+  "description": "주제\n'연결'\n\n...",
+  "summarized_description": "부산시사회복지협의회에서 주관하는 '51초 영화 공모전' 공고입니다. ...",
+  "recommended_targets": "대상 제한 없음, 역량 강화 및 포트폴리오 구축 희망자"
+}
+```
+
+`category`/`field`는 각각 3개(`CONTEST`/`EXTERNAL`/`SCHOOL`)·21개 고정 enum 값만 허용한다 —
+`field`의 코드 목록은 `CLAUDE.md`의 "field 코드 목록" 참고, 원문과 매칭되는 코드가 없으면
+`ETC`. `detail_url`/`image_url`은 형식 검증 없는 일반 문자열이다 — 이미지에서 OCR로 읽은 URL은
+스킴 누락이나 오타가 섞이기 쉬워, `HttpUrl` 강제 검증으로 인한 예기치 않은 `500`보다는 원문
+그대로 백엔드에 넘기고 정규화는 백엔드가 하는 쪽을 택했다. 파일 크기 상한은
+`Settings.max_contest_image_bytes`(기본 10MB)이며, 초과 시 `400`.
+
+---
+
+## 9. 포트폴리오 PDF 요약 — `POST /portfolios/summarize`
+
+역시 `multipart/form-data` 요청이다 — key `pdf_file`, value는 PDF 파일. `.pdf` 확장자가
+아니거나 빈 파일, 유효하지 않은 PDF 구조는 `400`.
+
+PDF는 텍스트만 있다는 보장이 없어(스캔본, 이미지 위주 페이지 등) 별도 텍스트 추출 대신
+**PyMuPDF로 각 페이지를 이미지로 렌더링**한 뒤(`Settings.portfolio_pdf_max_pages`, 기본
+15페이지까지만 — 그 이상은 비용 상 앞부분만 본다) 전부 한 번의 Vision 호출에 실어 보낸다.
+`pdf_id`는 AI 서버가 채번하지 않는다 — **PDF 원본 바이트의 SHA-256 해시**를 그대로 반환한다.
+AI 서버는 상태가 없어 같은 파일이면 항상 같은 값이 나오는 결정론적 식별자가 필요했고, 백엔드가
+이 값으로 중복 업로드를 판정할 수 있다.
+
+> 요약 프롬프트: [`prompts/portfolio_summary.txt`](../prompts/portfolio_summary.txt)
+
+요청 (curl 예시):
+```
+curl -X POST https://.../portfolios/summarize \
+  -H "X-Internal-Secret: ..." \
+  -F "pdf_file=@portfolio.pdf;type=application/pdf"
+```
+
+응답:
+```json
+{
+  "pdf_id": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "response": "- OO 서비스 프론트엔드 개발, React/TypeScript로 대시보드 UI 구현\n- OO 해커톤 팀 프로젝트, 백엔드 API 설계 및 배포\n\n요약\n이 사용자는 프론트엔드를 중심으로 실무 프로젝트 경험을 쌓아왔으며, 백엔드 협업 경험도 일부 있습니다."
+}
+```
+
+`response`는 고정 스키마가 아니라 **불릿 목록 + "요약" 문단으로 이어지는 마크다운 문자열
+하나**다 — 다른 엔드포인트의 `summary`/`reason`과 달리 사람이 읽는 자유 형식 결과물이라
+필드를 더 쪼갤 이유가 없었다. 프롬프트에 절대 평가(합격 가능성 등) 금지, 사실 기반 서술만
+지시해뒀다.

@@ -45,6 +45,9 @@ cp .env.example .env
 | `OPENAI_LLM_MODEL` | 구조화 추출/텍스트 생성 모델 (기본값 `gpt-4.1-mini`) |
 | `OPENAI_EMBEDDING_MODEL` | 임베딩 모델 (기본값 `text-embedding-3-small`) |
 | `INTERNAL_SHARED_SECRET` | 모든 엔드포인트가 요구하는 `X-Internal-Secret` 헤더 값 |
+| `MAX_CONTEST_IMAGE_BYTES` | 공모전 이미지 업로드 크기 상한, bytes (기본값 10MB) |
+| `MAX_PORTFOLIO_PDF_BYTES` | 포트폴리오 PDF 업로드 크기 상한, bytes (기본값 20MB) |
+| `PORTFOLIO_PDF_MAX_PAGES` | 포트폴리오 PDF에서 Vision 모델로 넘길 최대 페이지 수 (기본값 15) |
 
 ### 서버 실행
 
@@ -99,6 +102,8 @@ app/
     user_to_team/       # 제안(USER_TO_TEAM): 의도 추출, 추천, 제안 조립
     team_to_user/        # 역제안(TEAM_TO_USER): 추천, 제안 조립
     recommendation/       # 추천 이유 생성 (방향 공통)
+    contest_extraction/    # 공모전 이미지 OCR+LLM 자동 입력
+    portfolio_summary/      # 포트폴리오 PDF OCR+LLM 경력 요약
 prompts/           # LLM 시스템 프롬프트 (.txt, 코드와 분리 관리)
 tests/             # pytest — 단위 테스트 + tests/fixtures/ 캐시된 실제 임베딩 데이터
 scripts/           # 픽스처 생성 스크립트, LLM-as-judge 검증 스크립트

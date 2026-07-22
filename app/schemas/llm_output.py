@@ -13,3 +13,7 @@ class RecommendationReasonText(BaseModel):
 
 class UserIntentChatReply(BaseModel):
     message: str
+
+
+class PortfolioSummaryText(BaseModel):
+    response: str
