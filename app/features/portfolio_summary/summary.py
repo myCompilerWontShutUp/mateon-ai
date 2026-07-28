@@ -3,6 +3,7 @@ import hashlib
 
 import pymupdf
 from fastapi import HTTPException, UploadFile, status
+from openai import BadRequestError
 
 from app.core.config import get_settings
 from app.core.prompts import load_prompt
@@ -36,6 +37,11 @@ def render_pdf_pages_to_data_urls(pdf_bytes: bytes, max_pages: int) -> list[str]
     matrix = pymupdf.Matrix(_RENDER_ZOOM, _RENDER_ZOOM)
     try:
         with pymupdf.open(stream=pdf_bytes, filetype="pdf") as document:
+            if document.needs_pass:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="pdf_file is password-protected",
+                )
             if document.page_count == 0:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST, detail="pdf_file has no pages"
@@ -62,13 +68,19 @@ async def summarize_portfolio_pdf(pdf_file: UploadFile) -> PortfolioSummaryResul
     content: list[dict] = [{"type": "text", "text": "이 포트폴리오를 읽고 경력 사항을 정리해줘."}]
     content.extend({"type": "image_url", "image_url": {"url": url}} for url in page_data_urls)
 
-    text_result = await extract_structured(
-        messages=[
-            {"role": "system", "content": _SYSTEM_PROMPT},
-            {"role": "user", "content": content},
-        ],
-        response_model=PortfolioSummaryText,
-    )
+    try:
+        text_result = await extract_structured(
+            messages=[
+                {"role": "system", "content": _SYSTEM_PROMPT},
+                {"role": "user", "content": content},
+            ],
+            response_model=PortfolioSummaryText,
+        )
+    except BadRequestError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="pdf_file could not be processed",
+        ) from exc
 
     pdf_id = hashlib.sha256(pdf_bytes).hexdigest()
     return PortfolioSummaryResult(pdf_id=pdf_id, response=text_result.response)

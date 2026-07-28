@@ -2,6 +2,7 @@ import hashlib
 
 import pymupdf
 import pytest
+from fastapi import HTTPException
 
 from app.features.portfolio_summary import summary
 from app.schemas.llm_output import PortfolioSummaryText
@@ -12,6 +13,12 @@ def _build_pdf_bytes(page_count: int) -> bytes:
         for _ in range(page_count):
             document.new_page()
         return document.tobytes()
+
+
+def _build_encrypted_pdf_bytes() -> bytes:
+    with pymupdf.open() as document:
+        document.new_page()
+        return document.tobytes(encryption=pymupdf.PDF_ENCRYPT_AES_256, user_pw="secret")
 
 
 def test_validate_pdf_upload_rejects_non_pdf_extension() -> None:
@@ -44,6 +51,12 @@ def test_render_pdf_pages_to_data_urls_caps_at_max_pages() -> None:
 def test_render_pdf_pages_to_data_urls_rejects_invalid_pdf_bytes() -> None:
     with pytest.raises(Exception):
         summary.render_pdf_pages_to_data_urls(b"not a pdf", max_pages=10)
+
+
+def test_render_pdf_pages_to_data_urls_rejects_password_protected_pdf() -> None:
+    with pytest.raises(HTTPException) as exc_info:
+        summary.render_pdf_pages_to_data_urls(_build_encrypted_pdf_bytes(), max_pages=10)
+    assert exc_info.value.status_code == 400
 
 
 class _FakeUploadFile:

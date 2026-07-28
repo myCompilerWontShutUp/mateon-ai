@@ -1,6 +1,7 @@
 import base64
 
 from fastapi import HTTPException, UploadFile, status
+from openai import BadRequestError
 
 from app.core.config import get_settings
 from app.core.prompts import load_prompt
@@ -42,16 +43,24 @@ async def extract_contest_from_image(img_file: UploadFile) -> ContestExtractionR
 
     data_url = f"data:{mime_type};base64,{base64.b64encode(image_bytes).decode('ascii')}"
 
-    return await extract_structured(
-        messages=[
-            {"role": "system", "content": _SYSTEM_PROMPT},
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": "이 공고 이미지를 스키마에 맞게 정리해줘."},
-                    {"type": "image_url", "image_url": {"url": data_url}},
-                ],
-            },
-        ],
-        response_model=ContestExtractionResult,
-    )
+    try:
+        return await extract_structured(
+            messages=[
+                {"role": "system", "content": _SYSTEM_PROMPT},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "이 공고 이미지를 스키마에 맞게 정리해줘."},
+                        {"type": "image_url", "image_url": {"url": data_url}},
+                    ],
+                },
+            ],
+            response_model=ContestExtractionResult,
+        )
+    except BadRequestError as exc:
+        # 확장자는 맞지만 실제로는 디코딩 불가능한 이미지 바이트인 경우 OpenAI가 여기서
+        # invalid_image_format류 400을 준다 — 그대로 흘려보내면 우리 쪽 500이 되므로 변환한다.
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="img_file could not be processed as an image",
+        ) from exc

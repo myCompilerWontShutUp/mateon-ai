@@ -35,6 +35,12 @@ class ContestField(StrEnum):
 
 
 class ContestExtractionResult(BaseModel):
+    # 이미지에 공모전/대외활동/교내활동 공고로 볼 근거(제목, 주최, 모집 안내 등)가 전혀 없을 때
+    # false — category/field/title은 스키마상 필수라 모델이 "모르겠다"를 표현할 방법이 이
+    # 필드뿐이다. 없는 근거로 그럴듯한 공고를 지어내는 문제(백지/노이즈 이미지에도 실존하지
+    # 않는 공모전 제목·URL을 생성)가 실제로 있어서 추가했다 — false면 나머지 필드는 신뢰하지
+    # 말고 백엔드가 폐기/재업로드 요청 처리해야 한다.
+    is_recognizable: bool = True
     # 이미지에 원본 공고 ID를 알아낼 단서(사이트명 워터마크, URL 등)가 없는 경우가 대부분이라
     # 선택 필드다 — 백엔드가 크롤링 메타데이터로 채우거나 비워둔다.
     external_id: str | None = Field(default=None, max_length=100)
