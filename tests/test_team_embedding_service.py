@@ -1,18 +1,22 @@
 import pytest
 
 from app.features.team_embedding import service
+from app.schemas.role_codes import RoleCode
 from app.schemas.team_extraction import TeamEmbeddingRefreshRequest, TeamSoftFields
 
 
 @pytest.fixture(autouse=True)
 def _mock_openai(monkeypatch: pytest.MonkeyPatch) -> None:
-    async def fake_extract_team_soft_fields(intro_text: str) -> TeamSoftFields:
+    async def fake_extract_team_soft_fields(
+        intro_text: str, recruiting_roles: list[str], contest_field: str | None
+    ) -> TeamSoftFields:
         return TeamSoftFields(
             activity_goal="공모전 수상",
             activity_style="주 2회 오프라인",
             activity_intensity="high",
             beginner_friendly=True,
             team_atmosphere="자유로운 분위기",
+            recruiting_roles=[RoleCode.BE],
         )
 
     async def fake_embed_text(text: str) -> list[float]:

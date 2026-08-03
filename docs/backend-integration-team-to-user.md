@@ -45,7 +45,12 @@ var candidates = candidateSlots.stream()
         .toList();
 
 var queryMetadata = Map.of(
-        "recruiting_roles", team.getRecruitingRoles(),
+        // 주의: team.getRecruitingRoles()(백엔드 자유 텍스트 원본)가 아니라
+        // team.getEmbeddingMetadata().get("recruiting_roles")를 써야 한다 — embedding:refresh
+        // 응답이 이 값을 RoleCode로 정규화해서 돌려주고(2026-08-03 변경), 그 정규화된 값이
+        // desired_roles 쪽 코드 체계와 맞아야 역할 일치도 스코어링이 제대로 동작한다. 원본
+        // 자유 텍스트를 그대로 다시 보내면 이 정규화가 무의미해진다.
+        "recruiting_roles", team.getEmbeddingMetadata().get("recruiting_roles"),
         "required_skills", team.getRequiredSkills(),
         "activity_style", team.getEmbeddingMetadata().get("activity_style"),
         "beginner_friendly", team.getEmbeddingMetadata().get("beginner_friendly")

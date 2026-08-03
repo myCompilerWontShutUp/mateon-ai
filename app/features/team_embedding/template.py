@@ -18,12 +18,12 @@ def render_team_embedding_text(
 
     lines = [
         f"팀 소개: {request.intro_text}",
-        f"모집 역할: {', '.join(request.recruiting_roles) or '미정'}",
+        f"모집 역할: {', '.join(soft_fields.recruiting_roles) or '미정'}",
         f"요구 스킬: {', '.join(request.required_skills) or '미정'}",
         f"활동 목표: {soft_fields.activity_goal or '미정'}",
         f"활동 방식: {soft_fields.activity_style or '미정'}",
         f"활동 강도: {soft_fields.activity_intensity or '미정'}",
-        f"공모전 분야: {request.contest_field or '미정'}",
+        f"공모전 분야: {soft_fields.contest_field.value if soft_fields.contest_field else '미정'}",
         f"초보자 가능 여부: {beginner_desc}",
         f"팀 분위기: {soft_fields.team_atmosphere or '미정'}",
     ]

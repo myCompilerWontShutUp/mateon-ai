@@ -1,9 +1,12 @@
 from app.core.prompts import load_prompt
 from app.openai_client.extraction import extract_structured
 from app.schemas.llm_output import UserIntentChatReply
+from app.schemas.role_codes import role_code_translation_guide
 from app.schemas.user_intent import UserIntentFields
 
-_SYSTEM_PROMPT = load_prompt("user_intent_chat_reply")
+_SYSTEM_PROMPT = (
+    load_prompt("user_intent_chat_reply") + f"\n역할 코드→한글 라벨: {role_code_translation_guide()}"
+)
 
 AI_PERSONA_NAME = "드림이"
 

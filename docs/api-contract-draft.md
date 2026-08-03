@@ -22,10 +22,16 @@ AI 서버는 데이터베이스를 갖지 않는다. 임베딩 벡터를 포함�
 
 - ID 타입: 아래 예시는 `user_id`/`team_id`/`contest_id`/`sender_id`/`receiver_id`/`intent_id`를
   정수(Long)로 가정했다 (Spring Data JPA 기본 전략). UUID를 쓴다면 타입을 맞춰야 한다.
-- 역할/경험 수준 코드 값: `desired_roles`/`recruiting_roles`는 `BE`/`FE`/`Design`/`PM`/`Data`,
-  `experience_level`은 `beginner`/`intermediate`/`advanced`로 AI 서버가 임의로 정해서 쓰고
-  있다. 백엔드의 실제 코드 체계와 다르면 역할 일치도 스코어링이 항상 0이 된다 — 반드시 맞춰야
-  한다.
+- 역할/경험 수준 코드 값: `RoleCode`(`app/schemas/role_codes.py`)로 `BE`/`FE`/`Design`/`PM`/`Data`/
+  `MARKETING`/`CONTENT`/`BUSINESS`/`RESEARCH`/`ETC`, `ExperienceLevel`로 `beginner`/
+  `intermediate`/`advanced`를 AI 서버가 임의로 정해서 쓰고 있다(둘 다 OpenAPI 스펙에 실제
+  enum으로 노출된다 — `docs/openapi.json`의 `RoleCode`/`ExperienceLevel` 컴포넌트 참고).
+  **2026-08-03부터 `desired_roles`뿐 아니라 `recruiting_roles`도 AI 서버가 자유 텍스트를 이
+  코드로 정규화해서 돌려준다** — 팀 임베딩 계산 시 백엔드가 원문 그대로 보낸 값(예: "데이터
+  분석", "기획")을 AI가 읽고 `metadata.recruiting_roles`에는 정규화된 코드(`Data`, `PM`)만
+  담는다(아래 2번 참고). 그래도 이 코드 목록 자체는 AI 서버가 mateon-backend 실제 코드(자유
+  텍스트 예시만 있고 고정 enum은 없음, 2026-08-03 확인)를 참고해 임의로 정한 초안이라, 안정화
+  되면 백엔드와 다시 맞춰야 한다.
 - 에러 응답 포맷: FastAPI 기본 `{"detail": "..."}` 형태를 가정했다.
 
 **임베딩 벡터는 항상 정확히 1536개(float)여야 한다.** `text-embedding-3-small` 차원 기준으로
@@ -164,11 +170,27 @@ AI 서버는 mateon-backend만 호출하고 프론트엔드가 직접 부르는 
 없다). `team_id`는 요청/응답 어디에도 없다 — 백엔드가 이 결과를 자기 DB의 해당 `team_id` 행에
 저장한다.
 
-`recruiting_roles`/`required_skills`/`contest_field`는 백엔드가 이미 구조화된 값으로 가지고
-있다고 가정해 그대로 받는다. 반면 `activity_goal`/`activity_style`/`activity_intensity`/
-`beginner_friendly`/팀 분위기처럼 자유 서술로만 표현되는 값은 백엔드가 보내지 않고, **AI 서버가
-`intro_text`에서 GPT-4.1 mini로 직접 추출**한다 — 이미 구조화된 값을 LLM이 다시 추측하게 하면
-환각 위험만 커지기 때문이다.
+`recruiting_roles`/`required_skills`/`contest_field`는 **요청에는** 백엔드가 가진 원문 그대로
+보낸다 — mateon-backend 실제 코드를 확인해보니(2026-08-03) 이 값들이 자유 텍스트로 저장되고
+있어("데이터 분석, 기획" 같은 CSV, 고정 코드 체계 없음), 백엔드에 정규화를 요구하는 대신 **AI
+서버가 응답에서 정규화**하기로 했다:
+
+- `recruiting_roles`: 원문 각 항목을 `RoleCode`(`app/schemas/role_codes.py`) 중 의미상 가장
+  가까운 코드로 매핑해 응답 `metadata.recruiting_roles`에 담는다(중복 제거). `desired_roles`와
+  같은 코드 체계를 쓰게 되어, 유저 인텐트와 팀 모집 역할을 비교하는 역할 일치도 스코어링
+  (`app/scoring/rules.py`의 `overlap_ratio`, 완전 문자열 일치)이 표기 차이로 항상 0이 되는
+  문제를 막는다.
+- `contest_field`: 원문 문자열을 `ContestField`(공모전 이미지 추출기와 동일한 21개 코드,
+  `app/schemas/contest.py`) 중 하나로 매핑해 임베딩 텍스트에 반영한다. 원문이 없으면(자율
+  프로젝트) 정규화도 하지 않는다.
+- `required_skills`는 정규화 대상이 아니다 — 역할과 달리 스킬명은 사실상 열린 집합이라 고정
+  코드로 묶기 어렵다. 원문 그대로 echo한다(`desired_roles`는 정규화하지만 `skills`는 정규화하지
+  않는 것과 대칭이다).
+
+반면 `activity_goal`/`activity_style`/`activity_intensity`/`beginner_friendly`/팀 분위기처럼
+자유 서술로만 표현되는 값은 백엔드가 아예 보내지 않고, **AI 서버가 `intro_text`에서 GPT-4.1
+mini로 직접 추출**한다 — 이미 구조화된 값을 LLM이 다시 추측하게 하면 환각 위험만 커지기
+때문이다.
 
 현재 팀 구성(누가 몇 명인지)은 별도 필드가 없다 — `intro_text`에 자연어로 포함시키면 된다
 (2026-07-15 변경 — 이전엔 `current_members: [{role, count}]`로 구조화했는데, 이 값은 스코어링
@@ -177,24 +199,24 @@ AI 서버는 mateon-backend만 호출하고 프론트엔드가 직접 부르는 
 
 > 추출 프롬프트: [`prompts/team_soft_fields_extraction.txt`](../prompts/team_soft_fields_extraction.txt)
 
-요청:
+요청 (백엔드가 가진 원문 그대로 — 정규화되지 않은 값이어도 된다):
 ```json
 {
   "intro_text": "커머스 플랫폼을 만드는 4인 팀입니다. 현재 FE 2명, Design 1명으로 구성돼 있습니다. 매주 화, 목요일 저녁 오프라인으로 모이고, 초보자도 편하게 참여할 수 있는 분위기를 지향합니다. 이번 학기 교내 공모전 수상이 목표입니다.",
-  "recruiting_roles": ["BE"],
+  "recruiting_roles": ["데이터 분석", "기획"],
   "required_skills": ["Spring Boot", "PostgreSQL"],
-  "contest_field": "커머스"
+  "contest_field": "마케팅 공모전"
 }
 ```
 
-응답:
+응답 (`recruiting_roles`/`contest_field`가 `RoleCode`/`ContestField`로 정규화되어 돌아온다):
 ```json
 {
   "missing_fields": ["activity_intensity"],
-  "embedding_text": "팀 소개: ...\n모집 역할: BE\n요구 스킬: Spring Boot, PostgreSQL\n...",
+  "embedding_text": "팀 소개: ...\n모집 역할: Data, PM\n요구 스킬: Spring Boot, PostgreSQL\n...\n공모전 분야: MANAGEMENT_CONSULTING_MARKETING\n...",
   "embedding_vector": [0.0123, -0.0456, "... 1536개"],
   "metadata": {
-    "recruiting_roles": ["BE"],
+    "recruiting_roles": ["Data", "PM"],
     "required_skills": ["Spring Boot", "PostgreSQL"],
     "activity_goal": "교내 공모전 수상",
     "activity_style": "오프라인 모임",
