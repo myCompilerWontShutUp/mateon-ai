@@ -1,4 +1,6 @@
 from app.features.team_embedding.template import compute_missing_fields, render_team_embedding_text
+from app.schemas.contest import ContestField
+from app.schemas.role_codes import RoleCode
 from app.schemas.team_extraction import TeamEmbeddingRefreshRequest, TeamSoftFields
 
 
@@ -37,6 +39,8 @@ def test_render_is_deterministic() -> None:
         activity_intensity="high",
         beginner_friendly=True,
         team_atmosphere="자유로운 분위기",
+        recruiting_roles=[RoleCode.BE],
+        contest_field=ContestField.MANAGEMENT_CONSULTING_MARKETING,
     )
 
     first = render_team_embedding_text(request, soft_fields)

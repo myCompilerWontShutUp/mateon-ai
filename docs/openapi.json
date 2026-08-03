@@ -566,6 +566,11 @@
       },
       "ContestExtractionResult": {
         "properties": {
+          "is_recognizable": {
+            "type": "boolean",
+            "title": "Is Recognizable",
+            "default": true
+          },
           "external_id": {
             "anyOf": [
               {
@@ -790,6 +795,15 @@
           "embedding_vector"
         ],
         "title": "EmbeddingResult"
+      },
+      "ExperienceLevel": {
+        "type": "string",
+        "enum": [
+          "beginner",
+          "intermediate",
+          "advanced"
+        ],
+        "title": "ExperienceLevel"
       },
       "HTTPValidationError": {
         "properties": {
@@ -1081,6 +1095,22 @@
         ],
         "title": "RecommendationResponse"
       },
+      "RoleCode": {
+        "type": "string",
+        "enum": [
+          "BE",
+          "FE",
+          "Design",
+          "PM",
+          "Data",
+          "MARKETING",
+          "CONTENT",
+          "BUSINESS",
+          "RESEARCH",
+          "ETC"
+        ],
+        "title": "RoleCode"
+      },
       "TeamEmbeddingRefreshRequest": {
         "properties": {
           "intro_text": {
@@ -1194,7 +1224,7 @@
         "properties": {
           "desired_roles": {
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/RoleCode"
             },
             "type": "array",
             "title": "Desired Roles"
@@ -1238,13 +1268,12 @@
           "experience_level": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/ExperienceLevel"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Experience Level"
+            ]
           }
         },
         "type": "object",

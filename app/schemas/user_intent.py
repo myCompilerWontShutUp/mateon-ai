@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from app.schemas.common import EmbeddingVector
+from app.schemas.role_codes import ExperienceLevel, RoleCode
 
 
 class ConversationMessage(BaseModel):
@@ -25,12 +26,16 @@ class UserIntentExtractionRequest(BaseModel):
 
 
 class UserIntentFields(BaseModel):
-    desired_roles: list[str] = Field(default_factory=list)
+    # RoleCode/ExperienceLevel(app/schemas/role_codes.py)는 진짜 Pydantic enum이라, OpenAI
+    # structured output이 스키마 레벨에서 이 값들 중 하나만 나오도록 강제한다(2026-08-03 전엔
+    # list[str]/str이라 "BE"/"beginner" 같은 값이 나오길 프롬프트 지시에만 의존했다 — 모델이
+    # 지시를 안 지켜도 스키마가 걸러주지 못하는 구조였다).
+    desired_roles: list[RoleCode] = Field(default_factory=list)
     skills: list[str] = Field(default_factory=list)
     interests: list[str] = Field(default_factory=list)
     activity_goal: str | None = None
     activity_style: str | None = None
-    experience_level: str | None = None
+    experience_level: ExperienceLevel | None = None
 
 
 class UserIntentExtractionResult(BaseModel):

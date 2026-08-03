@@ -34,6 +34,35 @@ class ContestField(StrEnum):
     ETC = "ETC"
 
 
+# prompts/contest_image_extraction.txt에 이 21개 라벨이 하드코딩돼 있는 것과 별개로, 팀 임베딩
+# 쪽(app/features/team_embedding/extraction.py)이 contest_field를 같은 ContestField로
+# 정규화할 때 프롬프트 목록을 동적으로 만들기 위해 재사용한다 — 문자열을 두 번째로 손으로
+# 옮겨 적지 않기 위함.
+CONTEST_FIELD_LABELS: dict[ContestField, str] = {
+    ContestField.TRAVEL_HOTEL_AIRLINE: "여행/호텔/항공",
+    ContestField.PRESS_MEDIA: "언론/미디어",
+    ContestField.CULTURE_HISTORY: "문화/역사",
+    ContestField.EVENT_FESTIVAL: "행사/페스티벌",
+    ContestField.EDUCATION: "교육",
+    ContestField.DESIGN_PHOTO_ART_VIDEO: "디자인/사진/예술/영상",
+    ContestField.ECONOMY_FINANCE: "경제/금융",
+    ContestField.MANAGEMENT_CONSULTING_MARKETING: "경영/컨설팅/마케팅",
+    ContestField.POLITICS_SOCIETY_LAW: "정치/사회/법률",
+    ContestField.SPORTS_FITNESS: "체육/헬스",
+    ContestField.MEDICAL_HEALTH: "의료/보건",
+    ContestField.BEAUTY_COSMETICS: "뷰티/미용/화장품",
+    ContestField.SCIENCE_ENGINEERING_TECH_IT: "과학/공학/기술/IT",
+    ContestField.COOKING_FOOD: "요리/식품",
+    ContestField.STARTUP_SELF_DEVELOPMENT: "창업/자기계발",
+    ContestField.ENVIRONMENT_ENERGY: "환경/에너지",
+    ContestField.CONTENTS: "콘텐츠",
+    ContestField.SOCIAL_CONTRIBUTION_EXCHANGE: "사회공헌/교류",
+    ContestField.DISTRIBUTION_LOGISTICS: "유통/물류",
+    ContestField.PLANNING_IDEA: "기획/아이디어",
+    ContestField.ETC: "기타",
+}
+
+
 class ContestExtractionResult(BaseModel):
     # 이미지에 공모전/대외활동/교내활동 공고로 볼 근거(제목, 주최, 모집 안내 등)가 전혀 없을 때
     # false — category/field/title은 스키마상 필수라 모델이 "모르겠다"를 표현할 방법이 이
