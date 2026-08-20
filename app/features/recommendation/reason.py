@@ -1,4 +1,6 @@
+from app.core.background import fire_and_forget
 from app.core.prompts import load_prompt
+from app.features.quality.judge import judge_and_log
 from app.openai_client.extraction import extract_structured
 from app.schemas.llm_output import RecommendationReasonText
 from app.schemas.recommendation import RecommendationReason, RecommendationReasonRequest
@@ -19,4 +21,7 @@ async def generate_recommendation_reason(request: RecommendationReasonRequest) -
         ],
         response_model=RecommendationReasonText,
     )
+
+    fire_and_forget(judge_and_log("recommendation_reason", prompt, text.reason))
+
     return RecommendationReason(reason=text.reason)

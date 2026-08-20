@@ -44,19 +44,19 @@ def _build_request(team: EmbeddingResult, users: dict[str, UserIntentExtractionR
     )
 
 
-def test_fintech_team_prefers_backend_expert_over_frontend_beginner() -> None:
+async def test_fintech_team_prefers_backend_expert_over_frontend_beginner() -> None:
     teams = _load_teams()
     users = _load_users()  # 순서: backend_expert=0, frontend_beginner=1
 
-    response = recommend_users(_build_request(teams["7"], users))
+    response = await recommend_users(_build_request(teams["7"], users))
 
     assert response.recommendations[0].candidate_id == 0
 
 
-def test_beginner_club_team_prefers_frontend_beginner_over_backend_expert() -> None:
+async def test_beginner_club_team_prefers_frontend_beginner_over_backend_expert() -> None:
     teams = _load_teams()
     users = _load_users()
 
-    response = recommend_users(_build_request(teams["8"], users))
+    response = await recommend_users(_build_request(teams["8"], users))
 
     assert response.recommendations[0].candidate_id == 1

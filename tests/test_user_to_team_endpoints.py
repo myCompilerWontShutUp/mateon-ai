@@ -20,9 +20,13 @@ def _mock_services(monkeypatch: pytest.MonkeyPatch) -> None:
             embedding_vector=[0.1] * 1536, assistant_message="너의 관심사는 백엔드구나! 이건 추천 팀이야.",
         )
 
-    def fake_recommend_teams(request) -> RecommendationResponse:
+    async def fake_recommend_teams(request) -> RecommendationResponse:
         return RecommendationResponse(
-            recommendations=[RecommendationItem(candidate_id=17, score=0.9, label="적합해요")]
+            recommendations=[
+                RecommendationItem(
+                    candidate_id=17, score=0.9, label="적합해요", component_scores={"similarity": 0.9}
+                )
+            ]
         )
 
     async def fake_assemble_proposal(request) -> ProposalSchema:

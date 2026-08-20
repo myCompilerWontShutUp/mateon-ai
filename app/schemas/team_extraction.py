@@ -17,12 +17,19 @@ class TeamEmbeddingRefreshRequest(BaseModel):
     contest_field: str | None = None
 
 
+class OptionalTeamFields(BaseModel):
+    # 유저 쪽 OptionalUserFields와 대칭이다 — 선택 필드, missing_fields에 안 걸리고 없으면
+    # "미상"으로만 렌더링된다(CLAUDE.md "## 모니터링·데이터 기반 가중치 보정" 4번 참고).
+    activity_time: str | None = None  # 예: "평일 저녁", "주말"
+
+
 class TeamSoftFields(BaseModel):
     activity_goal: str | None = None
     activity_style: str | None = None
     activity_intensity: str | None = None
     beginner_friendly: bool | None = None
     team_atmosphere: str | None = None
+    optional: OptionalTeamFields = Field(default_factory=OptionalTeamFields)
     # 유저 인텐트 쪽(UserIntentFields.desired_roles)은 이미 AI가 정규화해서 돌려주는데
     # 팀 쪽(recruiting_roles)은 백엔드가 보낸 자유 텍스트를 그대로 echo만 하고 있었다 — 같은
     # RoleCode인데 표기가 다르면(예: 유저는 "BE", 팀은 "백엔드 개발자") 역할 일치도 스코어링이

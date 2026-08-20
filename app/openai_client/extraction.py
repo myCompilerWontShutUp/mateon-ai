@@ -22,12 +22,13 @@ _RETRYABLE_ERRORS = (APIConnectionError, APITimeoutError, InternalServerError, R
 async def extract_structured(
     messages: list[ChatCompletionMessageParam],
     response_model: type[ResponseModelT],
+    model: str | None = None,
 ) -> ResponseModelT:
     settings = get_settings()
     client = get_openai_client()
 
     completion = await client.chat.completions.parse(
-        model=settings.openai_llm_model,
+        model=model or settings.openai_llm_model,
         messages=messages,
         response_format=response_model,
     )

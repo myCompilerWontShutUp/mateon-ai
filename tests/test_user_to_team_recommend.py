@@ -4,7 +4,7 @@ from app.schemas.recommendation import CandidateEmbedding, RecommendationRequest
 DUMMY_VECTOR = [1.0] + [0.0] * 1535
 
 
-def test_recommend_teams_ranks_better_role_match_higher() -> None:
+async def test_recommend_teams_ranks_better_role_match_higher() -> None:
     request = RecommendationRequest(
         query_embedding_vector=DUMMY_VECTOR,
         query_metadata={
@@ -37,14 +37,48 @@ def test_recommend_teams_ranks_better_role_match_higher() -> None:
         ],
     )
 
-    response = recommend_teams(request)
+    response = await recommend_teams(request)
 
     assert [item.candidate_id for item in response.recommendations] == [1, 2]
     assert response.recommendations[0].score > response.recommendations[1].score
     assert response.recommendations[0].label == "BE 역할을 모집하고 있어요"
 
 
-def test_beginner_unfriendly_team_does_not_win_on_tiny_similarity_edge() -> None:
+async def test_activity_time_is_exposed_but_does_not_affect_score_or_label() -> None:
+    # 선택 필드(activity_time)는 component_scores에는 나오되 총점/label에는 영향을 주면 안
+    # 된다(CLAUDE.md "## 모니터링·데이터 기반 가중치 보정" 4번 참고) — 두 후보의 유일한 차이가
+    # activity_time인데도 순위/점수가 바뀌지 않는지로 검증한다.
+    def _request(candidate_activity_time: str | None) -> RecommendationRequest:
+        return RecommendationRequest(
+            query_embedding_vector=DUMMY_VECTOR,
+            query_metadata={
+                "desired_roles": ["BE"],
+                "skills": ["Spring Boot"],
+                "activity_time": "평일 저녁",
+            },
+            candidates=[
+                CandidateEmbedding(
+                    candidate_id=1,
+                    embedding_vector=DUMMY_VECTOR,
+                    metadata={
+                        "recruiting_roles": ["BE"],
+                        "required_skills": ["Spring Boot"],
+                        "activity_time": candidate_activity_time,
+                    },
+                ),
+            ],
+        )
+
+    matching = (await recommend_teams(_request("평일 저녁"))).recommendations[0]
+    mismatching = (await recommend_teams(_request("주말"))).recommendations[0]
+
+    assert matching.component_scores["activity_time_match"] == 1.0
+    assert mismatching.component_scores["activity_time_match"] == 0.0
+    assert matching.score == mismatching.score
+    assert matching.label == mismatching.label
+
+
+async def test_beginner_unfriendly_team_does_not_win_on_tiny_similarity_edge() -> None:
     # 회귀 재현(2026-07-15): 팀 소개 텍스트가 거의 동일하고 "초보자 지양" 여부만 다르면 원시
     # 유사도 차이가 아주 작다. 후보가 2개뿐이면 min-max 정규화가 이 작은 차이를 1.0 vs 0.0으로
     # 벌려버려서, 그것만으로 beginner_fit 미스매치를 뒤집고 "초보자 지양" 팀이 1위로 나왔다.
@@ -77,14 +111,14 @@ def test_beginner_unfriendly_team_does_not_win_on_tiny_similarity_edge() -> None
         ],
     )
 
-    response = recommend_teams(request)
+    response = await recommend_teams(request)
 
     assert response.recommendations[0].candidate_id == 2, (
         f"1위가 초보자 친화 팀(2)이어야 하는데: {response.recommendations}"
     )
 
 
-def test_recommend_teams_caps_at_top_n() -> None:
+async def test_recommend_teams_caps_at_top_n() -> None:
     candidates = [
         CandidateEmbedding(candidate_id=i, embedding_vector=DUMMY_VECTOR, metadata={})
         for i in range(15)
@@ -93,6 +127,6 @@ def test_recommend_teams_caps_at_top_n() -> None:
         query_embedding_vector=DUMMY_VECTOR, query_metadata={}, candidates=candidates
     )
 
-    response = recommend_teams(request)
+    response = await recommend_teams(request)
 
     assert len(response.recommendations) == 10

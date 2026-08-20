@@ -25,6 +25,17 @@ class UserIntentExtractionRequest(BaseModel):
     messages: list[ConversationMessage] = Field(min_length=1)
 
 
+class OptionalUserFields(BaseModel):
+    # 필수 필드가 아니다 — compute_missing_fields가 이 안의 값을 절대 확인하지 않으므로
+    # 유도 질문을 유발하지 않는다(CLAUDE.md "## 모니터링·데이터 기반 가중치 보정" 4번). 없으면
+    # render_intent_embedding_text가 "미상"으로만 짧게 채운다. 클러스터별 가산점(1번 항목)이
+    # 실 데이터로 유의미하다고 판단하기 전까지는 기본 WEIGHTS 스코어링에 전혀 반영되지 않는다
+    # — activity_time_match_score(app/scoring/rules.py)가 계산은 해두지만 total_score에는
+    # 안 들어간다. 새 선택 필드를 추가할 땐 여기 + 추출 프롬프트를 사람이 같이 고친다(자동
+    # 추가 안 함 — 통제 없는 필드 추가는 노이즈 위험).
+    activity_time: str | None = None  # 예: "평일 저녁", "주말"
+
+
 class UserIntentFields(BaseModel):
     # RoleCode/ExperienceLevel(app/schemas/role_codes.py)는 진짜 Pydantic enum이라, OpenAI
     # structured output이 스키마 레벨에서 이 값들 중 하나만 나오도록 강제한다(2026-08-03 전엔
@@ -36,6 +47,7 @@ class UserIntentFields(BaseModel):
     activity_goal: str | None = None
     activity_style: str | None = None
     experience_level: ExperienceLevel | None = None
+    optional: OptionalUserFields = Field(default_factory=OptionalUserFields)
 
 
 class UserIntentExtractionResult(BaseModel):

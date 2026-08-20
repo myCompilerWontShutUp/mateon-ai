@@ -10,44 +10,18 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from pydantic import BaseModel  # noqa: E402
-
-from app.core.prompts import load_prompt  # noqa: E402
+from app.features.quality.judge import judge  # noqa: E402
 from app.features.recommendation.reason import generate_recommendation_reason  # noqa: E402
 from app.features.team_to_user.proposal import assemble_team_to_user_proposal  # noqa: E402
 from app.features.user_to_team.proposal import assemble_user_to_team_proposal  # noqa: E402
-from app.openai_client.extraction import extract_structured  # noqa: E402
 from app.schemas.proposal import ProposalAssemblyRequest  # noqa: E402
 from app.schemas.recommendation import RecommendationReasonRequest  # noqa: E402
-
-
-class JudgeVerdict(BaseModel):
-    passes: bool
-    violations: list[str]
-    explanation: str
-
-
-async def judge(generation_prompt_name: str, context: str, output_text: str) -> JudgeVerdict:
-    generation_prompt = load_prompt(generation_prompt_name)
-    judge_system_prompt = load_prompt("judge_generated_text")
-    prompt = (
-        f"[생성 프롬프트]\n{generation_prompt}\n\n"
-        f"[입력 컨텍스트]\n{context}\n\n"
-        f"[생성된 텍스트]\n{output_text}"
-    )
-    return await extract_structured(
-        messages=[
-            {"role": "system", "content": judge_system_prompt},
-            {"role": "user", "content": prompt},
-        ],
-        response_model=JudgeVerdict,
-    )
 
 
 async def check(label: str, generation_prompt_name: str, context: str, output_text: str) -> bool:
     verdict = await judge(generation_prompt_name, context, output_text)
     status = "PASS" if verdict.passes else "FAIL"
-    print(f"[{status}] {label}")
+    print(f"[{status}] {label} (score={verdict.score}/10)")
     print(f"  출력: {output_text}")
     if not verdict.passes:
         print(f"  위반: {verdict.violations}")

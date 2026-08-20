@@ -21,5 +21,6 @@ def render_intent_embedding_text(conversation_text: str, fields: UserIntentField
         f"활동 목표: {fields.activity_goal or '미정'}",
         f"활동 방식: {fields.activity_style or '미정'}",
         f"경험 수준: {fields.experience_level or '미정'}",
+        f"활동 시간: {fields.optional.activity_time or '미상'}",
     ]
     return "\n".join(lines)

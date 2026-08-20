@@ -4,7 +4,7 @@ from app.schemas.recommendation import CandidateEmbedding, RecommendationRequest
 DUMMY_VECTOR = [1.0] + [0.0] * 1535
 
 
-def test_recommend_users_ranks_better_role_match_higher() -> None:
+async def test_recommend_users_ranks_better_role_match_higher() -> None:
     request = RecommendationRequest(
         query_embedding_vector=DUMMY_VECTOR,
         query_metadata={
@@ -37,14 +37,45 @@ def test_recommend_users_ranks_better_role_match_higher() -> None:
         ],
     )
 
-    response = recommend_users(request)
+    response = await recommend_users(request)
 
     assert [item.candidate_id for item in response.recommendations] == [101, 102]
     assert response.recommendations[0].score > response.recommendations[1].score
     assert response.recommendations[0].label == "BE 역할에 지원 가능해요"
 
 
-def test_recommend_users_caps_at_top_n() -> None:
+async def test_activity_time_is_exposed_but_does_not_affect_score_or_label() -> None:
+    def _request(candidate_activity_time: str | None) -> RecommendationRequest:
+        return RecommendationRequest(
+            query_embedding_vector=DUMMY_VECTOR,
+            query_metadata={
+                "recruiting_roles": ["BE"],
+                "required_skills": ["Spring Boot"],
+                "activity_time": "평일 저녁",
+            },
+            candidates=[
+                CandidateEmbedding(
+                    candidate_id=101,
+                    embedding_vector=DUMMY_VECTOR,
+                    metadata={
+                        "desired_roles": ["BE"],
+                        "skills": ["Spring Boot"],
+                        "activity_time": candidate_activity_time,
+                    },
+                ),
+            ],
+        )
+
+    matching = (await recommend_users(_request("평일 저녁"))).recommendations[0]
+    mismatching = (await recommend_users(_request("주말"))).recommendations[0]
+
+    assert matching.component_scores["activity_time_match"] == 1.0
+    assert mismatching.component_scores["activity_time_match"] == 0.0
+    assert matching.score == mismatching.score
+    assert matching.label == mismatching.label
+
+
+async def test_recommend_users_caps_at_top_n() -> None:
     candidates = [
         CandidateEmbedding(candidate_id=i, embedding_vector=DUMMY_VECTOR, metadata={})
         for i in range(15)
@@ -53,6 +84,6 @@ def test_recommend_users_caps_at_top_n() -> None:
         query_embedding_vector=DUMMY_VECTOR, query_metadata={}, candidates=candidates
     )
 
-    response = recommend_users(request)
+    response = await recommend_users(request)
 
     assert len(response.recommendations) == 10

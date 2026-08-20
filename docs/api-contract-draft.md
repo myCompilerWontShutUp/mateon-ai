@@ -127,7 +127,8 @@ AI 서버는 mateon-backend만 호출하고 프론트엔드가 직접 부르는 
     "interests": [],
     "activity_goal": "포트폴리오용 프로젝트",
     "activity_style": null,
-    "experience_level": null
+    "experience_level": null,
+    "optional": { "activity_time": null }
   },
   "embedding_text": null,
   "embedding_vector": null,
@@ -145,13 +146,23 @@ AI 서버는 mateon-backend만 호출하고 프론트엔드가 직접 부르는 
     "interests": ["커머스"],
     "activity_goal": "포트폴리오용 프로젝트",
     "activity_style": "주 2회 오프라인",
-    "experience_level": "beginner"
+    "experience_level": "beginner",
+    "optional": { "activity_time": null }
   },
   "embedding_text": "...",
   "embedding_vector": [0.0123, -0.0456, "... 1536개"],
   "assistant_message": "너의 관심사는 백엔드구나! 너의 취향을 조금 알 것 같아. 이건 내가 추천해주는 팀 후보야."
 }
 ```
+
+`extracted.optional`(2026-08-20 추가)은 **선택 필드**다 — `missing_fields`에 절대 포함되지
+않고(재질문을 유발하지 않음), 텍스트에 언급이 없으면 `null`로 남는다. 첫 필드는
+`activity_time`(선호 활동 시간대, 예: "평일 저녁"). 현재는 스코어링(`role_match`/`deficit_fit`/
+`activity_style_match`/`beginner_fit`)에 전혀 영향을 주지 않고, `/recommendations/*` 응답의
+`component_scores`에 `activity_time_match`로 노출만 된다(참고용 — 클러스터별 가중치 보정이
+실 데이터로 유의미하다고 판단하면 그때 반영될 수 있다). BE가 `query_metadata`/
+`candidates[].metadata`에 `activity_time`을 안 보내도 기존 흐름은 그대로 동작한다(기본값
+0.5, 중립).
 
 `assistant_message`는 프론트가 그대로 화면에 보여주면 되는 챗봇 문구다(2026-07-15 추가) —
 재진술 + 다음 질문 하나(누락 필드가 있을 때), 또는 재진술 + 추천 시작 안내(다 채워졌을 때),
@@ -275,8 +286,20 @@ mini로 직접 추출**한다 — 이미 구조화된 값을 LLM이 다시 추�
 ```json
 {
   "recommendations": [
-    { "candidate_id": 17, "score": 0.91, "label": "BE 역할을 모집하고 있어요" },
-    { "candidate_id": 42, "score": 0.14, "label": "초보자도 편하게 참여할 수 있는 팀이에요" }
+    {
+      "candidate_id": 17, "score": 0.91, "label": "BE 역할을 모집하고 있어요",
+      "component_scores": {
+        "similarity": 0.8, "role_match": 1.0, "deficit_fit": 1.0,
+        "beginner_fit": 0.5, "activity_style_match": 1.0
+      }
+    },
+    {
+      "candidate_id": 42, "score": 0.14, "label": "초보자도 편하게 참여할 수 있는 팀이에요",
+      "component_scores": {
+        "similarity": 0.1, "role_match": 0.0, "deficit_fit": 0.0,
+        "beginner_fit": 1.0, "activity_style_match": 0.5
+      }
+    }
   ]
 }
 ```
@@ -285,6 +308,11 @@ mini로 직접 추출**한다 — 이미 구조화된 값을 LLM이 다시 추�
 문장이다 — 동점이면 가중치가 높은 구성요소를 우선한다. 모든 구성요소가 0이면(의미 있는 룰
 매칭이 하나도 없으면) "의미적으로 관심사가 잘 맞아요"처럼 유사도만 근거로 삼는 문구로
 대체된다.
+
+`component_scores`는 2026-08-20 추가됐다(`similarity`/`role_match`/`deficit_fit`/
+`beginner_fit`/`activity_style_match`) — 백엔드가 이 후보를 선택했을 때 6번
+`selection_context.shown_candidates`로 그대로 되돌려 보내는 용도다(클러스터별 가중치 보정 입력
+데이터, `## 모니터링·데이터 기반 가중치 보정` 참고).
 
 ## 4. 역제안 추천 — `POST /recommendations/team-to-user`
 
@@ -377,9 +405,32 @@ AI 서버가 아무것도 저장하지 않으므로, 이유 생성에 필요한 
   "intent_id": 88,
   "synergy_score": 0.91,
   "candidate_summary": "React/TypeScript 경험, 초보자",
-  "target_summary": "커머스 플랫폼, BE 1명 결핍"
+  "target_summary": "커머스 플랫폼, BE 1명 결핍",
+  "selection_context": {
+    "idempotency_key": "b3f1...(UUID)",
+    "chooser_fields": { "desired_roles": ["BE"], "experience_level": "beginner" },
+    "shown_candidates": [
+      {
+        "candidate_id": 17, "total_score": 0.91,
+        "component_scores": { "similarity": 0.8, "role_match": 1.0, "deficit_fit": 1.0, "beginner_fit": 0.5, "activity_style_match": 1.0 }
+      },
+      {
+        "candidate_id": 42, "total_score": 0.14,
+        "component_scores": { "similarity": 0.1, "role_match": 0.0, "deficit_fit": 0.0, "beginner_fit": 1.0, "activity_style_match": 0.5 }
+      }
+    ]
+  }
 }
 ```
+
+`selection_context`는 **선택 필드**다(2026-08-20 추가) — 없으면 클러스터별 선호 데이터 로깅만
+생략되고 나머지 조립은 그대로 동작한다. `idempotency_key`는 `proposal_id`가 아니다 — 이 요청
+시점엔 `proposal_id`가 아직 채번되기 전이라(백엔드가 응답을 저장하며 채번) 멱등키로 쓸 수
+없다. 백엔드가 이 요청 전용으로 새 UUID를 생성해 보낸다. `chooser_fields`는 `USER_TO_TEAM`이면
+`desired_roles`/`experience_level`, `TEAM_TO_USER`면 `recruiting_roles`/`contest_field` — 둘 다
+이미 정규화해서 갖고 있는 값을 재사용할 뿐 새로 계산할 게 없다. 자세한 내용은
+`docs/backend-integration-user-to-team.md`의 "2-4-1"과
+`docs/backend-integration-team-to-user.md`의 "3-3-1" 참고.
 
 응답 (`ProposalSchema`):
 ```json

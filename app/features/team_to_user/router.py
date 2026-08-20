@@ -11,7 +11,7 @@ router = APIRouter(tags=["team-to-user"], dependencies=[Depends(require_internal
 
 @router.post("/recommendations/team-to-user", summary="역제안 추천 — 팀 결핍 기준 유저 Top N")
 async def recommend_team_to_user(request: RecommendationRequest) -> RecommendationResponse:
-    return recommend_users(request)
+    return await recommend_users(request)
 
 
 @router.post("/proposals/team-to-user", summary="역제안 최종 조립 (proposal_id는 백엔드가 채번)")
