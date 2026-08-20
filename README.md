@@ -155,16 +155,35 @@ uv run python scripts/generate_team_fixtures.py
 uv run python scripts/generate_user_fixtures.py
 ```
 
+## Docker로 실행 (백엔드 로컬 테스트용)
+
+DB가 없는 무상태 서버라 이미지 하나만 뜨면 끝난다 — 별도 컨테이너(DB 등)를 같이 띄울 필요가
+없어 `docker-compose.yml`은 두지 않았다.
+
+```bash
+docker build -t mateon-ai .
+docker run -p 8000:8000 --env-file .env mateon-ai
+```
+
+`.env` 파일에 `.env.example`의 키를 채워서 넘기면 된다(`OPENAI_API_KEY`,
+`INTERNAL_SHARED_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
+`OPENAI_JUDGE_MODEL` 등 — 기본값 없는 필수 설정값은 미설정 시 컨테이너가 시작 시점에 바로
+실패한다). `GET /health`는 인증 없이 컨테이너가 떴는지만 확인할 수 있고, 그 외 모든
+엔드포인트는 `X-Internal-Secret` 헤더가 필요하다(위 "요구 사항" 섹션 및
+`docs/api-contract-draft.md` 참고).
+
 ## 배포
 
 이 서비스는 DB가 없는 완전 무상태 서버라, 어딘가에서 프로세스가 계속 떠 있고 환경변수만
 안전하게 주입되면 배포가 끝난다. `Procfile`이 이미 있어 Railway/Render 같은 PaaS에 GitHub
-저장소를 연결하기만 하면 자동으로 인식한다.
+저장소를 연결하기만 하면 자동으로 인식하고, `Dockerfile`도 있어 Docker 기반 배포를 지원하는
+PaaS에서도 그대로 쓸 수 있다.
 
 1. [Railway](https://railway.app) 또는 [Render](https://render.com)에서 GitHub 저장소
    (`mateon-ai`)를 연결한다.
-2. 환경변수를 설정한다: `OPENAI_API_KEY`, `OPENAI_LLM_MODEL`, `OPENAI_EMBEDDING_MODEL`,
-   `INTERNAL_SHARED_SECRET`(운영용으로 새로 생성 — 로컬 `.env` 값과 다르게 유지 권장).
+2. 환경변수를 설정한다(`.env.example` 전체 — `OPENAI_API_KEY`, `OPENAI_LLM_MODEL`,
+   `OPENAI_EMBEDDING_MODEL`, `OPENAI_JUDGE_MODEL`, `INTERNAL_SHARED_SECRET`(운영용으로 새로
+   생성 — 로컬 `.env` 값과 다르게 유지 권장), `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`).
 3. 배포하면 **재시작해도 바뀌지 않는 영구 URL**이 발급된다 (예:
    `https://mateon-ai-production.up.railway.app`). 이 URL과 `INTERNAL_SHARED_SECRET`을
    백엔드 팀에 전달하면 된다.
