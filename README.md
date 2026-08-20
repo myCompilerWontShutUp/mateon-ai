@@ -105,8 +105,9 @@ app/
     contest_extraction/    # 공모전 이미지 OCR+LLM 자동 입력
     portfolio_summary/      # 포트폴리오 PDF OCR+LLM 경력 요약
 prompts/           # LLM 시스템 프롬프트 (.txt, 코드와 분리 관리)
-tests/             # pytest — 단위 테스트 + tests/fixtures/ 캐시된 실제 임베딩 데이터
-scripts/           # 픽스처 생성 스크립트, LLM-as-judge 검증 스크립트
+tests/             # pytest — 단위 테스트 + tests/fixtures/ 실제 test_*.py가 로드하는 캐시 데이터
+scripts/           # 픽스처 생성 스크립트, 평가/시각화 배치, LLM-as-judge 검증 스크립트
+data/              # 스크립트 전용 원본/생성 데이터 (pytest가 로드하지 않음 — tests/fixtures와 구분)
 docs/              # 백엔드 연동용 API 계약 문서
 ```
 

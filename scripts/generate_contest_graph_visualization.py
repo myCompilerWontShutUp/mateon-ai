@@ -1,12 +1,19 @@
 """그래프형 시각화(CLAUDE.md "## 모니터링·데이터 기반 가중치 보정" 7번) 대상 정정 — 애초 팀/유저
 제안·역제안 관계로 잘못 잡았으나, 실제 요구사항은 제안 관계와 무관하게 **공모전/대외활동 공고를
 서로 얼마나 비슷한지 2차원에 배치하고 분야(ContestField)별로 색칠**하는 것이었다
-(2026-08-20 정정). BE가 실제로 수집한 공모전 데이터(`tests/fixtures/result_events.json`,
-Linkareer 스크래핑 결과로 보이는 실 데이터)를 그대로 쓴다 — 이전 팀/유저 fixture와 달리 합성이
-아니다.
+(2026-08-20 정정). BE가 실제로 수집한 공모전 데이터(`data/result_events.json`, Linkareer
+스크래핑 결과로 보이는 실 데이터)를 그대로 쓴다 — 이전 팀/유저 fixture와 달리 합성이 아니다.
+pytest가 쓰는 값이 아니라 이 스크립트 전용 입출력이라 `tests/fixtures/`가 아니라 `data/`에
+둔다(2026-08-20, 사용자 피드백으로 위치 정정 — `tests/fixtures/teams.json`처럼 실제
+`test_*.py`가 로드하는 파일과 섞이면 혼동됨).
 
-기존 `generate_graph_visualization.py`(팀/유저·제안 관계 기반)는 삭제했다 — 대상 자체가 틀렸던
-설계라 재사용할 게 좌표 축소(PCA) 로직 정도뿐이었다.
+**2차원 축소 방식(2026-08-20 재정정)**: 처음엔 순수 PCA로 2차원까지 바로 줄였는데, 실측 결과
+"같은 장르끼리 가까이"가 전혀 안 보였다(PC1+PC2 설명 분산 11.9%뿐 — PCA는 전역 분산이 가장 큰
+방향을 찾을 뿐 지역적 이웃 관계를 보존하지 않아서, 애초에 이 목적에 안 맞는 도구였다).
+**PCA로 1536→100차원까지 노이즈를 걷어낸 뒤 UMAP으로 100→2차원 축소**(이웃 관계 보존이 목적함수)
+로 바꿨다 — UMAP 자체 문서가 권장하는 표준 전처리 순서이기도 하다. 원본 1536차원 벡터는
+`data/contest_embeddings_cache.json`에 캐싱해서, 축소 기법을 다시 바꾸더라도 API를 재호출하지
+않아도 되게 했다.
 """
 
 import json
@@ -15,14 +22,19 @@ from collections import Counter
 from pathlib import Path
 
 import numpy as np
+import umap
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.openai_client.embedding import embed_text  # noqa: E402
 from app.schemas.contest import CONTEST_FIELD_LABELS, ContestField  # noqa: E402
 
-INPUT_PATH = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "result_events.json"
-OUTPUT_PATH = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "contest_graph_visualization.json"
+INPUT_PATH = Path(__file__).resolve().parent.parent / "data" / "result_events.json"
+EMBEDDING_CACHE_PATH = Path(__file__).resolve().parent.parent / "data" / "contest_embeddings_cache.json"
+OUTPUT_PATH = Path(__file__).resolve().parent.parent / "data" / "contest_graph_visualization.json"
+
+PCA_COMPONENTS = 100  # UMAP 전처리 — 1536차원 노이즈를 걷어내고 의미 있는 축만 남긴다.
+UMAP_RANDOM_STATE = 20260820  # 재현 가능한 레이아웃(같은 입력이면 항상 같은 좌표가 나오게)
 
 # dataviz 스킬 palette.md 실측: 이 8색 순서는 "인접 쌍"(막대/선 등) 기준으로 검증된 것이고,
 # 산점도처럼 모든 점이 동시에 보이는 "전 쌍"(all-pairs) 형태에서는 처음 3개(파랑/주황/아쿠아)만
@@ -73,10 +85,46 @@ def _embedding_text(contest: dict) -> str:
     return "\n".join(parts)
 
 
-def _pca_2d(vectors: np.ndarray) -> np.ndarray:
+async def _get_vectors(ids: list[str], contests: dict[str, dict]) -> np.ndarray:
+    """캐시가 전체 id를 커버하면 재사용하고, 아니면 전부 다시 embed해서 캐시를 새로 쓴다 —
+    부분 무효화는 안 하는 단순한 방식(이 스크립트 규모에서 그 이상은 과설계)."""
+    if EMBEDDING_CACHE_PATH.exists():
+        cache = json.loads(EMBEDDING_CACHE_PATH.read_text(encoding="utf-8"))
+        if set(ids) <= set(cache):
+            print(f"embedding cache hit — reusing {len(ids)}건 (API 재호출 없음)")
+            return np.array([cache[eid] for eid in ids])
+
+    cache = {}
+    for i, eid in enumerate(ids, start=1):
+        text = _embedding_text(contests[eid])
+        cache[eid] = await embed_text(text)
+        print(f"[{i}/{len(ids)}] embedded {eid} ({contests[eid]['title'][:30]}...)")
+    EMBEDDING_CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False), encoding="utf-8")
+    return np.array([cache[eid] for eid in ids])
+
+
+def _pca_reduce(vectors: np.ndarray, n_components: int) -> np.ndarray:
     centered = vectors - vectors.mean(axis=0)
     _, _, vt = np.linalg.svd(centered, full_matrices=False)
-    return centered @ vt[:2].T
+    return centered @ vt[:n_components].T
+
+
+def _genre_separation_ratio(vectors: np.ndarray, labels: list[str]) -> float:
+    """between-group / within-group 분산비 — 장르가 원본 임베딩 공간에 실제로 신호로 존재하는지
+    최종 2D 투영과 무관하게 확인하는 진단(1536차원 원본 벡터 기준). 1보다 크면 "장르가 무작위
+    배치보다는 어느 정도 갈린다"는 뜻, 1 미만이면 이 축소 기법을 뭘 써도 장르별로 안 갈린다는
+    뜻이라 투영 기법을 바꿔봐야 소용없다는 신호다."""
+    labels_arr = np.array(labels)
+    overall_mean = vectors.mean(axis=0)
+    between = 0.0
+    within = 0.0
+    for label in set(labels_arr):
+        mask = labels_arr == label
+        group = vectors[mask]
+        group_mean = group.mean(axis=0)
+        between += mask.sum() * np.sum((group_mean - overall_mean) ** 2)
+        within += np.sum((group - group_mean) ** 2)
+    return float(between / within) if within else 0.0
 
 
 def _field_color_map(primary_fields: list[str]) -> dict[str, str]:
@@ -94,23 +142,17 @@ def _field_label(field_code: str) -> str:
 async def main() -> None:
     contests = _load_unique_contests()
     ids = sorted(contests)
-
-    vectors = []
-    for i, eid in enumerate(ids, start=1):
-        text = _embedding_text(contests[eid])
-        vector = await embed_text(text)
-        vectors.append(vector)
-        print(f"[{i}/{len(ids)}] embedded {eid} ({contests[eid]['title'][:30]}...)")
-
-    coords = _pca_2d(np.array(vectors))
-    explained = None
-    if len(vectors) > 1:
-        centered = np.array(vectors) - np.array(vectors).mean(axis=0)
-        s = np.linalg.svd(centered, full_matrices=False, compute_uv=False)
-        var = s**2
-        explained = (var[:2] / var.sum()).tolist()
-
     primary_fields = [contests[eid]["primary_field"] for eid in ids]
+
+    vectors = await _get_vectors(ids, contests)
+
+    separation_ratio = _genre_separation_ratio(vectors, primary_fields)
+    print(f"장르 분리 진단(원본 1536차원 기준 between/within 분산비): {separation_ratio:.3f}")
+
+    reduced = _pca_reduce(vectors, PCA_COMPONENTS)
+    reducer = umap.UMAP(n_components=2, metric="cosine", random_state=UMAP_RANDOM_STATE)
+    coords = reducer.fit_transform(reduced)
+
     color_map = _field_color_map(primary_fields)
 
     nodes = []
@@ -145,11 +187,11 @@ async def main() -> None:
     output = {
         "nodes": nodes,
         "legend": legend,
-        "pca_explained_variance_ratio": explained,
+        "dimensionality_reduction": f"PCA(1536->{PCA_COMPONENTS}) + UMAP({PCA_COMPONENTS}->2, cosine)",
+        "genre_separation_ratio": separation_ratio,
     }
     OUTPUT_PATH.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"wrote {len(nodes)} nodes to {OUTPUT_PATH}")
-    print(f"PC1+PC2 explained variance: {explained}")
     print(f"color_map: {color_map}")
 
 
