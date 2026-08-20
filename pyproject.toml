@@ -22,7 +22,7 @@ dev = [
     "httpx>=0.27",
     "ruff>=0.8",
     "streamlit>=1.38",
-    # scripts/generate_graph_visualization.py의 PCA 계산용 — 프로덕션 앱 코드에서는 쓰지 않는다.
+    # scripts/generate_contest_graph_visualization.py의 PCA 계산용 — 프로덕션 앱 코드에서는 쓰지 않는다.
     "numpy>=1.26",
 ]
 
