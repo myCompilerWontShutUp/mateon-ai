@@ -22,8 +22,12 @@ dev = [
     "httpx>=0.27",
     "ruff>=0.8",
     "streamlit>=1.38",
-    # scripts/generate_contest_graph_visualization.py의 PCA 계산용 — 프로덕션 앱 코드에서는 쓰지 않는다.
+    # scripts/generate_contest_graph_visualization.py의 PCA/UMAP 계산용 — 프로덕션 앱 코드에서는
+    # 쓰지 않는다. umap-learn은 PCA로 100차원까지 줄인 뒤 이웃 관계를 보존하며 2차원으로 축소하는
+    # 용도(2026-08-20 추가 — 순수 PCA만으로는 "비슷한 장르끼리 가깝게"가 전혀 안 됨을 실측 확인,
+    # CLAUDE.md "그래프형 시각화" 참고).
     "numpy>=1.26",
+    "umap-learn>=0.5",
 ]
 
 [tool.uv]
