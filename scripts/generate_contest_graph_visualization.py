@@ -1,9 +1,11 @@
 """그래프형 시각화(CLAUDE.md "## 모니터링·데이터 기반 가중치 보정" 7번) 대상 정정 — 애초 팀/유저
 제안·역제안 관계로 잘못 잡았으나, 실제 요구사항은 제안 관계와 무관하게 **공모전/대외활동 공고를
 서로 얼마나 비슷한지 2차원에 배치하고 분야(ContestField)별로 색칠**하는 것이었다
-(2026-08-20 정정). BE가 실제로 수집한 공모전 데이터(`tests/fixtures/result_events.json`,
-Linkareer 스크래핑 결과로 보이는 실 데이터)를 그대로 쓴다 — 이전 팀/유저 fixture와 달리 합성이
-아니다.
+(2026-08-20 정정). BE가 실제로 수집한 공모전 데이터(`data/result_events.json`, Linkareer
+스크래핑 결과로 보이는 실 데이터)를 그대로 쓴다 — 이전 팀/유저 fixture와 달리 합성이 아니다.
+pytest가 쓰는 값이 아니라 이 스크립트 전용 입출력이라 `tests/fixtures/`가 아니라 `data/`에
+둔다(2026-08-20, 사용자 피드백으로 위치 정정 — `tests/fixtures/teams.json`처럼 실제
+`test_*.py`가 로드하는 파일과 섞이면 혼동됨).
 
 기존 `generate_graph_visualization.py`(팀/유저·제안 관계 기반)는 삭제했다 — 대상 자체가 틀렸던
 설계라 재사용할 게 좌표 축소(PCA) 로직 정도뿐이었다.
@@ -21,8 +23,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.openai_client.embedding import embed_text  # noqa: E402
 from app.schemas.contest import CONTEST_FIELD_LABELS, ContestField  # noqa: E402
 
-INPUT_PATH = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "result_events.json"
-OUTPUT_PATH = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "contest_graph_visualization.json"
+INPUT_PATH = Path(__file__).resolve().parent.parent / "data" / "result_events.json"
+OUTPUT_PATH = Path(__file__).resolve().parent.parent / "data" / "contest_graph_visualization.json"
 
 # dataviz 스킬 palette.md 실측: 이 8색 순서는 "인접 쌍"(막대/선 등) 기준으로 검증된 것이고,
 # 산점도처럼 모든 점이 동시에 보이는 "전 쌍"(all-pairs) 형태에서는 처음 3개(파랑/주황/아쿠아)만
