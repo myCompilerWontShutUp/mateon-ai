@@ -216,3 +216,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# LLM 생성 평가 데이터 — 비결정론적 산출물이라 다른 data/*.json 캐시와 달리 커밋하지 않는다
+# (scripts/generate_eval_definitions_llm.py)
+data/eval_llm_generated_definitions_cache.json
