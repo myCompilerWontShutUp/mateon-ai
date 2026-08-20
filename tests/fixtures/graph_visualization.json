@@ -1,0 +1,1918 @@
+{
+  "nodes": [
+    {
+      "id": "team:1",
+      "type": "team",
+      "role": "ETC",
+      "label": "팀 1 (ETC)",
+      "x": -0.09062165974644737,
+      "y": 0.13060259879732042,
+      "color": "#008300",
+      "match_count": 2
+    },
+    {
+      "id": "team:2",
+      "type": "team",
+      "role": "RESEARCH",
+      "label": "팀 2 (RESEARCH)",
+      "x": -0.1262769282545328,
+      "y": -0.20589290531928775,
+      "color": "#2a78d6",
+      "match_count": 0
+    },
+    {
+      "id": "team:3",
+      "type": "team",
+      "role": "RESEARCH",
+      "label": "팀 3 (RESEARCH)",
+      "x": -0.17292696122419332,
+      "y": -0.06700916484824497,
+      "color": "#2a78d6",
+      "match_count": 3
+    },
+    {
+      "id": "team:4",
+      "type": "team",
+      "role": "RESEARCH",
+      "label": "팀 4 (RESEARCH)",
+      "x": 0.06891922473878428,
+      "y": -0.04482436401104935,
+      "color": "#2a78d6",
+      "match_count": 7
+    },
+    {
+      "id": "team:5",
+      "type": "team",
+      "role": "PM",
+      "label": "팀 5 (PM)",
+      "x": -0.13826443749219924,
+      "y": 0.034707068184751604,
+      "color": "#e87ba4",
+      "match_count": 1
+    },
+    {
+      "id": "team:6",
+      "type": "team",
+      "role": "CONTENT",
+      "label": "팀 6 (CONTENT)",
+      "x": 0.17386953334968977,
+      "y": 0.3189683946453622,
+      "color": "#eb6834",
+      "match_count": 4
+    },
+    {
+      "id": "team:7",
+      "type": "team",
+      "role": "BE",
+      "label": "팀 7 (BE)",
+      "x": -0.0005281480256593097,
+      "y": 0.06308514453187508,
+      "color": "#1baf7a",
+      "match_count": 1
+    },
+    {
+      "id": "team:8",
+      "type": "team",
+      "role": "FE",
+      "label": "팀 8 (FE)",
+      "x": -0.1167970123286296,
+      "y": -0.10788060115055803,
+      "color": "#eda100",
+      "match_count": 0
+    },
+    {
+      "id": "team:9",
+      "type": "team",
+      "role": "RESEARCH",
+      "label": "팀 9 (RESEARCH)",
+      "x": -0.11873916674369743,
+      "y": 0.10108317240280858,
+      "color": "#2a78d6",
+      "match_count": 0
+    },
+    {
+      "id": "team:10",
+      "type": "team",
+      "role": "BUSINESS",
+      "label": "팀 10 (BUSINESS)",
+      "x": -0.12679269742513077,
+      "y": -0.08084218702418144,
+      "color": "#7a5230",
+      "match_count": 2
+    },
+    {
+      "id": "team:11",
+      "type": "team",
+      "role": "ETC",
+      "label": "팀 11 (ETC)",
+      "x": 0.18252470973450635,
+      "y": 0.2584979083270695,
+      "color": "#008300",
+      "match_count": 4
+    },
+    {
+      "id": "team:12",
+      "type": "team",
+      "role": "BE",
+      "label": "팀 12 (BE)",
+      "x": 0.2622035995874535,
+      "y": -0.2205462819153484,
+      "color": "#1baf7a",
+      "match_count": 2
+    },
+    {
+      "id": "team:13",
+      "type": "team",
+      "role": "CONTENT",
+      "label": "팀 13 (CONTENT)",
+      "x": 0.38529795076737183,
+      "y": 0.1316637586124273,
+      "color": "#eb6834",
+      "match_count": 7
+    },
+    {
+      "id": "team:14",
+      "type": "team",
+      "role": "PM",
+      "label": "팀 14 (PM)",
+      "x": -0.0259142825622107,
+      "y": 0.2655377771709874,
+      "color": "#e87ba4",
+      "match_count": 2
+    },
+    {
+      "id": "team:15",
+      "type": "team",
+      "role": "FE",
+      "label": "팀 15 (FE)",
+      "x": -0.0672784749733085,
+      "y": -0.19309711941792104,
+      "color": "#eda100",
+      "match_count": 0
+    },
+    {
+      "id": "team:16",
+      "type": "team",
+      "role": "FE",
+      "label": "팀 16 (FE)",
+      "x": 0.1847331501337088,
+      "y": -0.04028651789596189,
+      "color": "#eda100",
+      "match_count": 3
+    },
+    {
+      "id": "team:17",
+      "type": "team",
+      "role": "PM",
+      "label": "팀 17 (PM)",
+      "x": -0.1977498025018342,
+      "y": 0.04120401109982085,
+      "color": "#e87ba4",
+      "match_count": 1
+    },
+    {
+      "id": "team:18",
+      "type": "team",
+      "role": "ETC",
+      "label": "팀 18 (ETC)",
+      "x": 0.0534021471917764,
+      "y": 0.19418555204354707,
+      "color": "#008300",
+      "match_count": 4
+    },
+    {
+      "id": "team:19",
+      "type": "team",
+      "role": "PM",
+      "label": "팀 19 (PM)",
+      "x": -0.1997272094784883,
+      "y": 0.04360859771908597,
+      "color": "#e87ba4",
+      "match_count": 2
+    },
+    {
+      "id": "team:20",
+      "type": "team",
+      "role": "FE",
+      "label": "팀 20 (FE)",
+      "x": 0.19226804374066245,
+      "y": 0.029291310840710814,
+      "color": "#eda100",
+      "match_count": 1
+    },
+    {
+      "id": "team:21",
+      "type": "team",
+      "role": "MARKETING",
+      "label": "팀 21 (MARKETING)",
+      "x": 0.2276018956918397,
+      "y": 0.05187207842266398,
+      "color": "#e34948",
+      "match_count": 6
+    },
+    {
+      "id": "team:22",
+      "type": "team",
+      "role": "PM",
+      "label": "팀 22 (PM)",
+      "x": -0.11404730672375168,
+      "y": 0.022256027871019525,
+      "color": "#e87ba4",
+      "match_count": 1
+    },
+    {
+      "id": "team:23",
+      "type": "team",
+      "role": "PM",
+      "label": "팀 23 (PM)",
+      "x": 0.018920902782924923,
+      "y": -0.02704332438219212,
+      "color": "#e87ba4",
+      "match_count": 0
+    },
+    {
+      "id": "team:24",
+      "type": "team",
+      "role": "FE",
+      "label": "팀 24 (FE)",
+      "x": 0.1538877756456984,
+      "y": -0.06399888880151172,
+      "color": "#eda100",
+      "match_count": 1
+    },
+    {
+      "id": "team:25",
+      "type": "team",
+      "role": "Data",
+      "label": "팀 25 (Data)",
+      "x": 0.13238544572464697,
+      "y": 0.012198433342025508,
+      "color": "#5a5a5a",
+      "match_count": 1
+    },
+    {
+      "id": "team:26",
+      "type": "team",
+      "role": "MARKETING",
+      "label": "팀 26 (MARKETING)",
+      "x": -0.0837894930512936,
+      "y": 0.13854885261033595,
+      "color": "#e34948",
+      "match_count": 5
+    },
+    {
+      "id": "team:27",
+      "type": "team",
+      "role": "BUSINESS",
+      "label": "팀 27 (BUSINESS)",
+      "x": -0.16866510214363725,
+      "y": 0.10831298956562227,
+      "color": "#7a5230",
+      "match_count": 2
+    },
+    {
+      "id": "team:28",
+      "type": "team",
+      "role": "MARKETING",
+      "label": "팀 28 (MARKETING)",
+      "x": 0.014016313130536383,
+      "y": 0.09393205265800152,
+      "color": "#e34948",
+      "match_count": 3
+    },
+    {
+      "id": "team:29",
+      "type": "team",
+      "role": "BE",
+      "label": "팀 29 (BE)",
+      "x": 0.41810460890833784,
+      "y": 0.1319734815597127,
+      "color": "#1baf7a",
+      "match_count": 6
+    },
+    {
+      "id": "team:30",
+      "type": "team",
+      "role": "CONTENT",
+      "label": "팀 30 (CONTENT)",
+      "x": 0.12639833136098108,
+      "y": 0.15227012269924817,
+      "color": "#eb6834",
+      "match_count": 3
+    },
+    {
+      "id": "team:31",
+      "type": "team",
+      "role": "Design",
+      "label": "팀 31 (Design)",
+      "x": -0.10837472297577386,
+      "y": -0.030076270497229447,
+      "color": "#4a3aa7",
+      "match_count": 11
+    },
+    {
+      "id": "team:32",
+      "type": "team",
+      "role": "FE",
+      "label": "팀 32 (FE)",
+      "x": -0.04544994904870259,
+      "y": -0.09801782051273494,
+      "color": "#eda100",
+      "match_count": 5
+    },
+    {
+      "id": "team:33",
+      "type": "team",
+      "role": "BE",
+      "label": "팀 33 (BE)",
+      "x": 0.03057551602123667,
+      "y": -0.25056451404116536,
+      "color": "#1baf7a",
+      "match_count": 9
+    },
+    {
+      "id": "team:34",
+      "type": "team",
+      "role": "BE",
+      "label": "팀 34 (BE)",
+      "x": 0.20110249145780035,
+      "y": -0.2210837568420954,
+      "color": "#1baf7a",
+      "match_count": 1
+    },
+    {
+      "id": "team:35",
+      "type": "team",
+      "role": "Data",
+      "label": "팀 35 (Data)",
+      "x": -0.11170704863899875,
+      "y": -0.09521084553804146,
+      "color": "#5a5a5a",
+      "match_count": 3
+    },
+    {
+      "id": "team:36",
+      "type": "team",
+      "role": "Design",
+      "label": "팀 36 (Design)",
+      "x": -0.13913101021188656,
+      "y": -0.07419207939786009,
+      "color": "#4a3aa7",
+      "match_count": 7
+    },
+    {
+      "id": "team:37",
+      "type": "team",
+      "role": "CONTENT",
+      "label": "팀 37 (CONTENT)",
+      "x": -0.019795117759453668,
+      "y": 0.0014598113798721304,
+      "color": "#eb6834",
+      "match_count": 1
+    },
+    {
+      "id": "team:38",
+      "type": "team",
+      "role": "RESEARCH",
+      "label": "팀 38 (RESEARCH)",
+      "x": -0.037509850869667655,
+      "y": -0.18979405146001052,
+      "color": "#2a78d6",
+      "match_count": 2
+    },
+    {
+      "id": "team:39",
+      "type": "team",
+      "role": "RESEARCH",
+      "label": "팀 39 (RESEARCH)",
+      "x": -0.14636608769665121,
+      "y": -0.025071801919039544,
+      "color": "#2a78d6",
+      "match_count": 2
+    },
+    {
+      "id": "team:40",
+      "type": "team",
+      "role": "BE",
+      "label": "팀 40 (BE)",
+      "x": -0.13808192274868655,
+      "y": -0.1810570960151357,
+      "color": "#1baf7a",
+      "match_count": 4
+    },
+    {
+      "id": "team:41",
+      "type": "team",
+      "role": "PM",
+      "label": "팀 41 (PM)",
+      "x": -0.03796971023556038,
+      "y": -0.06104493906415581,
+      "color": "#e87ba4",
+      "match_count": 6
+    },
+    {
+      "id": "team:42",
+      "type": "team",
+      "role": "RESEARCH",
+      "label": "팀 42 (RESEARCH)",
+      "x": -0.04972781453748769,
+      "y": 0.054753256799626615,
+      "color": "#2a78d6",
+      "match_count": 3
+    },
+    {
+      "id": "team:43",
+      "type": "team",
+      "role": "BUSINESS",
+      "label": "팀 43 (BUSINESS)",
+      "x": -0.13983524313666526,
+      "y": -0.011856539100912016,
+      "color": "#7a5230",
+      "match_count": 1
+    },
+    {
+      "id": "team:44",
+      "type": "team",
+      "role": "BE",
+      "label": "팀 44 (BE)",
+      "x": 0.2663486846036643,
+      "y": -0.19847328218274324,
+      "color": "#1baf7a",
+      "match_count": 8
+    },
+    {
+      "id": "team:45",
+      "type": "team",
+      "role": "ETC",
+      "label": "팀 45 (ETC)",
+      "x": -0.088985877962933,
+      "y": 0.07228089239526826,
+      "color": "#008300",
+      "match_count": 1
+    },
+    {
+      "id": "team:46",
+      "type": "team",
+      "role": "ETC",
+      "label": "팀 46 (ETC)",
+      "x": -0.06203903878793085,
+      "y": 0.09046647018158602,
+      "color": "#008300",
+      "match_count": 1
+    },
+    {
+      "id": "team:47",
+      "type": "team",
+      "role": "PM",
+      "label": "팀 47 (PM)",
+      "x": -0.19127691200776817,
+      "y": 0.05819125900867721,
+      "color": "#e87ba4",
+      "match_count": 1
+    },
+    {
+      "id": "team:48",
+      "type": "team",
+      "role": "RESEARCH",
+      "label": "팀 48 (RESEARCH)",
+      "x": -0.10978916791533086,
+      "y": 0.16584779489932314,
+      "color": "#2a78d6",
+      "match_count": 1
+    },
+    {
+      "id": "team:49",
+      "type": "team",
+      "role": "RESEARCH",
+      "label": "팀 49 (RESEARCH)",
+      "x": 0.021982343064674083,
+      "y": -0.02210991497826841,
+      "color": "#2a78d6",
+      "match_count": 5
+    },
+    {
+      "id": "team:50",
+      "type": "team",
+      "role": "FE",
+      "label": "팀 50 (FE)",
+      "x": 0.059615489572216754,
+      "y": -0.256824551453101,
+      "color": "#eda100",
+      "match_count": 4
+    },
+    {
+      "id": "user:1",
+      "type": "user",
+      "role": "FE",
+      "label": "유저 1 (FE)",
+      "x": 0.06023719388276093,
+      "y": -0.18217185625591872,
+      "color": "#eda100",
+      "match_count": 0
+    },
+    {
+      "id": "user:2",
+      "type": "user",
+      "role": "Data",
+      "label": "유저 2 (Data)",
+      "x": -0.11323583393368084,
+      "y": -0.005925311023503043,
+      "color": "#5a5a5a",
+      "match_count": 0
+    },
+    {
+      "id": "user:3",
+      "type": "user",
+      "role": "CONTENT",
+      "label": "유저 3 (CONTENT)",
+      "x": 0.43320491148896256,
+      "y": 0.07503052755274403,
+      "color": "#eb6834",
+      "match_count": 0
+    },
+    {
+      "id": "user:4",
+      "type": "user",
+      "role": "CONTENT",
+      "label": "유저 4 (CONTENT)",
+      "x": 0.31029571713208826,
+      "y": 0.1256264197233133,
+      "color": "#eb6834",
+      "match_count": 0
+    },
+    {
+      "id": "user:5",
+      "type": "user",
+      "role": "MARKETING",
+      "label": "유저 5 (MARKETING)",
+      "x": -0.22072711059271305,
+      "y": 0.1398963893831171,
+      "color": "#e34948",
+      "match_count": 0
+    },
+    {
+      "id": "user:6",
+      "type": "user",
+      "role": "BE",
+      "label": "유저 6 (BE)",
+      "x": -0.11047283021658164,
+      "y": -0.18619480535174993,
+      "color": "#1baf7a",
+      "match_count": 0
+    },
+    {
+      "id": "user:7",
+      "type": "user",
+      "role": "CONTENT",
+      "label": "유저 7 (CONTENT)",
+      "x": 0.17451423655145837,
+      "y": 0.2668743812766927,
+      "color": "#eb6834",
+      "match_count": 0
+    },
+    {
+      "id": "user:8",
+      "type": "user",
+      "role": "RESEARCH",
+      "label": "유저 8 (RESEARCH)",
+      "x": 0.01833302167357648,
+      "y": -0.0748385353761034,
+      "color": "#2a78d6",
+      "match_count": 0
+    },
+    {
+      "id": "user:9",
+      "type": "user",
+      "role": "MARKETING",
+      "label": "유저 9 (MARKETING)",
+      "x": -0.04569815438764436,
+      "y": 0.2592919454653799,
+      "color": "#e34948",
+      "match_count": 0
+    },
+    {
+      "id": "user:10",
+      "type": "user",
+      "role": "RESEARCH",
+      "label": "유저 10 (RESEARCH)",
+      "x": -0.06299706710487793,
+      "y": -0.037507908140719096,
+      "color": "#2a78d6",
+      "match_count": 0
+    },
+    {
+      "id": "user:11",
+      "type": "user",
+      "role": "Design",
+      "label": "유저 11 (Design)",
+      "x": -0.32503336297029434,
+      "y": 0.07039268420314863,
+      "color": "#4a3aa7",
+      "match_count": 0
+    },
+    {
+      "id": "user:12",
+      "type": "user",
+      "role": "PM",
+      "label": "유저 12 (PM)",
+      "x": -0.1467589830923329,
+      "y": 0.13490745290997336,
+      "color": "#e87ba4",
+      "match_count": 0
+    },
+    {
+      "id": "user:13",
+      "type": "user",
+      "role": "BUSINESS",
+      "label": "유저 13 (BUSINESS)",
+      "x": -0.0634897898840227,
+      "y": -0.07166710247726728,
+      "color": "#7a5230",
+      "match_count": 0
+    },
+    {
+      "id": "user:14",
+      "type": "user",
+      "role": "CONTENT",
+      "label": "유저 14 (CONTENT)",
+      "x": 0.37478680116893337,
+      "y": 0.060600497954483426,
+      "color": "#eb6834",
+      "match_count": 0
+    },
+    {
+      "id": "user:15",
+      "type": "user",
+      "role": "Design",
+      "label": "유저 15 (Design)",
+      "x": -0.008482357709269105,
+      "y": -0.0917897866951657,
+      "color": "#4a3aa7",
+      "match_count": 0
+    },
+    {
+      "id": "user:16",
+      "type": "user",
+      "role": "CONTENT",
+      "label": "유저 16 (CONTENT)",
+      "x": 0.28682005568228813,
+      "y": 0.0802315852009696,
+      "color": "#eb6834",
+      "match_count": 0
+    },
+    {
+      "id": "user:17",
+      "type": "user",
+      "role": "Design",
+      "label": "유저 17 (Design)",
+      "x": -0.24416053998066056,
+      "y": 0.10254445418382442,
+      "color": "#4a3aa7",
+      "match_count": 0
+    },
+    {
+      "id": "user:18",
+      "type": "user",
+      "role": "CONTENT",
+      "label": "유저 18 (CONTENT)",
+      "x": 0.20047470780142124,
+      "y": 0.22140263204305718,
+      "color": "#eb6834",
+      "match_count": 0
+    },
+    {
+      "id": "user:19",
+      "type": "user",
+      "role": "MARKETING",
+      "label": "유저 19 (MARKETING)",
+      "x": -0.10861003980040906,
+      "y": 0.3399378921426363,
+      "color": "#e34948",
+      "match_count": 0
+    },
+    {
+      "id": "user:20",
+      "type": "user",
+      "role": "Data",
+      "label": "유저 20 (Data)",
+      "x": -0.0778593464635914,
+      "y": -0.06598219161776549,
+      "color": "#5a5a5a",
+      "match_count": 0
+    },
+    {
+      "id": "user:21",
+      "type": "user",
+      "role": "BE",
+      "label": "유저 21 (BE)",
+      "x": -0.03605919556522233,
+      "y": -0.14101034233019064,
+      "color": "#1baf7a",
+      "match_count": 0
+    },
+    {
+      "id": "user:22",
+      "type": "user",
+      "role": "ETC",
+      "label": "유저 22 (ETC)",
+      "x": 0.047804355265816945,
+      "y": 0.034510411660905294,
+      "color": "#008300",
+      "match_count": 0
+    },
+    {
+      "id": "user:23",
+      "type": "user",
+      "role": "BE",
+      "label": "유저 23 (BE)",
+      "x": -0.07955771171122596,
+      "y": -0.18323064570867012,
+      "color": "#1baf7a",
+      "match_count": 0
+    },
+    {
+      "id": "user:24",
+      "type": "user",
+      "role": "FE",
+      "label": "유저 24 (FE)",
+      "x": -0.09471423181303218,
+      "y": -0.18133373358878227,
+      "color": "#eda100",
+      "match_count": 0
+    },
+    {
+      "id": "user:25",
+      "type": "user",
+      "role": "FE",
+      "label": "유저 25 (FE)",
+      "x": 0.2004154406474864,
+      "y": -0.2519909709790791,
+      "color": "#eda100",
+      "match_count": 0
+    },
+    {
+      "id": "user:26",
+      "type": "user",
+      "role": "BE",
+      "label": "유저 26 (BE)",
+      "x": 0.08434114350067687,
+      "y": -0.28933813731922386,
+      "color": "#1baf7a",
+      "match_count": 0
+    },
+    {
+      "id": "user:27",
+      "type": "user",
+      "role": "Data",
+      "label": "유저 27 (Data)",
+      "x": 0.018037120897556828,
+      "y": -0.17917373478394932,
+      "color": "#5a5a5a",
+      "match_count": 0
+    },
+    {
+      "id": "user:28",
+      "type": "user",
+      "role": "MARKETING",
+      "label": "유저 28 (MARKETING)",
+      "x": -0.09126861214131425,
+      "y": 0.26254314337633516,
+      "color": "#e34948",
+      "match_count": 0
+    },
+    {
+      "id": "user:29",
+      "type": "user",
+      "role": "CONTENT",
+      "label": "유저 29 (CONTENT)",
+      "x": 0.0932057503119304,
+      "y": 0.19085414416198002,
+      "color": "#eb6834",
+      "match_count": 0
+    },
+    {
+      "id": "user:30",
+      "type": "user",
+      "role": "FE",
+      "label": "유저 30 (FE)",
+      "x": 0.03847148237868768,
+      "y": -0.23357205958331667,
+      "color": "#eda100",
+      "match_count": 0
+    },
+    {
+      "id": "user:31",
+      "type": "user",
+      "role": "BUSINESS",
+      "label": "유저 31 (BUSINESS)",
+      "x": -0.26853520116453655,
+      "y": 0.0538414882260169,
+      "color": "#7a5230",
+      "match_count": 0
+    },
+    {
+      "id": "user:32",
+      "type": "user",
+      "role": "ETC",
+      "label": "유저 32 (ETC)",
+      "x": -0.07490621197012652,
+      "y": 0.25077122098275206,
+      "color": "#008300",
+      "match_count": 0
+    },
+    {
+      "id": "user:33",
+      "type": "user",
+      "role": "CONTENT",
+      "label": "유저 33 (CONTENT)",
+      "x": 0.35437208005068677,
+      "y": 0.17410366552868892,
+      "color": "#eb6834",
+      "match_count": 0
+    },
+    {
+      "id": "user:34",
+      "type": "user",
+      "role": "BE",
+      "label": "유저 34 (BE)",
+      "x": 0.20475541884866558,
+      "y": -0.2927167043424981,
+      "color": "#1baf7a",
+      "match_count": 0
+    },
+    {
+      "id": "user:35",
+      "type": "user",
+      "role": "Design",
+      "label": "유저 35 (Design)",
+      "x": -0.30792796646348997,
+      "y": -0.006429856012049743,
+      "color": "#4a3aa7",
+      "match_count": 0
+    },
+    {
+      "id": "user:36",
+      "type": "user",
+      "role": "Design",
+      "label": "유저 36 (Design)",
+      "x": -0.10335768303271971,
+      "y": -0.12281497534543587,
+      "color": "#4a3aa7",
+      "match_count": 0
+    },
+    {
+      "id": "user:37",
+      "type": "user",
+      "role": "MARKETING",
+      "label": "유저 37 (MARKETING)",
+      "x": -0.18901991445594843,
+      "y": 0.20521201878036455,
+      "color": "#e34948",
+      "match_count": 0
+    },
+    {
+      "id": "user:38",
+      "type": "user",
+      "role": "Design",
+      "label": "유저 38 (Design)",
+      "x": -0.08793377121294359,
+      "y": 0.0223406233961491,
+      "color": "#4a3aa7",
+      "match_count": 0
+    },
+    {
+      "id": "user:39",
+      "type": "user",
+      "role": "RESEARCH",
+      "label": "유저 39 (RESEARCH)",
+      "x": -0.20968373378563115,
+      "y": 0.09978569945448196,
+      "color": "#2a78d6",
+      "match_count": 0
+    },
+    {
+      "id": "user:40",
+      "type": "user",
+      "role": "ETC",
+      "label": "유저 40 (ETC)",
+      "x": 0.06080559083524658,
+      "y": 0.0850407821758556,
+      "color": "#008300",
+      "match_count": 0
+    },
+    {
+      "id": "user:41",
+      "type": "user",
+      "role": "BUSINESS",
+      "label": "유저 41 (BUSINESS)",
+      "x": -0.20186868324962756,
+      "y": -0.01807354439143879,
+      "color": "#7a5230",
+      "match_count": 0
+    },
+    {
+      "id": "user:42",
+      "type": "user",
+      "role": "Design",
+      "label": "유저 42 (Design)",
+      "x": -0.0712459469900262,
+      "y": 0.0025929691747667537,
+      "color": "#4a3aa7",
+      "match_count": 0
+    },
+    {
+      "id": "user:43",
+      "type": "user",
+      "role": "Data",
+      "label": "유저 43 (Data)",
+      "x": 0.14373514645170885,
+      "y": -0.236215756446363,
+      "color": "#5a5a5a",
+      "match_count": 0
+    },
+    {
+      "id": "user:44",
+      "type": "user",
+      "role": "ETC",
+      "label": "유저 44 (ETC)",
+      "x": 0.06850503601391575,
+      "y": 0.05320803626053748,
+      "color": "#008300",
+      "match_count": 0
+    },
+    {
+      "id": "user:45",
+      "type": "user",
+      "role": "PM",
+      "label": "유저 45 (PM)",
+      "x": -0.26708706584558356,
+      "y": 0.046660368423777604,
+      "color": "#e87ba4",
+      "match_count": 0
+    },
+    {
+      "id": "user:46",
+      "type": "user",
+      "role": "BE",
+      "label": "유저 46 (BE)",
+      "x": 0.06595124170817634,
+      "y": -0.32856574680052436,
+      "color": "#1baf7a",
+      "match_count": 0
+    },
+    {
+      "id": "user:47",
+      "type": "user",
+      "role": "CONTENT",
+      "label": "유저 47 (CONTENT)",
+      "x": 0.419249946141322,
+      "y": 0.1499799953717756,
+      "color": "#eb6834",
+      "match_count": 0
+    },
+    {
+      "id": "user:48",
+      "type": "user",
+      "role": "FE",
+      "label": "유저 48 (FE)",
+      "x": 0.05682965868466881,
+      "y": -0.1894509173908043,
+      "color": "#eda100",
+      "match_count": 0
+    },
+    {
+      "id": "user:49",
+      "type": "user",
+      "role": "RESEARCH",
+      "label": "유저 49 (RESEARCH)",
+      "x": -0.247951337787872,
+      "y": -0.00599528600426813,
+      "color": "#2a78d6",
+      "match_count": 0
+    },
+    {
+      "id": "user:50",
+      "type": "user",
+      "role": "RESEARCH",
+      "label": "유저 50 (RESEARCH)",
+      "x": 0.14349662620734274,
+      "y": -0.13219152104893991,
+      "color": "#2a78d6",
+      "match_count": 0
+    }
+  ],
+  "edges": [
+    {
+      "source": "user:1",
+      "target": "team:20",
+      "score": 0.925,
+      "rank": 1
+    },
+    {
+      "source": "user:1",
+      "target": "team:24",
+      "score": 0.8759121499203811,
+      "rank": 2
+    },
+    {
+      "source": "user:1",
+      "target": "team:16",
+      "score": 0.776735149922982,
+      "rank": 3
+    },
+    {
+      "source": "user:2",
+      "target": "team:31",
+      "score": 0.8500000000000001,
+      "rank": 1
+    },
+    {
+      "source": "user:2",
+      "target": "team:35",
+      "score": 0.7872175662010918,
+      "rank": 2
+    },
+    {
+      "source": "user:2",
+      "target": "team:46",
+      "score": 0.7574208760541954,
+      "rank": 3
+    },
+    {
+      "source": "user:3",
+      "target": "team:13",
+      "score": 0.8500000000000001,
+      "rank": 1
+    },
+    {
+      "source": "user:3",
+      "target": "team:29",
+      "score": 0.720271157218933,
+      "rank": 2
+    },
+    {
+      "source": "user:3",
+      "target": "team:4",
+      "score": 0.6691006248831186,
+      "rank": 3
+    },
+    {
+      "source": "user:4",
+      "target": "team:4",
+      "score": 0.7144426686349078,
+      "rank": 1
+    },
+    {
+      "source": "user:4",
+      "target": "team:29",
+      "score": 0.6782408890715396,
+      "rank": 2
+    },
+    {
+      "source": "user:4",
+      "target": "team:11",
+      "score": 0.676086837208326,
+      "rank": 3
+    },
+    {
+      "source": "user:5",
+      "target": "team:26",
+      "score": 0.9500000000000001,
+      "rank": 1
+    },
+    {
+      "source": "user:5",
+      "target": "team:28",
+      "score": 0.9147833079452372,
+      "rank": 2
+    },
+    {
+      "source": "user:5",
+      "target": "team:21",
+      "score": 0.815413348530398,
+      "rank": 3
+    },
+    {
+      "source": "user:6",
+      "target": "team:33",
+      "score": 0.875,
+      "rank": 1
+    },
+    {
+      "source": "user:6",
+      "target": "team:40",
+      "score": 0.7694260963636969,
+      "rank": 2
+    },
+    {
+      "source": "user:6",
+      "target": "team:34",
+      "score": 0.7137109644397401,
+      "rank": 3
+    },
+    {
+      "source": "user:7",
+      "target": "team:6",
+      "score": 1.0,
+      "rank": 1
+    },
+    {
+      "source": "user:7",
+      "target": "team:13",
+      "score": 0.9069769903194973,
+      "rank": 2
+    },
+    {
+      "source": "user:7",
+      "target": "team:30",
+      "score": 0.8433706010603939,
+      "rank": 3
+    },
+    {
+      "source": "user:8",
+      "target": "team:49",
+      "score": 0.9056308473286938,
+      "rank": 1
+    },
+    {
+      "source": "user:8",
+      "target": "team:38",
+      "score": 0.781055919950195,
+      "rank": 2
+    },
+    {
+      "source": "user:8",
+      "target": "team:42",
+      "score": 0.6651670764985647,
+      "rank": 3
+    },
+    {
+      "source": "user:9",
+      "target": "team:14",
+      "score": 0.8375,
+      "rank": 1
+    },
+    {
+      "source": "user:9",
+      "target": "team:26",
+      "score": 0.7806418715592738,
+      "rank": 2
+    },
+    {
+      "source": "user:9",
+      "target": "team:21",
+      "score": 0.7652875978583822,
+      "rank": 3
+    },
+    {
+      "source": "user:10",
+      "target": "team:39",
+      "score": 1.0,
+      "rank": 1
+    },
+    {
+      "source": "user:10",
+      "target": "team:3",
+      "score": 0.8223268054025387,
+      "rank": 2
+    },
+    {
+      "source": "user:10",
+      "target": "team:49",
+      "score": 0.8203439696424351,
+      "rank": 3
+    },
+    {
+      "source": "user:11",
+      "target": "team:40",
+      "score": 0.8375,
+      "rank": 1
+    },
+    {
+      "source": "user:11",
+      "target": "team:31",
+      "score": 0.7987876614722152,
+      "rank": 2
+    },
+    {
+      "source": "user:11",
+      "target": "team:36",
+      "score": 0.795971295113705,
+      "rank": 3
+    },
+    {
+      "source": "user:12",
+      "target": "team:5",
+      "score": 1.0,
+      "rank": 1
+    },
+    {
+      "source": "user:12",
+      "target": "team:22",
+      "score": 0.9228769217766065,
+      "rank": 2
+    },
+    {
+      "source": "user:12",
+      "target": "team:19",
+      "score": 0.8756194441275785,
+      "rank": 3
+    },
+    {
+      "source": "user:13",
+      "target": "team:32",
+      "score": 0.7678827087179179,
+      "rank": 1
+    },
+    {
+      "source": "user:13",
+      "target": "team:49",
+      "score": 0.5768261002846499,
+      "rank": 2
+    },
+    {
+      "source": "user:13",
+      "target": "team:41",
+      "score": 0.5708731979815465,
+      "rank": 3
+    },
+    {
+      "source": "user:14",
+      "target": "team:13",
+      "score": 0.775,
+      "rank": 1
+    },
+    {
+      "source": "user:14",
+      "target": "team:4",
+      "score": 0.7535250561207472,
+      "rank": 2
+    },
+    {
+      "source": "user:14",
+      "target": "team:29",
+      "score": 0.7167247661057973,
+      "rank": 3
+    },
+    {
+      "source": "user:15",
+      "target": "team:36",
+      "score": 1.0,
+      "rank": 1
+    },
+    {
+      "source": "user:15",
+      "target": "team:31",
+      "score": 0.7406128838650798,
+      "rank": 2
+    },
+    {
+      "source": "user:15",
+      "target": "team:21",
+      "score": 0.4547547271218245,
+      "rank": 3
+    },
+    {
+      "source": "user:16",
+      "target": "team:4",
+      "score": 0.7548177267326105,
+      "rank": 1
+    },
+    {
+      "source": "user:16",
+      "target": "team:13",
+      "score": 0.6901630354085166,
+      "rank": 2
+    },
+    {
+      "source": "user:16",
+      "target": "team:29",
+      "score": 0.6584449160677792,
+      "rank": 3
+    },
+    {
+      "source": "user:17",
+      "target": "team:36",
+      "score": 0.8643526948463197,
+      "rank": 1
+    },
+    {
+      "source": "user:17",
+      "target": "team:31",
+      "score": 0.8375,
+      "rank": 2
+    },
+    {
+      "source": "user:17",
+      "target": "team:40",
+      "score": 0.7018769911543187,
+      "rank": 3
+    },
+    {
+      "source": "user:18",
+      "target": "team:13",
+      "score": 0.925,
+      "rank": 1
+    },
+    {
+      "source": "user:18",
+      "target": "team:6",
+      "score": 0.9228477303355809,
+      "rank": 2
+    },
+    {
+      "source": "user:18",
+      "target": "team:30",
+      "score": 0.7868645917342707,
+      "rank": 3
+    },
+    {
+      "source": "user:19",
+      "target": "team:14",
+      "score": 0.8875000000000001,
+      "rank": 1
+    },
+    {
+      "source": "user:19",
+      "target": "team:21",
+      "score": 0.8340789200505537,
+      "rank": 2
+    },
+    {
+      "source": "user:19",
+      "target": "team:26",
+      "score": 0.8263770380741142,
+      "rank": 3
+    },
+    {
+      "source": "user:20",
+      "target": "team:25",
+      "score": 0.8780732756835713,
+      "rank": 1
+    },
+    {
+      "source": "user:20",
+      "target": "team:35",
+      "score": 0.875,
+      "rank": 2
+    },
+    {
+      "source": "user:20",
+      "target": "team:31",
+      "score": 0.8348785212510239,
+      "rank": 3
+    },
+    {
+      "source": "user:21",
+      "target": "team:33",
+      "score": 0.875,
+      "rank": 1
+    },
+    {
+      "source": "user:21",
+      "target": "team:12",
+      "score": 0.8429664166398729,
+      "rank": 2
+    },
+    {
+      "source": "user:21",
+      "target": "team:44",
+      "score": 0.7725920492747442,
+      "rank": 3
+    },
+    {
+      "source": "user:22",
+      "target": "team:18",
+      "score": 0.9500000000000001,
+      "rank": 1
+    },
+    {
+      "source": "user:22",
+      "target": "team:11",
+      "score": 0.7866382640469387,
+      "rank": 2
+    },
+    {
+      "source": "user:22",
+      "target": "team:33",
+      "score": 0.49079368617623315,
+      "rank": 3
+    },
+    {
+      "source": "user:23",
+      "target": "team:33",
+      "score": 0.8500000000000001,
+      "rank": 1
+    },
+    {
+      "source": "user:23",
+      "target": "team:7",
+      "score": 0.8274076083272982,
+      "rank": 2
+    },
+    {
+      "source": "user:23",
+      "target": "team:44",
+      "score": 0.7703906921718408,
+      "rank": 3
+    },
+    {
+      "source": "user:24",
+      "target": "team:32",
+      "score": 0.8375,
+      "rank": 1
+    },
+    {
+      "source": "user:24",
+      "target": "team:35",
+      "score": 0.7982037613870402,
+      "rank": 2
+    },
+    {
+      "source": "user:24",
+      "target": "team:41",
+      "score": 0.7056833691827763,
+      "rank": 3
+    },
+    {
+      "source": "user:25",
+      "target": "team:16",
+      "score": 0.7875000000000001,
+      "rank": 1
+    },
+    {
+      "source": "user:25",
+      "target": "team:41",
+      "score": 0.7363364022767189,
+      "rank": 2
+    },
+    {
+      "source": "user:25",
+      "target": "team:32",
+      "score": 0.6432653015393814,
+      "rank": 3
+    },
+    {
+      "source": "user:26",
+      "target": "team:33",
+      "score": 0.875,
+      "rank": 1
+    },
+    {
+      "source": "user:26",
+      "target": "team:50",
+      "score": 0.7416198575643776,
+      "rank": 2
+    },
+    {
+      "source": "user:26",
+      "target": "team:44",
+      "score": 0.6678146913175298,
+      "rank": 3
+    },
+    {
+      "source": "user:27",
+      "target": "team:31",
+      "score": 0.7237375128435655,
+      "rank": 1
+    },
+    {
+      "source": "user:27",
+      "target": "team:4",
+      "score": 0.5523593568366817,
+      "rank": 2
+    },
+    {
+      "source": "user:27",
+      "target": "team:44",
+      "score": 0.5467536431445388,
+      "rank": 3
+    },
+    {
+      "source": "user:28",
+      "target": "team:26",
+      "score": 0.9500000000000001,
+      "rank": 1
+    },
+    {
+      "source": "user:28",
+      "target": "team:21",
+      "score": 0.8281912107025656,
+      "rank": 2
+    },
+    {
+      "source": "user:28",
+      "target": "team:28",
+      "score": 0.7661472788380453,
+      "rank": 3
+    },
+    {
+      "source": "user:29",
+      "target": "team:6",
+      "score": 0.8400877941171554,
+      "rank": 1
+    },
+    {
+      "source": "user:29",
+      "target": "team:30",
+      "score": 0.8375,
+      "rank": 2
+    },
+    {
+      "source": "user:29",
+      "target": "team:37",
+      "score": 0.8084033791070728,
+      "rank": 3
+    },
+    {
+      "source": "user:30",
+      "target": "team:50",
+      "score": 0.7979217863092878,
+      "rank": 1
+    },
+    {
+      "source": "user:30",
+      "target": "team:41",
+      "score": 0.7680295504143285,
+      "rank": 2
+    },
+    {
+      "source": "user:30",
+      "target": "team:16",
+      "score": 0.7212796654675899,
+      "rank": 3
+    },
+    {
+      "source": "user:31",
+      "target": "team:27",
+      "score": 1.0,
+      "rank": 1
+    },
+    {
+      "source": "user:31",
+      "target": "team:43",
+      "score": 0.9329502876362445,
+      "rank": 2
+    },
+    {
+      "source": "user:31",
+      "target": "team:10",
+      "score": 0.8781312478128237,
+      "rank": 3
+    },
+    {
+      "source": "user:32",
+      "target": "team:1",
+      "score": 0.9387780350085247,
+      "rank": 1
+    },
+    {
+      "source": "user:32",
+      "target": "team:11",
+      "score": 0.875,
+      "rank": 2
+    },
+    {
+      "source": "user:32",
+      "target": "team:18",
+      "score": 0.870690186967321,
+      "rank": 3
+    },
+    {
+      "source": "user:33",
+      "target": "team:13",
+      "score": 0.925,
+      "rank": 1
+    },
+    {
+      "source": "user:33",
+      "target": "team:6",
+      "score": 0.8433794555467143,
+      "rank": 2
+    },
+    {
+      "source": "user:33",
+      "target": "team:29",
+      "score": 0.7508790684786018,
+      "rank": 3
+    },
+    {
+      "source": "user:34",
+      "target": "team:44",
+      "score": 0.7977242689893962,
+      "rank": 1
+    },
+    {
+      "source": "user:34",
+      "target": "team:33",
+      "score": 0.7742051919453479,
+      "rank": 2
+    },
+    {
+      "source": "user:34",
+      "target": "team:12",
+      "score": 0.7073352034307263,
+      "rank": 3
+    },
+    {
+      "source": "user:35",
+      "target": "team:31",
+      "score": 0.832662976647688,
+      "rank": 1
+    },
+    {
+      "source": "user:35",
+      "target": "team:36",
+      "score": 0.8,
+      "rank": 2
+    },
+    {
+      "source": "user:35",
+      "target": "team:40",
+      "score": 0.7758678528159799,
+      "rank": 3
+    },
+    {
+      "source": "user:36",
+      "target": "team:36",
+      "score": 0.925,
+      "rank": 1
+    },
+    {
+      "source": "user:36",
+      "target": "team:31",
+      "score": 0.6846586546860749,
+      "rank": 2
+    },
+    {
+      "source": "user:36",
+      "target": "team:41",
+      "score": 0.4640855140236647,
+      "rank": 3
+    },
+    {
+      "source": "user:37",
+      "target": "team:26",
+      "score": 0.875,
+      "rank": 1
+    },
+    {
+      "source": "user:37",
+      "target": "team:28",
+      "score": 0.7837048445562841,
+      "rank": 2
+    },
+    {
+      "source": "user:37",
+      "target": "team:21",
+      "score": 0.7257855161240622,
+      "rank": 3
+    },
+    {
+      "source": "user:38",
+      "target": "team:36",
+      "score": 0.875,
+      "rank": 1
+    },
+    {
+      "source": "user:38",
+      "target": "team:31",
+      "score": 0.7754711724859611,
+      "rank": 2
+    },
+    {
+      "source": "user:38",
+      "target": "team:49",
+      "score": 0.5215317245895741,
+      "rank": 3
+    },
+    {
+      "source": "user:39",
+      "target": "team:3",
+      "score": 0.875,
+      "rank": 1
+    },
+    {
+      "source": "user:39",
+      "target": "team:42",
+      "score": 0.8181366965811664,
+      "rank": 2
+    },
+    {
+      "source": "user:39",
+      "target": "team:48",
+      "score": 0.7667605639503703,
+      "rank": 3
+    },
+    {
+      "source": "user:40",
+      "target": "team:18",
+      "score": 0.9619488206153749,
+      "rank": 1
+    },
+    {
+      "source": "user:40",
+      "target": "team:1",
+      "score": 0.9500000000000001,
+      "rank": 2
+    },
+    {
+      "source": "user:40",
+      "target": "team:45",
+      "score": 0.8611562206193246,
+      "rank": 3
+    },
+    {
+      "source": "user:41",
+      "target": "team:10",
+      "score": 1.0,
+      "rank": 1
+    },
+    {
+      "source": "user:41",
+      "target": "team:32",
+      "score": 0.8314376866995724,
+      "rank": 2
+    },
+    {
+      "source": "user:41",
+      "target": "team:27",
+      "score": 0.8241235299995024,
+      "rank": 3
+    },
+    {
+      "source": "user:42",
+      "target": "team:36",
+      "score": 0.908352557786794,
+      "rank": 1
+    },
+    {
+      "source": "user:42",
+      "target": "team:31",
+      "score": 0.8375,
+      "rank": 2
+    },
+    {
+      "source": "user:42",
+      "target": "team:33",
+      "score": 0.4681411327092031,
+      "rank": 3
+    },
+    {
+      "source": "user:43",
+      "target": "team:31",
+      "score": 0.8334414936851106,
+      "rank": 1
+    },
+    {
+      "source": "user:43",
+      "target": "team:44",
+      "score": 0.5746677341477997,
+      "rank": 2
+    },
+    {
+      "source": "user:43",
+      "target": "team:33",
+      "score": 0.5550961677072681,
+      "rank": 3
+    },
+    {
+      "source": "user:44",
+      "target": "team:18",
+      "score": 0.9008127662056016,
+      "rank": 1
+    },
+    {
+      "source": "user:44",
+      "target": "team:11",
+      "score": 0.6776427960080201,
+      "rank": 2
+    },
+    {
+      "source": "user:44",
+      "target": "team:44",
+      "score": 0.4566614074834675,
+      "rank": 3
+    },
+    {
+      "source": "user:45",
+      "target": "team:47",
+      "score": 0.925,
+      "rank": 1
+    },
+    {
+      "source": "user:45",
+      "target": "team:19",
+      "score": 0.8269791929880227,
+      "rank": 2
+    },
+    {
+      "source": "user:45",
+      "target": "team:17",
+      "score": 0.7873391189511484,
+      "rank": 3
+    },
+    {
+      "source": "user:46",
+      "target": "team:33",
+      "score": 0.875,
+      "rank": 1
+    },
+    {
+      "source": "user:46",
+      "target": "team:44",
+      "score": 0.8251403338012088,
+      "rank": 2
+    },
+    {
+      "source": "user:46",
+      "target": "team:50",
+      "score": 0.7971139887315793,
+      "rank": 3
+    },
+    {
+      "source": "user:47",
+      "target": "team:29",
+      "score": 0.925,
+      "rank": 1
+    },
+    {
+      "source": "user:47",
+      "target": "team:13",
+      "score": 0.8234345965087804,
+      "rank": 2
+    },
+    {
+      "source": "user:47",
+      "target": "team:4",
+      "score": 0.7673794956769131,
+      "rank": 3
+    },
+    {
+      "source": "user:48",
+      "target": "team:41",
+      "score": 0.8,
+      "rank": 1
+    },
+    {
+      "source": "user:48",
+      "target": "team:50",
+      "score": 0.696306599033025,
+      "rank": 2
+    },
+    {
+      "source": "user:48",
+      "target": "team:32",
+      "score": 0.6641645658093119,
+      "rank": 3
+    },
+    {
+      "source": "user:49",
+      "target": "team:42",
+      "score": 0.8828139367469703,
+      "rank": 1
+    },
+    {
+      "source": "user:49",
+      "target": "team:39",
+      "score": 0.875,
+      "rank": 2
+    },
+    {
+      "source": "user:49",
+      "target": "team:3",
+      "score": 0.8633943701425141,
+      "rank": 3
+    },
+    {
+      "source": "user:50",
+      "target": "team:49",
+      "score": 0.875,
+      "rank": 1
+    },
+    {
+      "source": "user:50",
+      "target": "team:38",
+      "score": 0.8207250293564654,
+      "rank": 2
+    },
+    {
+      "source": "user:50",
+      "target": "team:4",
+      "score": 0.7268392923420112,
+      "rank": 3
+    }
+  ],
+  "color_map": {
+    "RESEARCH": "#2a78d6",
+    "CONTENT": "#eb6834",
+    "BE": "#1baf7a",
+    "FE": "#eda100",
+    "PM": "#e87ba4",
+    "ETC": "#008300",
+    "Design": "#4a3aa7",
+    "MARKETING": "#e34948",
+    "BUSINESS": "#7a5230",
+    "Data": "#5a5a5a"
+  }
+}

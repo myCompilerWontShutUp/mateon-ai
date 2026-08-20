@@ -39,22 +39,22 @@ def _build_request(user: UserIntentExtractionResult, teams: dict[str, EmbeddingR
     )
 
 
-def test_backend_expert_matches_fintech_team() -> None:
+async def test_backend_expert_matches_fintech_team() -> None:
     teams = _load_teams()
     users = _load_users()
 
-    response = recommend_teams(_build_request(users["backend_expert"], teams))
+    response = await recommend_teams(_build_request(users["backend_expert"], teams))
 
     # 핀테크 BE 팀 (Spring Boot/Kafka/Redis, 실무 경험 우대, 고강도)이 뚜렷한 1위여야 한다
     # (실제 임베딩 기준 1위 0.83 vs 2위 0.50 — 큰 격차로 확인됨).
     assert response.recommendations[0].candidate_id == 7
 
 
-def test_frontend_beginner_matches_beginner_friendly_team() -> None:
+async def test_frontend_beginner_matches_beginner_friendly_team() -> None:
     teams = _load_teams()
     users = _load_users()
 
-    response = recommend_teams(_build_request(users["frontend_beginner"], teams))
+    response = await recommend_teams(_build_request(users["frontend_beginner"], teams))
 
     # 완전 초보자 FE 팀 (HTML/CSS/JS, 가벼운 강도)이 뚜렷한 1위여야 한다
     # (실제 임베딩 기준 1위 0.95 vs 2위 0.56 — 큰 격차로 확인됨).

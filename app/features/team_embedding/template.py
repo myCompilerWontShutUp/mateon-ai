@@ -26,5 +26,6 @@ def render_team_embedding_text(
         f"공모전 분야: {soft_fields.contest_field.value if soft_fields.contest_field else '미정'}",
         f"초보자 가능 여부: {beginner_desc}",
         f"팀 분위기: {soft_fields.team_atmosphere or '미정'}",
+        f"활동 시간: {soft_fields.optional.activity_time or '미상'}",
     ]
     return "\n".join(lines)

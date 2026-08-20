@@ -826,6 +826,23 @@
         ],
         "title": "MatchDirection"
       },
+      "OptionalUserFields": {
+        "properties": {
+          "activity_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activity Time"
+          }
+        },
+        "type": "object",
+        "title": "OptionalUserFields"
+      },
       "PortfolioSummaryResult": {
         "properties": {
           "pdf_id": {
@@ -895,6 +912,16 @@
           "target_summary": {
             "type": "string",
             "title": "Target Summary"
+          },
+          "selection_context": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SelectionContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -1002,13 +1029,21 @@
           "label": {
             "type": "string",
             "title": "Label"
+          },
+          "component_scores": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Component Scores"
           }
         },
         "type": "object",
         "required": [
           "candidate_id",
           "score",
-          "label"
+          "label",
+          "component_scores"
         ],
         "title": "RecommendationItem"
       },
@@ -1110,6 +1145,57 @@
           "ETC"
         ],
         "title": "RoleCode"
+      },
+      "SelectionContext": {
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "title": "Idempotency Key"
+          },
+          "chooser_fields": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Chooser Fields"
+          },
+          "shown_candidates": {
+            "items": {
+              "$ref": "#/components/schemas/ShownCandidate"
+            },
+            "type": "array",
+            "title": "Shown Candidates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "idempotency_key"
+        ],
+        "title": "SelectionContext"
+      },
+      "ShownCandidate": {
+        "properties": {
+          "candidate_id": {
+            "type": "integer",
+            "title": "Candidate Id"
+          },
+          "total_score": {
+            "type": "number",
+            "title": "Total Score"
+          },
+          "component_scores": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Component Scores"
+          }
+        },
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "total_score",
+          "component_scores"
+        ],
+        "title": "ShownCandidate"
       },
       "TeamEmbeddingRefreshRequest": {
         "properties": {
@@ -1274,6 +1360,9 @@
                 "type": "null"
               }
             ]
+          },
+          "optional": {
+            "$ref": "#/components/schemas/OptionalUserFields"
           }
         },
         "type": "object",

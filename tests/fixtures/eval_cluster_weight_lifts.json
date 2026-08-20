@@ -1,0 +1,95 @@
+{
+  "FE:intermediate": {
+    "similarity": 0.4333968304746707,
+    "role_match": 0.78,
+    "deficit_fit": 0.455,
+    "activity_style_match": 0.6799999999999999
+  },
+  "CONTENT:beginner": {
+    "similarity": 0.4357771281010921,
+    "role_match": 0.86,
+    "deficit_fit": 0.49100000000000005,
+    "beginner_fit": 0.42000000000000004,
+    "activity_style_match": 0.07200000000000001
+  },
+  "MARKETING:advanced": {
+    "similarity": 0.6410207998730066,
+    "role_match": 0.92,
+    "deficit_fit": 0.62
+  },
+  "BE:advanced": {
+    "similarity": 0.492619270820254,
+    "role_match": 0.84,
+    "deficit_fit": 0.1,
+    "activity_style_match": 0.6799999999999999
+  },
+  "CONTENT:intermediate": {
+    "similarity": 0.6492870675266138,
+    "role_match": 0.86,
+    "deficit_fit": 0.685,
+    "activity_style_match": 0.64
+  },
+  "RESEARCH:beginner": {
+    "similarity": 0.426211217277219,
+    "role_match": 0.78,
+    "deficit_fit": 0.385,
+    "beginner_fit": 0.62,
+    "activity_style_match": 0.18
+  },
+  "RESEARCH:advanced": {
+    "similarity": 0.5311834933335766,
+    "role_match": 0.78,
+    "deficit_fit": 0.7233333333333334,
+    "activity_style_match": 0.046666666666666634
+  },
+  "Design:advanced": {
+    "similarity": 0.5659341067160062,
+    "role_match": 0.94,
+    "deficit_fit": 0.12,
+    "activity_style_match": 0.10999999999999999
+  },
+  "Design:beginner": {
+    "similarity": 0.6677173633227791,
+    "role_match": 0.94,
+    "deficit_fit": 0.60375,
+    "beginner_fit": 0.62,
+    "activity_style_match": 0.495
+  },
+  "CONTENT:advanced": {
+    "similarity": 0.4716986981128102,
+    "role_match": 0.86,
+    "deficit_fit": 0.6875,
+    "activity_style_match": 0.21000000000000002
+  },
+  "ETC:beginner": {
+    "similarity": 0.5867488421919763,
+    "role_match": 0.88,
+    "deficit_fit": 0.91,
+    "beginner_fit": 0.62
+  },
+  "FE:beginner": {
+    "similarity": 0.2639241936958937,
+    "role_match": 0.78,
+    "beginner_fit": 0.62,
+    "activity_style_match": 0.6866666666666666
+  },
+  "BE:beginner": {
+    "similarity": 0.42225429659235103,
+    "role_match": 0.84,
+    "deficit_fit": 0.3,
+    "beginner_fit": 0.62,
+    "activity_style_match": 0.06666666666666665
+  },
+  "Data:beginner": {
+    "similarity": 0.39941108159698857,
+    "role_match": 0.92,
+    "deficit_fit": 0.2275,
+    "beginner_fit": 0.62
+  },
+  "ETC:advanced": {
+    "similarity": 0.5147796073798057,
+    "role_match": 0.88,
+    "deficit_fit": 0.91,
+    "activity_style_match": 0.71
+  }
+}

@@ -18,7 +18,7 @@ async def extract_intent(request: UserIntentExtractionRequest) -> UserIntentExtr
 
 @router.post("/recommendations/user-to-team", summary="제안 추천 — 유저 intent 기준 팀 Top 10")
 async def recommend_user_to_team(request: RecommendationRequest) -> RecommendationResponse:
-    return recommend_teams(request)
+    return await recommend_teams(request)
 
 
 @router.post("/proposals/user-to-team", summary="제안 최종 조립 (proposal_id는 백엔드가 채번)")

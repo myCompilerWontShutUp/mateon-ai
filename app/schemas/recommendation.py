@@ -21,6 +21,11 @@ class RecommendationItem(BaseModel):
     candidate_id: int
     score: float
     label: str
+    # 유사도 + 메타데이터 컴포넌트별 점수(similarity/role_match/deficit_fit/beginner_fit/
+    # activity_style_match). 백엔드가 사용자가 이 후보를 선택했을 때 /proposals/*의
+    # selection_context.shown_candidates로 그대로 되돌려 보내는 용도 — 클러스터별 가중치
+    # 보정의 입력 데이터가 된다(CLAUDE.md "## 모니터링·데이터 기반 가중치 보정" 참고).
+    component_scores: dict[str, float]
 
 
 class RecommendationResponse(BaseModel):

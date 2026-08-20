@@ -1,7 +1,7 @@
 from app.features.team_embedding.template import compute_missing_fields, render_team_embedding_text
 from app.schemas.contest import ContestField
 from app.schemas.role_codes import RoleCode
-from app.schemas.team_extraction import TeamEmbeddingRefreshRequest, TeamSoftFields
+from app.schemas.team_extraction import OptionalTeamFields, TeamEmbeddingRefreshRequest, TeamSoftFields
 
 
 def _request(**overrides) -> TeamEmbeddingRefreshRequest:
@@ -60,3 +60,24 @@ def test_render_handles_missing_soft_fields() -> None:
     rendered = render_team_embedding_text(request, soft_fields)
 
     assert "미정" in rendered
+    assert "활동 시간: 미상" in rendered
+
+
+def test_render_includes_optional_activity_time_when_present() -> None:
+    request = _request()
+    soft_fields = TeamSoftFields(optional=OptionalTeamFields(activity_time="주말"))
+
+    rendered = render_team_embedding_text(request, soft_fields)
+
+    assert "활동 시간: 주말" in rendered
+
+
+def test_optional_field_never_triggers_missing_fields() -> None:
+    soft_fields = TeamSoftFields(
+        activity_goal="공모전 수상",
+        activity_style="주 2회 오프라인",
+        activity_intensity="high",
+        beginner_friendly=True,
+    )
+    assert soft_fields.optional.activity_time is None
+    assert compute_missing_fields(soft_fields) == []

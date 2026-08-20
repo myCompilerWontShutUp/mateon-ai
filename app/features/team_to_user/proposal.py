@@ -1,4 +1,7 @@
+from app.core.background import fire_and_forget
 from app.core.prompts import load_prompt
+from app.features.quality.judge import judge_and_log
+from app.features.quality.selection_log import log_selection_event
 from app.openai_client.extraction import extract_structured
 from app.schemas.common import MatchDirection
 from app.schemas.llm_output import ProposalTextFields
@@ -16,6 +19,18 @@ async def assemble_team_to_user_proposal(request: ProposalAssemblyRequest) -> Pr
         ],
         response_model=ProposalTextFields,
     )
+
+    fire_and_forget(
+        judge_and_log(
+            "team_to_user_proposal",
+            prompt,
+            f"summary: {text_fields.summary}\nmessage: {text_fields.message}",
+        )
+    )
+    if request.selection_context is not None:
+        fire_and_forget(
+            log_selection_event(MatchDirection.TEAM_TO_USER, request.selection_context, request.user_id)
+        )
 
     return ProposalSchema(
         direction=MatchDirection.TEAM_TO_USER,

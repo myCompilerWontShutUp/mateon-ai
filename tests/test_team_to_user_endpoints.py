@@ -12,9 +12,13 @@ _AUTH_HEADERS = {"X-Internal-Secret": get_settings().internal_shared_secret}
 
 @pytest.fixture(autouse=True)
 def _mock_services(monkeypatch: pytest.MonkeyPatch) -> None:
-    def fake_recommend_users(request) -> RecommendationResponse:
+    async def fake_recommend_users(request) -> RecommendationResponse:
         return RecommendationResponse(
-            recommendations=[RecommendationItem(candidate_id=203, score=0.9, label="적합해요")]
+            recommendations=[
+                RecommendationItem(
+                    candidate_id=203, score=0.9, label="적합해요", component_scores={"similarity": 0.9}
+                )
+            ]
         )
 
     async def fake_assemble_proposal(request) -> ProposalSchema:
