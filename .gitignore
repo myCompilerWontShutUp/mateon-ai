@@ -218,5 +218,16 @@ __marimo__/
 .streamlit/secrets.toml
 
 # LLM 생성 평가 데이터 — 비결정론적 산출물이라 다른 data/*.json 캐시와 달리 커밋하지 않는다
-# (scripts/generate_eval_definitions_llm.py)
+# (scripts/generate_eval_definitions_llm.py, scripts/run_eval_on_llm_pool.py)
 data/eval_llm_generated_definitions_cache.json
+data/eval_llm_pool_teams.json
+data/eval_llm_pool_users.json
+data/eval_llm_pool_ground_truth.json
+data/eval_llm_pool_synthetic_selections.json
+
+# ML 사전 구축 실험(더미 데이터 학습 + 로컬 시각화) — 로컬 전용, 커밋하지 않는다
+# (scripts/train_cluster_weight_ml_pretrain.py)
+data/ml_pretrain_dummy_events.json
+data/ml_pretrain_weight_comparison.png
+data/ml_pretrain_weight_comparison_gpt56terra.png
+data/ml_pretrain_weight_eval_report.md
