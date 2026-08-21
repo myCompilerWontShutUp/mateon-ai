@@ -16,8 +16,10 @@
 
 - **Python 3.13**, [FastAPI](https://fastapi.tiangolo.com/) + [Pydantic v2](https://docs.pydantic.dev/)
 - [uv](https://docs.astral.sh/uv/) — 패키지/환경 관리
-- [OpenAI SDK](https://github.com/openai/openai-python) — `gpt-4.1-mini`(구조화 추출/텍스트 생성),
-  `text-embedding-3-small`(임베딩, 1536차원)
+- [OpenAI SDK](https://github.com/openai/openai-python) — `gpt-5.6-luna`(구조화 추출/텍스트 생성),
+  `gpt-5.6-terra`(LLM-as-judge 판정, `OPENAI_JUDGE_MODEL`), `text-embedding-3-small`(임베딩,
+  1536차원) *(2026-08-21 — 기존 `gpt-4.1-mini`/`gpt-5.6-luna` 조합에서 성능·속도·토큰 사용량
+  개선을 위해 교체, 자세한 사유는 CLAUDE.md "## 모델 확정" 참고)*
 - [tenacity](https://tenacity.readthedocs.io/) — OpenAI 호출 재시도
 - [Supabase](https://supabase.com/)(`supabase-py`) — judge 판정 로그·선택 이벤트 기록(쓰기 전용),
   클러스터별 가중치 설정값 읽기 전용. 도메인 데이터 저장소가 아니다(아래 "모니터링·데이터 기반
@@ -25,6 +27,9 @@
 - [pytest](https://docs.pytest.org/) + [ruff](https://docs.astral.sh/ruff/) — 테스트/린트
 - [Docker](https://www.docker.com/) — 백엔드 로컬 테스트·배포용 컨테이너 이미지(아래 "Docker로
   실행" 참고)
+- **dev 전용**(프로덕션 이미지에서 제외): `numpy`/`umap-learn`(공모전 지형도 시각화),
+  `scikit-learn`(`umap-learn`의 하위 의존성이자 ML 사전 구축 실험용), `matplotlib`(ML 실험
+  결과 로컬 시각화)
 
 ## 시작하기
 
@@ -51,7 +56,7 @@ cp .env.example .env
 | 변수 | 설명 |
 |---|---|
 | `OPENAI_API_KEY` | OpenAI API 키 |
-| `OPENAI_LLM_MODEL` | 구조화 추출/텍스트 생성 모델 (기본값 `gpt-4.1-mini`) |
+| `OPENAI_LLM_MODEL` | 구조화 추출/텍스트 생성 모델 (기본값 `gpt-5.6-luna`) |
 | `OPENAI_EMBEDDING_MODEL` | 임베딩 모델 (기본값 `text-embedding-3-small`) |
 | `OPENAI_JUDGE_MODEL` | LLM-as-judge 전용 모델 (생성 모델과 분리, GPT-5 이상급 권장 — 기본값 없음, 미설정 시 시작 실패) |
 | `INTERNAL_SHARED_SECRET` | 모든 엔드포인트가 요구하는 `X-Internal-Secret` 헤더 값 |
@@ -116,7 +121,8 @@ app/
   scoring/         # 코사인 유사도, Score Engine, 공통 룰 유틸, cluster.py/cluster_weights.py/
                    #   cluster_weight_store.py(클러스터별 가중치 보정)
   evaluation/      # Hit@10/NDCG 평가용 순수 계산 모듈(metrics/scoring_arms/simulation) — 실제
-                   #   프로덕션 스코어링 코드를 재사용, 평가 로직을 따로 재구현하지 않음
+                   #   프로덕션 스코어링 코드를 재사용, 평가 로직을 따로 재구현하지 않음.
+                   #   ml_pretrain.py는 정식 ML(로지스틱 회귀) 사전 구축 실험 공유 로직
   features/
     team_embedding/    # 팀 임베딩 계산
     user_to_team/       # 제안(USER_TO_TEAM): 의도 추출, 추천, 제안 조립
@@ -131,7 +137,7 @@ scripts/           # 픽스처 생성 스크립트, 평가/시각화 배치, LLM
 data/              # 스크립트 전용 원본/생성 데이터 (pytest가 로드하지 않음 — tests/fixtures와 구분)
 docs/              # 백엔드 연동용 API 계약 문서, docs/monitoring/ 모니터링 관련 리포트·초안
 supabase/          # 모니터링 테이블 SQL 마이그레이션 (judge_results/cluster_selection_events/
-                   #   cluster_weight_config)
+                   #   cluster_weight_config/ml_pretrain_dummy_events)
 ```
 
 ## API 문서
@@ -229,13 +235,78 @@ uv run python scripts/run_eval.py                            # 결과: docs/moni
 | 스크립트 | 용도 | 출력 |
 |---|---|---|
 | `generate_team_fixtures.py` / `generate_user_fixtures.py` | 정답 매칭 검증용 팀 10개·유저 fixture | `tests/fixtures/teams.json`, `users.json` |
-| `generate_eval_fixtures.py` | Hit@10 평가용 팀·유저 50개씩 | `tests/fixtures/eval_teams.json`, `eval_users.json` |
+| `generate_eval_fixtures.py` | Hit@10 평가용 팀·유저 50개씩(결정론적 생성) | `tests/fixtures/eval_teams.json`, `eval_users.json` |
 | `generate_eval_ground_truth.py` | 평가용 정답 라벨(상위 모델) | `tests/fixtures/eval_ground_truth.json` |
 | `generate_eval_synthetic_selections.py` | 클러스터 가중치 보정용 합성 선택 이벤트 | `tests/fixtures/eval_synthetic_selections.json` |
+| `generate_eval_definitions_llm.py` | Hit@10 평가용 팀·유저 50개씩(`gpt-5.6-terra`로 생성, 결정론적 생성의 대안) | `data/eval_llm_generated_definitions_cache.json`(gitignore) |
+| `run_eval_on_llm_pool.py` | 위 gpt-5.6-terra 풀로 `run_eval.py`와 동일 방식 재측정 | `docs/monitoring/hit-at-10-eval-report-llm-pool.md` |
 | `run_cluster_weight_batch.py` | 클러스터별 가중치 lift 계산 후 Supabase 기록 | `cluster_weight_config`(Supabase) |
 | `run_eval.py` | Hit@10/NDCG 4종 비교 리포트 생성 | `docs/monitoring/hit-at-10-eval-report.md` |
 | `generate_contest_graph_visualization.py` | 공모전 임베딩을 PCA+UMAP으로 2차원 축소해 분야별 색칠 | `data/contest_graph_visualization.json`(+ 임베딩 캐시) |
+| `train_cluster_weight_ml_pretrain.py` | 정식 ML(로지스틱 회귀) 사전 구축 — 혼합 데이터 학습 + 시각화 | `data/ml_pretrain_*.json`/`*.png`(gitignore) |
+| `train_cluster_weight_ml_pretrain_gpt56terra.py` | 위와 동일, gpt-5.6-terra 데이터만(Supabase 저장분 재사용) | `data/ml_pretrain_weight_comparison_gpt56terra.png`(gitignore) |
+| `eval_ml_pretrain_weights.py` | 학습된 ML 가중치를 실제 추천 스코어링에 꽂아 Hit@10/NDCG/선호 회복률 측정 | `data/ml_pretrain_weight_eval_report.md`(gitignore) |
 | `judge_outputs.py` | LLM-as-judge 수동 점검 CLI | 콘솔 출력 |
+
+`generate_eval_definitions_llm.py`부터 아래 ML 관련 스크립트까지는 `data/*.json`/`*.png` 산출물이
+비결정론적(LLM 생성 또는 매 학습마다 값이 조금씩 달라짐)이라 `.gitignore` 대상이다 — 다른
+캐시들과 달리 GitHub에는 올라가지 않는다.
+
+## 실험: 정식 ML(로지스틱 회귀) 사전 구축 (2026-08-21)
+
+클러스터별 가중치 보정(위 섹션)은 정식 ML이 아니라 "선택된 후보 평균 − 전체 평균"이라는 닫힌
+형태 수식이다. "정식 ML로 미리 만들어둘 수 있는가"를 실제로 검증해본 실험이며, **결론은 지금은
+휴리스틱을 유지하는 것**이다 — 근거를 아래에 그대로 남긴다.
+
+**방식**: 후보를 "선택됨(1)/안됨(0)" 이진 라벨로 펼쳐 컴포넌트 점수(similarity/role_match/
+deficit_fit/beginner_fit/activity_style_match)를 피처로 로지스틱 회귀(`LogisticRegressionCV`,
+`class_weight='balanced'`, 같은 선택 세션 내 후보가 학습/검증에 걸쳐 섞이지 않도록
+`GroupKFold`로 정규화 강도 C를 튜닝)를 학습한다. 더미 데이터(결정론적 50 + gpt-5.6-terra 50,
+합 100건)로 학습했으므로 예측값 자체는 의미가 없고, 학습·서빙 파이프라인이 정상 작동하는지와
+방법론에 따라 결과가 어떻게 달라지는지를 보는 게 목적이다.
+
+**학습된 가중치 비교** (① 기본 WEIGHTS 고정 / ② 휴리스틱 보정 / ③ 로지스틱 회귀 학습):
+
+| 컴포넌트 | ① 기본 | ② 휴리스틱(혼합 데이터) | ③ ML(혼합 데이터) | ③ ML(gpt-5.6-terra 전용) |
+|---|---|---|---|---|
+| similarity | 0.400 | 0.403 | 0.302 | 0.269 |
+| role_match | 0.200 | 0.248 | 0.236 | 0.294 |
+| deficit_fit | 0.150 | 0.141 | 0.136 | 0.226 |
+| beginner_fit | 0.200 | 0.169 | 0.292 | 0.212 |
+| activity_style_match | 0.050 | 0.039 | 0.034 | 0.000 |
+
+**실제 추천 점수까지 측정**(같은 두 평가셋에 Hit@10/NDCG/선호 회복률 재적용, ③번 lift는
+Supabase에 쓰지 않고 로컬 계산만 사용 — 감사 추적 문서가 참조하는 라이브 값 보존):
+
+| 평가셋 | 비교군 | Hit@10 | NDCG@10(LLM 정답) | NDCG@10(선호) | 선호 회복률 |
+|---|---|---|---|---|---|
+| 결정론적 | ② 프로덕션(고정) | 1.000 | 0.997 | 0.995 | 0.780 |
+| 결정론적 | ML(혼합 데이터 학습) | 1.000 | 0.998 | 0.995 | **0.820** |
+| 결정론적 | ML(gpt-5.6-terra 전용) | 1.000 | 0.998 | 0.990 | 0.580 |
+| gpt-5.6-terra | ② 프로덕션(고정) | 1.000 | 0.933 | 0.942 | 0.900 |
+| gpt-5.6-terra | ML(혼합 데이터 학습) | 1.000 | 0.957 | 0.963 | **0.940** |
+| gpt-5.6-terra | ML(gpt-5.6-terra 전용) | 1.000 | 0.974 | 0.978 | 0.920 |
+
+*(2026-08-21 판정 모델을 `gpt-5.6-luna`→`gpt-5.6-terra`로 교체하면서 두 평가셋의 정답
+라벨을 재생성했고, 이 표는 그 새 라벨 기준으로 다시 측정한 값이다 — 학습된 가중치 자체는
+더미 이벤트 스냅샷에서 나온 값이라 안 바뀌었으므로 새 API 호출 없이 로컬 재계산만으로
+갱신했다. 절대 수치는 다소 올랐지만 아래 해석은 이전과 동일하게 유지된다.)*
+
+**해석**: 두 데이터 소스를 섞어 학습한 모델은 두 평가셋 모두에서 프로덕션을 앞섰지만(다양한
+데이터로 학습 → 더 잘 일반화), gpt-5.6-terra 데이터만으로 학습한 모델은 자기 데이터와 비슷한
+평가셋에서만 잘하고 결정론적 평가셋에서는 프로덕션보다 못했다(0.580) — 좁은 데이터로 학습한
+전형적인 과적합이다. 이 문제는 ML만의 약점이 아니다 — 휴리스틱도 "50명 중 1~2건에서만 순위가
+바뀐다"는 같은 소표본 취약성을 이미 보였다(Hit@10 리포트 참고). 즉 알고리즘을 바꿔도 근본
+원인(데이터 부족)은 해결되지 않는데, ML은 해석 가능성만 잃고 학습 파이프라인·의존성·재학습
+주기 같은 운영 부담을 늘린다 — **지금은 이득 없이 비용만 커서 휴리스틱을 유지한다.** 실 데이터가
+쌓이면 같은 스크립트를 무료로 재실행해 재검토할 수 있는 상태로 남겨뒀다.
+
+**Supabase 저장 시 주의**: 더미 선택 이벤트는 `cluster_selection_events`(실 데이터 전용)가
+아니라 별도 테이블 `ml_pretrain_dummy_events`에 저장한다 — `run_cluster_weight_batch.py`가
+`cluster_selection_events`를 source 구분 없이 전부 "실 데이터"로 취급하기 때문에, 더미를
+거기 넣으면 나중에 실 데이터가 들어와도 걸러낼 방법이 없다. 이 테이블은 정식 클러스터 가중치
+파이프라인에서 전혀 읽지 않는다 — `supabase/migrations/
+20260821000000_create_ml_pretrain_dummy_events.sql`을 SQL Editor에서 적용해야 만들어진다.
 
 ## Docker로 실행 (백엔드 로컬 테스트용)
 
