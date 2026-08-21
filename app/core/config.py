@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     openai_api_key: str
-    openai_llm_model: str = "gpt-4.1-mini"
+    openai_llm_model: str = "gpt-5.6-luna"
     openai_embedding_model: str = "text-embedding-3-small"
     embedding_dimension: int = 1536
 

@@ -74,9 +74,9 @@
     "activity_style_match": 0.6866666666666666
   },
   "BE:beginner": {
-    "similarity": 0.42225429659235103,
+    "similarity": 0.6447350923835239,
     "role_match": 0.84,
-    "deficit_fit": 0.3,
+    "deficit_fit": 0.13333333333333333,
     "beginner_fit": 0.62,
     "activity_style_match": 0.06666666666666665
   },

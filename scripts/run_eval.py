@@ -308,7 +308,10 @@ async def main() -> None:
     ]
 
     settings = get_settings()
-    input_cost = naive_prompt_tokens / 1_000_000 * 0.40  # gpt-4.1-mini 단가, .env 모델과 다르면 참고치
+    # 참고 단가(gpt-4.1-mini 기준, $0.40/$1.60 per 1M in/out) — 실제 .env 모델(openai_llm_model)의
+    # 단가와 다를 수 있어 순수 참고치다. 정확한 절대 비용보다 "④가 후보 수에 비례해 비싸진다"는
+    # 상대적 논증이 이 절의 목적이라 모델이 바뀔 때마다 갱신하지 않는다.
+    input_cost = naive_prompt_tokens / 1_000_000 * 0.40
     output_cost = naive_completion_tokens / 1_000_000 * 1.60
     lines += [
         "",
@@ -318,7 +321,8 @@ async def main() -> None:
         f"- 호출 {naive_calls}회, 총 {naive_prompt_tokens + naive_completion_tokens} 토큰"
         f"(input {naive_prompt_tokens}, output {naive_completion_tokens})",
         f"- 평균 응답 시간: {naive_elapsed / naive_calls if naive_calls else 0:.2f}초/호출",
-        f"- 추정 비용(gpt-4.1-mini 단가 기준): ${input_cost + output_cost:.4f}"
+        f"- 추정 비용(gpt-4.1-mini 참고 단가 기준, 실제 `{settings.openai_llm_model}` 단가와 다를 "
+        f"수 있음): ${input_cost + output_cost:.4f}"
         f"(요청 {len(users) - skipped_users}건 기준, 후보군이 커지면 입력 토큰이 선형으로 늘어난다)",
         "",
         "①~③은 임베딩 계산(요청당 1회) 외 추가 LLM 호출이 없다 — 후보 수가 늘어도 스코어링",

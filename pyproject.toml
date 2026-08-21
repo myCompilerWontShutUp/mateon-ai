@@ -28,6 +28,10 @@ dev = [
     # CLAUDE.md "그래프형 시각화" 참고).
     "numpy>=1.26",
     "umap-learn>=0.5",
+    # scikit-learn은 umap-learn의 하위 의존성으로 이미 딸려온다 — 클러스터 가중치 ML 사전 구축
+    # 실험(scripts/train_cluster_weight_ml_pretrain.py, 로지스틱 회귀)에도 재사용. matplotlib은
+    # 그 실험 결과를 로컬 전용으로 시각화하는 용도(2026-08-21).
+    "matplotlib>=3.9",
 ]
 
 [tool.uv]
