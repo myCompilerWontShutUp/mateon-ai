@@ -25,7 +25,9 @@ USER appuser
 EXPOSE 8000
 
 # /health는 인증 불필요(app/api/router.py) — 컨테이너 자체가 뜨는지만 확인하는 용도.
+# Railway 등 PaaS가 주입하는 $PORT를 읽어야 한다 — 하드코딩된 8000은 로컬에서만 맞고,
+# 실제 배포 환경에서 Railway가 할당한 포트와 어긋나 502를 유발한다(2026-08-23 실측 발견).
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+    CMD ["python", "-c", "import os, urllib.request; urllib.request.urlopen('http://localhost:' + os.environ.get('PORT', '8000') + '/health')"]
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
