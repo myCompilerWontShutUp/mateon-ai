@@ -56,7 +56,7 @@ class ProposalAssemblyRequest(BaseModel):
     candidate_summary: str
     target_summary: str
 
-    # 선택 필드 — 없으면 클러스터 선호 데이터 로깅만 건너뛰고 기존 흐름은 그대로 동작한다
-    # (하위 호환 유지). 아직 Supabase에 실제로 기록하는 로직은 연결되지 않았다 — 필드만 받는
-    # 단계다(CLAUDE.md "## 모니터링·데이터 기반 가중치 보정" 2번 항목 참고).
-    selection_context: SelectionContext | None = None
+    # selection_context는 2026-08-23에 여기서 뺐다 — BE가 제안 조립을 기존 계약으로 롤백하면서,
+    # 선택 이벤트 로깅은 POST /selection-events로 분리해달라고 요청했다. 핵심 경로(제안 생성)와
+    # 모니터링 경로(선택 로깅)를 요청 스키마 레벨에서도 완전히 독립시켜, 한쪽만 롤백/재배포할 수
+    # 있게 하기 위함(app/schemas/selection_event.py 참고).

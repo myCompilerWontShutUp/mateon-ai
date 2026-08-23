@@ -179,8 +179,7 @@ var response = mateonAiRestClient.post()
 ```java
 public record ProposalAssemblyRequest(
         Long userId, Long teamId, Long contestId, Long senderId, Long receiverId, Long intentId,
-        double synergyScore, String candidateSummary, String targetSummary,
-        SelectionContext selectionContext  // nullable — 2-4-1 참고, 없어도 기존 흐름 그대로 동작
+        double synergyScore, String candidateSummary, String targetSummary
 ) {}
 
 public record ProposalSchema(
@@ -197,7 +196,7 @@ var response = mateonAiRestClient.post()
         .uri("/proposals/user-to-team")
         .body(new ProposalAssemblyRequest(
                 user.getId(), team.getId(), contestId, user.getId(), team.getId(), slot.getId(),
-                selectedRecommendation.score(), candidateSummary, targetSummary, selectionContext))
+                selectedRecommendation.score(), candidateSummary, targetSummary))
         .retrieve()
         .body(ProposalSchema.class);
 
@@ -206,37 +205,14 @@ Proposal proposal = Proposal.from(response);
 proposalRepository.save(proposal); // 여기서 비로소 proposal_id 생성
 ```
 
-### 2-4-1. 선택 피드백 로깅 (선택 필드, 2026-08-20 추가 — 클러스터별 가중치 보정용)
+### 2-4-1. 선택 피드백 로깅 — `POST /selection-events`로 분리(2026-08-23)
 
-`selectionContext`를 함께 보내면 AI 서버가 "이 클러스터의 사용자가 어떤 팀을 골랐는가"를
-기록해 나중에 스코어링 가중치를 보정하는 데 쓴다. **아직 필수는 아니다** — 이 필드가 없으면
-로깅만 생략하고 제안 조립 자체는 그대로 동작한다.
-
-```java
-public record ShownCandidate(Long candidateId, double totalScore, ComponentScores componentScores) {}
-
-public record SelectionContext(
-        String idempotencyKey, Map<String, Object> chooserFields, List<ShownCandidate> shownCandidates
-) {}
-```
-
-- **`idempotencyKey`**: 이 요청 전용으로 새로 생성하는 UUID(`UUID.randomUUID().toString()`).
-  **`proposalId`가 아니다** — 이 호출 시점엔 `proposalId`가 아직 채번되기 전이라(백엔드가 저장할
-  때 채번) 멱등키로 쓸 수 없다. 재시도 시 같은 값을 다시 보내면 AI 서버가 중복 기록하지 않는다.
-- **`chooserFields`**: 2-2에서 이미 만든 `queryMetadata`를 그대로 재사용하면 된다
-  (`desired_roles`, `experience_level`) — 새로 계산할 게 없다.
-- **`shownCandidates`**: 2-2 응답으로 받은 랭킹 결과 전체(컴포넌트별 점수 포함, 위
-  `RecommendationItem.componentScores` 참고)를 그대로 담는다.
-
-```java
-var selectionContext = new SelectionContext(
-        UUID.randomUUID().toString(),
-        queryMetadata,  // 2-2에서 만든 것 재사용
-        recommendationResponse.recommendations().stream()
-                .map(r -> new ShownCandidate(r.candidateId(), r.score(), r.componentScores()))
-                .toList()
-);
-```
+2026-08-20엔 `selectionContext`를 이 요청에 선택 필드로 얹는 방식이었는데, 2026-08-23에
+**완전히 별도인 `POST /selection-events` 엔드포인트**로 옮겼다 — 제안 조립(위 요청)은 이제
+`selectionContext`를 받지 않는다. 클러스터별 가중치 보정용 로깅이 필요하면 제안 생성 직후
+별도 요청으로 `/selection-events`를 호출하면 된다. 상세 필드 설명·Java 예시·JSON 예시는
+[`docs/monitoring/selection-feedback-draft.md`](monitoring/selection-feedback-draft.md)
+"변경 B" 참고 — 여기서 중복 설명하지 않는다.
 
 ## 에러 처리
 

@@ -4,6 +4,7 @@ from typing import Any
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from app.features.quality import router as quality_router_module
 from app.features.recommendation import reason as reason_module
 from app.features.team_to_user import proposal as team_to_user_proposal_module
 from app.features.team_to_user import recommend as team_to_user_recommend_module
@@ -31,6 +32,7 @@ def _no_background_tasks(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(user_to_team_proposal_module, "fire_and_forget", _noop)
     monkeypatch.setattr(team_to_user_proposal_module, "fire_and_forget", _noop)
     monkeypatch.setattr(reason_module, "fire_and_forget", _noop)
+    monkeypatch.setattr(quality_router_module, "fire_and_forget", _noop)
 
 
 @pytest.fixture(autouse=True)
