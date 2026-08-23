@@ -18,7 +18,7 @@ def render_intent_embedding_text(conversation_text: str, fields: UserIntentField
         f"희망 역할: {', '.join(fields.desired_roles) or '미정'}",
         f"스킬: {', '.join(fields.skills) or '미정'}",
         f"관심 분야: {', '.join(fields.interests) or '미정'}",
-        f"활동 목표: {fields.activity_goal or '미정'}",
+        f"활동 목표: {fields.optional.activity_goal or '미상'}",
         f"활동 방식: {fields.activity_style or '미정'}",
         f"경험 수준: {fields.experience_level or '미정'}",
         f"활동 시간: {fields.optional.activity_time or '미상'}",

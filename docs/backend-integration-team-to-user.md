@@ -92,8 +92,7 @@ DTO는 제안(USER_TO_TEAM) 쪽과 완전히 동일한 `ProposalAssemblyRequest`
 ```java
 public record ProposalAssemblyRequest(
         Long userId, Long teamId, Long contestId, Long senderId, Long receiverId, Long intentId,
-        double synergyScore, String candidateSummary, String targetSummary,
-        SelectionContext selectionContext  // nullable — 3-3-1 참고
+        double synergyScore, String candidateSummary, String targetSummary
 ) {}
 
 public record ProposalSchema(
@@ -107,7 +106,7 @@ var response = mateonAiRestClient.post()
         .uri("/proposals/team-to-user")
         .body(new ProposalAssemblyRequest(
                 selectedUser.getId(), team.getId(), contestId, team.getId(), selectedUser.getId(), null,
-                selectedRecommendation.score(), candidateSummary, targetSummary, selectionContext))
+                selectedRecommendation.score(), candidateSummary, targetSummary))
         .retrieve()
         .body(ProposalSchema.class);
 
@@ -115,38 +114,15 @@ Proposal proposal = Proposal.from(response); // direction: TEAM_TO_USER
 proposalRepository.save(proposal);
 ```
 
-### 3-3-1. 선택 피드백 로깅 (선택 필드, 2026-08-20 추가)
+### 3-3-1. 선택 피드백 로깅 — `POST /selection-events`로 분리(2026-08-23)
 
-`user-to-team` 쪽(2-4-1)과 완전히 같은 `SelectionContext` 구조를 쓴다. **`chooserFields`만
-방향에 맞게 다르다** — 여기서는 팀장(팀) 쪽이 고르는 입장이므로 팀의 정규화된 필드를 쓴다:
-
-```java
-public record ShownCandidate(Long candidateId, double totalScore, ComponentScores componentScores) {}
-
-public record SelectionContext(
-        String idempotencyKey, Map<String, Object> chooserFields, List<ShownCandidate> shownCandidates
-) {}
-```
-
-```java
-var chooserFields = Map.of(
-        "recruiting_roles", team.getEmbeddingMetadata().get("recruiting_roles"),
-        "contest_field", team.getEmbeddingMetadata().get("contest_field")
-);
-
-var selectionContext = new SelectionContext(
-        UUID.randomUUID().toString(),
-        chooserFields,
-        recommendationResponse.recommendations().stream()
-                .map(r -> new ShownCandidate(r.candidateId(), r.score(), r.componentScores()))
-                .toList()
-);
-```
-
-AI 서버는 이 값(`recruiting_roles` × `contest_field`)으로 팀 쪽 클러스터 키를 계산한다 —
-사용자 쪽(`desired_roles` × `experience_level`)과 대칭 구조이며, 둘 다 이미 정규화해서 갖고
-있는 기존 코드 체계를 그대로 재사용할 뿐 새로 계산할 값은 없다. 이 필드도 선택값이라 없으면
-로깅만 생략된다.
+2026-08-20엔 `selectionContext`를 이 요청에 선택 필드로 얹는 방식이었는데, 2026-08-23에
+**완전히 별도인 `POST /selection-events` 엔드포인트**로 옮겼다 — 제안 조립(위 요청)은 이제
+`selectionContext`를 받지 않는다. `user-to-team` 쪽(2-4-1)과 완전히 같은 구조를 쓰되
+`direction: "TEAM_TO_USER"`, `chooserFields`는 팀의 정규화된 필드(`recruiting_roles`×
+`contest_field`)를 쓴다는 점만 다르다. 상세 필드 설명·Java 예시·JSON 예시는
+[`docs/monitoring/selection-feedback-draft.md`](monitoring/selection-feedback-draft.md)
+"변경 B" 참고 — 여기서 중복 설명하지 않는다.
 
 **주의**: `portfolioRoleFitScore`는 응답에 필드만 남아있고 항상 `null`이다. 포트폴리오
 데이터 없이 `experience_level`을 대리 지표로 쓰던 이전 방식은 신호가 약해 계산에서

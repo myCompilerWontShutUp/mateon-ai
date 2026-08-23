@@ -125,10 +125,9 @@ AI 서버는 mateon-backend만 호출하고 프론트엔드가 직접 부르는 
     "desired_roles": [],
     "skills": ["React", "TypeScript"],
     "interests": [],
-    "activity_goal": "포트폴리오용 프로젝트",
     "activity_style": null,
     "experience_level": null,
-    "optional": { "activity_time": null }
+    "optional": { "activity_time": null, "activity_goal": "포트폴리오용 프로젝트" }
   },
   "embedding_text": null,
   "embedding_vector": null,
@@ -144,10 +143,9 @@ AI 서버는 mateon-backend만 호출하고 프론트엔드가 직접 부르는 
     "desired_roles": ["BE"],
     "skills": ["React", "TypeScript"],
     "interests": ["커머스"],
-    "activity_goal": "포트폴리오용 프로젝트",
     "activity_style": "주 2회 오프라인",
     "experience_level": "beginner",
-    "optional": { "activity_time": null }
+    "optional": { "activity_time": null, "activity_goal": "포트폴리오용 프로젝트" }
   },
   "embedding_text": "...",
   "embedding_vector": [0.0123, -0.0456, "... 1536개"],
@@ -163,6 +161,11 @@ AI 서버는 mateon-backend만 호출하고 프론트엔드가 직접 부르는 
 실 데이터로 유의미하다고 판단하면 그때 반영될 수 있다). BE가 `query_metadata`/
 `candidates[].metadata`에 `activity_time`을 안 보내도 기존 흐름은 그대로 동작한다(기본값
 0.5, 중립).
+
+선택 필드 2호는 `activity_goal`(이번 활동으로 이루고 싶은 목표, 예: "포트폴리오용 프로젝트",
+"공모전 수상")이다(2026-08-21 추가 — 원래 `extracted` 최상위에 있었는데 필수도 아니면서
+`optional`에도 안 들어 있어 애매했다). `activity_time`과 달리 대응하는 스코어링 함수 자체가
+없다 — 임베딩 텍스트에만 반영되고 `component_scores`에는 노출되지 않는다.
 
 `assistant_message`는 프론트가 그대로 화면에 보여주면 되는 챗봇 문구다(2026-07-15 추가) —
 재진술 + 다음 질문 하나(누락 필드가 있을 때), 또는 재진술 + 추천 시작 안내(다 채워졌을 때),
@@ -405,32 +408,15 @@ AI 서버가 아무것도 저장하지 않으므로, 이유 생성에 필요한 
   "intent_id": 88,
   "synergy_score": 0.91,
   "candidate_summary": "React/TypeScript 경험, 초보자",
-  "target_summary": "커머스 플랫폼, BE 1명 결핍",
-  "selection_context": {
-    "idempotency_key": "b3f1...(UUID)",
-    "chooser_fields": { "desired_roles": ["BE"], "experience_level": "beginner" },
-    "shown_candidates": [
-      {
-        "candidate_id": 17, "total_score": 0.91,
-        "component_scores": { "similarity": 0.8, "role_match": 1.0, "deficit_fit": 1.0, "beginner_fit": 0.5, "activity_style_match": 1.0 }
-      },
-      {
-        "candidate_id": 42, "total_score": 0.14,
-        "component_scores": { "similarity": 0.1, "role_match": 0.0, "deficit_fit": 0.0, "beginner_fit": 1.0, "activity_style_match": 0.5 }
-      }
-    ]
-  }
+  "target_summary": "커머스 플랫폼, BE 1명 결핍"
 }
 ```
 
-`selection_context`는 **선택 필드**다(2026-08-20 추가) — 없으면 클러스터별 선호 데이터 로깅만
-생략되고 나머지 조립은 그대로 동작한다. `idempotency_key`는 `proposal_id`가 아니다 — 이 요청
-시점엔 `proposal_id`가 아직 채번되기 전이라(백엔드가 응답을 저장하며 채번) 멱등키로 쓸 수
-없다. 백엔드가 이 요청 전용으로 새 UUID를 생성해 보낸다. `chooser_fields`는 `USER_TO_TEAM`이면
-`desired_roles`/`experience_level`, `TEAM_TO_USER`면 `recruiting_roles`/`contest_field` — 둘 다
-이미 정규화해서 갖고 있는 값을 재사용할 뿐 새로 계산할 게 없다. 자세한 내용은
-`docs/backend-integration-user-to-team.md`의 "2-4-1"과
-`docs/backend-integration-team-to-user.md`의 "3-3-1" 참고.
+**`selection_context`는 더 이상 이 요청의 일부가 아니다(2026-08-23 롤백).** 2026-08-20에
+클러스터별 선호 데이터 로깅용으로 이 요청에 선택 필드로 추가했었는데, BE가 `/proposals/*`를
+원래 계약으로 롤백하면서 선택 이벤트 로깅은 별도 엔드포인트(`POST /selection-events`, 11번
+섹션)로 분리해달라고 요청했다 — 제안 조립(핵심 경로)과 선택 로깅(모니터링 경로)을 요청
+스키마 레벨에서도 완전히 독립시켜, 한쪽만 롤백·재배포할 수 있게 하기 위함이다.
 
 응답 (`ProposalSchema`):
 ```json
@@ -542,3 +528,145 @@ curl -X POST https://.../portfolios/summarize \
 하나**다 — 다른 엔드포인트의 `summary`/`reason`과 달리 사람이 읽는 자유 형식 결과물이라
 필드를 더 쪼갤 이유가 없었다. 프롬프트에 절대 평가(합격 가능성 등) 금지, 사실 기반 서술만
 지시해뒀다.
+
+---
+
+## 10. 공모전 유사도 지도 — `POST /contests/similarity-map`
+
+핵심 매칭 기능(제안/역제안)과 무관한 **부가 시각화 기능**이다 — 쿼리 공모전 1건을 중심에 두고,
+BE가 넘겨준 후보 공모전들을 "얼마나 비슷한가"에 따라 2차원에 배치할 좌표를 계산해 반환한다.
+다른 엔드포인트와 마찬가지로 무상태다 — 임베딩 벡터는 BE가 요청에 실어 보내야 한다(AI 서버는
+공모전 임베딩을 자체적으로 계산하거나 저장하지 않는다. 공모전 임베딩을 어디서 계산할지는 아직
+정해지지 않았다 — 팀 임베딩과 같은 방식으로 별도 `embedding:refresh` 류 엔드포인트가 필요할 수
+있다, 상세 문서 참고).
+
+> 상세 배경·설계 근거·BE 체크리스트: [`backend-integration-contest-similarity-draft.md`](backend-integration-contest-similarity-draft.md)
+
+요청:
+```json
+{
+  "query": {
+    "id": "linkareer-325453",
+    "embedding_vector": [0.01, -0.02, "... 1536개"],
+    "title": "제1회 대학생 국제기구 입찰 경진대회",
+    "organizer": "(사)정부조달수출진흥협회",
+    "category": "CONTEST",
+    "field": "EDUCATION",
+    "detail_url": "https://linkareer.com/activity/325453"
+  },
+  "candidates": [
+    {
+      "id": "linkareer-328417",
+      "embedding_vector": [0.03, 0.04, "... 1536개"],
+      "title": "한솔그룹 AI숏폼 공모전",
+      "organizer": "한솔그룹",
+      "category": "CONTEST",
+      "field": "PLANNING_IDEA",
+      "detail_url": "https://linkareer.com/activity/328417"
+    }
+  ],
+  "top_n": 500
+}
+```
+
+응답:
+```json
+{
+  "query": {
+    "id": "linkareer-325453",
+    "title": "제1회 대학생 국제기구 입찰 경진대회",
+    "organizer": "(사)정부조달수출진흥협회",
+    "category": "CONTEST",
+    "field": "EDUCATION",
+    "field_label": "교육",
+    "detail_url": "https://linkareer.com/activity/325453"
+  },
+  "points": [
+    {
+      "id": "linkareer-328417",
+      "title": "한솔그룹 AI숏폼 공모전",
+      "organizer": "한솔그룹",
+      "category": "CONTEST",
+      "field": "PLANNING_IDEA",
+      "field_label": "기획/아이디어",
+      "detail_url": "https://linkareer.com/activity/328417",
+      "similarity": 0.615,
+      "rank_percentile": 0.0,
+      "radius": 2.6,
+      "x": 1.14,
+      "y": -2.35
+    }
+  ],
+  "max_radius": 12.0,
+  "min_radius": 2.6,
+  "radial_jitter": 0.5,
+  "reference_rings": [
+    { "percentile": 0.1, "similarity_at_percentile": 0.505, "radius": 3.54 },
+    { "percentile": 0.3, "similarity_at_percentile": 0.463, "radius": 5.42 },
+    { "percentile": 0.6, "similarity_at_percentile": 0.422, "radius": 8.24 },
+    { "percentile": 0.9, "similarity_at_percentile": 0.368, "radius": 11.06 }
+  ],
+  "candidate_pool_total": 1
+}
+```
+
+**후보 선정은 여전히 BE 책임이다** — `candidates`에 넣어 보낸 것 중에서만 유사도를 계산하고
+정렬·`top_n` 컷을 한다("AI 서버는 후보 선정을 하지 않는다" 원칙 그대로).
+
+**반지름은 절대 유사도(0~1)가 아니라 `candidates` 안에서의 순위 백분위로 정한다** —
+가장 유사한 후보가 `min_radius`, 가장 안 비슷한 후보가 `max_radius`에 오도록 항상 전체
+구간을 채운다. 처음엔 절대 유사도를 그대로 반지름에 매핑했는데, 실제 공모전 데이터는
+유사도가 0.25~0.62 같은 좁은 대역에만 몰려 있어서 대부분의 점이 바깥쪽 절반에만 찍히고
+`유사도 0.9` 같은 절대 기준선 안쪽엔 아무것도 안 찍히는 문제가 있었다 — 그래서 `x`/`y`도
+`similarity`가 아니라 **후보군 안에서의 상대 순위**로 계산한다. `reference_rings`가 그
+근거다 — "상위 10%"가 지금 후보군 기준으로 실제 어떤 유사도 값에 해당하는지를 같이 담아,
+FE가 절대 유사도 숫자를 참고선으로 보여줄 수 있게 한다.
+
+**색상은 응답에 없다** — `similarity`/`rank_percentile`만 주고, 실제 표시 색(예: 멀수록
+회색·가까울수록 파랑)은 FE가 계산한다. 라이트/다크 테마 전환에 그때그때 대응하기 쉽고,
+색상 팔레트는 순수 프레젠테이션 관심사라 AI 서버가 매번 정할 이유가 없어서다.
+
+**같은 순위대끼리만 자연스럽게 흩어지고, 서로 다른 순위대는 절대 겹치지 않는다** — 각 점의
+반지름은 `자기 순위가 정한 이상적인 반지름 ± radial_jitter`로만 흔든다. 모든 점이 반지름
+범위(예: 공통 안쪽 경계)를 공유하는 방식은 시연 중 유사도 낮은 점이 우연히 중앙 근처로
+찍히는 버그로 이어져서 폐기했다.
+
+---
+
+## 11. 선택 이벤트 로깅 — `POST /selection-events`
+
+클러스터별 가중치 보정(`CLAUDE.md` "## 모니터링·데이터 기반 가중치 보정" 참고)용 신호를 기록한다.
+2026-08-23에 `/proposals/*`(6·7번 섹션)에서 분리된 엔드포인트다 — 제안 생성(핵심 경로)과 이
+로깅(모니터링 경로)은 이제 완전히 독립된 요청이라, 한쪽만 재배포·롤백해도 다른 쪽에 영향이 없다.
+fire-and-forget이라 Supabase 기록 성공 여부와 무관하게 항상 `{"accepted": true}`를 반환한다.
+
+요청:
+```json
+{
+  "direction": "USER_TO_TEAM",
+  "selected_candidate_id": 17,
+  "selection_context": {
+    "idempotency_key": "b3f1...(UUID)",
+    "chooser_fields": { "desired_roles": ["BE"], "experience_level": "beginner" },
+    "shown_candidates": [
+      {
+        "candidate_id": 17, "total_score": 0.91,
+        "component_scores": { "similarity": 0.8, "role_match": 1.0, "deficit_fit": 1.0, "beginner_fit": 0.5, "activity_style_match": 1.0 }
+      },
+      {
+        "candidate_id": 42, "total_score": 0.14,
+        "component_scores": { "similarity": 0.1, "role_match": 0.0, "deficit_fit": 0.0, "beginner_fit": 1.0, "activity_style_match": 0.5 }
+      }
+    ]
+  }
+}
+```
+
+응답:
+```json
+{ "accepted": true }
+```
+
+> 필드별 설명, 방향별(USER_TO_TEAM/TEAM_TO_USER) 차이, Java 예시, BE 체크리스트는 전부
+> [`docs/monitoring/selection-feedback-draft.md`](monitoring/selection-feedback-draft.md)
+> "변경 B" 하나에 모아뒀다 — 이 문서에는 요청/응답 형태만 남긴다.

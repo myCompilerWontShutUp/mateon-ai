@@ -1,0 +1,631 @@
+{
+  "user_id": "1",
+  "user_desired_roles": [
+    "FE"
+  ],
+  "user_skills": [
+    "Vue",
+    "Next.js"
+  ],
+  "user_interests": "예술, 중고거래",
+  "points": [
+    {
+      "team_id": 20,
+      "recruiting_roles": [
+        "FE"
+      ],
+      "contest_field": "STARTUP_SELF_DEVELOPMENT",
+      "contest_field_label": "창업/자기계발",
+      "intro": "에듀테크 서비스를 만드는 팀입니다. FE 역할을 모집 중이며, 오프라인으로 주 1회 모입니다. 포트폴리오 제작이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.75,
+      "y_interest_fit": 0.1976328503291301,
+      "total_score": 0.925
+    },
+    {
+      "team_id": 24,
+      "recruiting_roles": [
+        "FE",
+        "ETC"
+      ],
+      "contest_field": null,
+      "contest_field_label": null,
+      "intro": "채용 서비스를 만드는 팀입니다. FE, ETC 역할을 모집 중이며, 오프라인으로 주 4회 이상 모입니다. 포트폴리오 제작이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.625,
+      "y_interest_fit": 0.23809017717996492,
+      "total_score": 0.8759121499203811
+    },
+    {
+      "team_id": 16,
+      "recruiting_roles": [
+        "FE",
+        "PM"
+      ],
+      "contest_field": "SPORTS_FITNESS",
+      "contest_field_label": "체육/헬스",
+      "intro": "음악 서비스를 만드는 팀입니다. FE, PM 역할을 모집 중이며, 온라인으로 주 2~3회 모입니다. 포트폴리오 제작이 목표입니다.",
+      "x_skill_fit": 0.5,
+      "y_interest_fit": 0.2221200177078847,
+      "total_score": 0.776735149922982
+    },
+    {
+      "team_id": 2,
+      "recruiting_roles": [
+        "RESEARCH",
+        "FE"
+      ],
+      "contest_field": "DISTRIBUTION_LOGISTICS",
+      "contest_field_label": "유통/물류",
+      "intro": "배달 서비스를 만드는 팀입니다. RESEARCH, FE 역할을 모집 중이며, 오프라인으로 주 2~3회 모입니다. 공모전 수상이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.625,
+      "y_interest_fit": 0.22414009398526916,
+      "total_score": 0.7478342252559899
+    },
+    {
+      "team_id": 32,
+      "recruiting_roles": [
+        "FE",
+        "BUSINESS"
+      ],
+      "contest_field": null,
+      "contest_field_label": null,
+      "intro": "모빌리티 서비스를 만드는 팀입니다. FE, BUSINESS 역할을 모집 중이며, 오프라인으로 주 4회 이상 모입니다. 공모전 수상이 목표입니다. 초보자도 편하게 참여할 수 있는 분위기입니다.",
+      "x_skill_fit": 0.625,
+      "y_interest_fit": 0.22161085001771155,
+      "total_score": 0.7258006654322768
+    },
+    {
+      "team_id": 30,
+      "recruiting_roles": [
+        "CONTENT",
+        "FE"
+      ],
+      "contest_field": "ETC",
+      "contest_field_label": "기타",
+      "intro": "재테크 서비스를 만드는 팀입니다. CONTENT, FE 역할을 모집 중이며, 오프라인으로 주 4회 이상 모입니다. 공모전 수상이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.625,
+      "y_interest_fit": 0.23977379353492223,
+      "total_score": 0.7194231904635728
+    },
+    {
+      "team_id": 41,
+      "recruiting_roles": [
+        "PM",
+        "FE"
+      ],
+      "contest_field": "TRAVEL_HOTEL_AIRLINE",
+      "contest_field_label": "여행/호텔/항공",
+      "intro": "환경 서비스를 만드는 팀입니다. PM, FE 역할을 모집 중이며, 온라인으로 주 2~3회 모입니다. 취미로 가볍게이 목표입니다. 초보자도 편하게 참여할 수 있는 분위기입니다.",
+      "x_skill_fit": 0.625,
+      "y_interest_fit": 0.23668937280496027,
+      "total_score": 0.7137307218765219
+    },
+    {
+      "team_id": 8,
+      "recruiting_roles": [
+        "FE",
+        "RESEARCH"
+      ],
+      "contest_field": "COOKING_FOOD",
+      "contest_field_label": "요리/식품",
+      "intro": "정신건강 서비스를 만드는 팀입니다. FE, RESEARCH 역할을 모집 중이며, 혼합으로 주 4회 이상 모입니다. 실무형 프로젝트 경험이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.625,
+      "y_interest_fit": 0.1900685490543576,
+      "total_score": 0.6618189004043128
+    },
+    {
+      "team_id": 15,
+      "recruiting_roles": [
+        "FE"
+      ],
+      "contest_field": "SPORTS_FITNESS",
+      "contest_field_label": "체육/헬스",
+      "intro": "자원봉사 서비스를 만드는 팀입니다. FE 역할을 모집 중이며, 혼합으로 주 2~3회 모입니다. 공모전 수상이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.75,
+      "y_interest_fit": 0.18034111371032152,
+      "total_score": 0.6387434895638335
+    },
+    {
+      "team_id": 35,
+      "recruiting_roles": [
+        "Data",
+        "FE"
+      ],
+      "contest_field": "POLITICS_SOCIETY_LAW",
+      "contest_field_label": "정치/사회/법률",
+      "intro": "취미공유 서비스를 만드는 팀입니다. Data, FE 역할을 모집 중이며, 온라인으로 주 4회 이상 모입니다. 공모전 수상이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.5,
+      "y_interest_fit": 0.27525956154318537,
+      "total_score": 0.6247257621927876
+    },
+    {
+      "team_id": 50,
+      "recruiting_roles": [
+        "FE",
+        "BE"
+      ],
+      "contest_field": "ETC",
+      "contest_field_label": "기타",
+      "intro": "자원봉사 서비스를 만드는 팀입니다. FE, BE 역할을 모집 중이며, 혼합으로 주 1회 모입니다. 공모전 수상이 목표입니다. 초보자도 편하게 참여할 수 있는 분위기입니다.",
+      "x_skill_fit": 0.5,
+      "y_interest_fit": 0.20085254474322153,
+      "total_score": 0.5457979211337327
+    },
+    {
+      "team_id": 34,
+      "recruiting_roles": [
+        "BE"
+      ],
+      "contest_field": "CONTENTS",
+      "contest_field_label": "콘텐츠",
+      "intro": "부동산 서비스를 만드는 팀입니다. BE 역할을 모집 중이며, 온라인으로 주 1회 모입니다. 포트폴리오 제작이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.23413753466881795,
+      "total_score": 0.5447054226109198
+    },
+    {
+      "team_id": 21,
+      "recruiting_roles": [
+        "MARKETING"
+      ],
+      "contest_field": "STARTUP_SELF_DEVELOPMENT",
+      "contest_field_label": "창업/자기계발",
+      "intro": "게임 서비스를 만드는 팀입니다. MARKETING 역할을 모집 중이며, 오프라인으로 주 4회 이상 모입니다. 포트폴리오 제작이 목표입니다. 초보자도 편하게 참여할 수 있는 분위기입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.24053220169368178,
+      "total_score": 0.5029534599692174
+    },
+    {
+      "team_id": 33,
+      "recruiting_roles": [
+        "BE"
+      ],
+      "contest_field": "SPORTS_FITNESS",
+      "contest_field_label": "체육/헬스",
+      "intro": "반려동물 서비스를 만드는 팀입니다. BE 역할을 모집 중이며, 오프라인으로 주 1회 모입니다. 실무형 프로젝트 경험이 목표입니다. 초보자도 편하게 참여할 수 있는 분위기입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.25639510264557197,
+      "total_score": 0.4996150967153905
+    },
+    {
+      "team_id": 31,
+      "recruiting_roles": [
+        "Design",
+        "Data"
+      ],
+      "contest_field": "EDUCATION",
+      "contest_field_label": "교육",
+      "intro": "예술 서비스를 만드는 팀입니다. Design, Data 역할을 모집 중이며, 오프라인으로 주 2~3회 모입니다. 실무형 프로젝트 경험이 목표입니다. 초보자도 편하게 참여할 수 있는 분위기입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.3661957509486865,
+      "total_score": 0.4942975328841334
+    },
+    {
+      "team_id": 25,
+      "recruiting_roles": [
+        "Data"
+      ],
+      "contest_field": "EVENT_FESTIVAL",
+      "contest_field_label": "행사/페스티벌",
+      "intro": "헬스케어 서비스를 만드는 팀입니다. Data 역할을 모집 중이며, 오프라인으로 주 4회 이상 모입니다. 포트폴리오 제작이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.19379178116711543,
+      "total_score": 0.48529957182735045
+    },
+    {
+      "team_id": 44,
+      "recruiting_roles": [
+        "BE"
+      ],
+      "contest_field": null,
+      "contest_field_label": null,
+      "intro": "부동산 서비스를 만드는 팀입니다. BE 역할을 모집 중이며, 혼합으로 주 2~3회 모입니다. 포트폴리오 제작이 목표입니다. 초보자도 편하게 참여할 수 있는 분위기입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.24304190022549169,
+      "total_score": 0.48275242955894554
+    },
+    {
+      "team_id": 39,
+      "recruiting_roles": [
+        "RESEARCH"
+      ],
+      "contest_field": "PRESS_MEDIA",
+      "contest_field_label": "언론/미디어",
+      "intro": "중고거래 서비스를 만드는 팀입니다. RESEARCH 역할을 모집 중이며, 오프라인으로 주 2~3회 모입니다. 실무형 프로젝트 경험이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.4441248472476455,
+      "total_score": 0.46883957035518514
+    },
+    {
+      "team_id": 3,
+      "recruiting_roles": [
+        "RESEARCH"
+      ],
+      "contest_field": "SPORTS_FITNESS",
+      "contest_field_label": "체육/헬스",
+      "intro": "예술 서비스를 만드는 팀입니다. RESEARCH 역할을 모집 중이며, 오프라인으로 주 2~3회 모입니다. 공모전 수상이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.3134612145032982,
+      "total_score": 0.4585839389870652
+    },
+    {
+      "team_id": 23,
+      "recruiting_roles": [
+        "PM"
+      ],
+      "contest_field": "DESIGN_PHOTO_ART_VIDEO",
+      "contest_field_label": "디자인/사진/예술/영상",
+      "intro": "육아 서비스를 만드는 팀입니다. PM 역할을 모집 중이며, 오프라인으로 주 2~3회 모입니다. 포트폴리오 제작이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.23633953083307283,
+      "total_score": 0.446010907527711
+    },
+    {
+      "team_id": 10,
+      "recruiting_roles": [
+        "BUSINESS"
+      ],
+      "contest_field": "ETC",
+      "contest_field_label": "기타",
+      "intro": "반려동물 서비스를 만드는 팀입니다. BUSINESS 역할을 모집 중이며, 오프라인으로 주 1회 모입니다. 공모전 수상이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.267567822810841,
+      "total_score": 0.43866612884285794
+    },
+    {
+      "team_id": 22,
+      "recruiting_roles": [
+        "PM"
+      ],
+      "contest_field": "BEAUTY_COSMETICS",
+      "contest_field_label": "뷰티/미용/화장품",
+      "intro": "뷰티 서비스를 만드는 팀입니다. PM 역할을 모집 중이며, 오프라인으로 주 2~3회 모입니다. 실무형 프로젝트 경험이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.24862517285369798,
+      "total_score": 0.419944111082183
+    },
+    {
+      "team_id": 29,
+      "recruiting_roles": [
+        "BE",
+        "CONTENT"
+      ],
+      "contest_field": "ETC",
+      "contest_field_label": "기타",
+      "intro": "에듀테크 서비스를 만드는 팀입니다. BE, CONTENT 역할을 모집 중이며, 혼합으로 주 1회 모입니다. 포트폴리오 제작이 목표입니다. 초보자도 편하게 참여할 수 있는 분위기입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.2084687476196686,
+      "total_score": 0.41964883201737707
+    },
+    {
+      "team_id": 26,
+      "recruiting_roles": [
+        "MARKETING"
+      ],
+      "contest_field": "SCIENCE_ENGINEERING_TECH_IT",
+      "contest_field_label": "과학/공학/기술/IT",
+      "intro": "언어학습 서비스를 만드는 팀입니다. MARKETING 역할을 모집 중이며, 온라인으로 주 1회 모입니다. 취미로 가볍게이 목표입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.29512476362517026,
+      "total_score": 0.410814740576804
+    },
+    {
+      "team_id": 11,
+      "recruiting_roles": [
+        "ETC",
+        "CONTENT"
+      ],
+      "contest_field": null,
+      "contest_field_label": null,
+      "intro": "에듀테크 서비스를 만드는 팀입니다. ETC, CONTENT 역할을 모집 중이며, 오프라인으로 주 2~3회 모입니다. 공모전 수상이 목표입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.2661660153312358,
+      "total_score": 0.40429571879227527
+    },
+    {
+      "team_id": 12,
+      "recruiting_roles": [
+        "BE"
+      ],
+      "contest_field": "COOKING_FOOD",
+      "contest_field_label": "요리/식품",
+      "intro": "육아 서비스를 만드는 팀입니다. BE 역할을 모집 중이며, 혼합으로 주 1회 모입니다. 포트폴리오 제작이 목표입니다. 초보자도 편하게 참여할 수 있는 분위기입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.1878792176434109,
+      "total_score": 0.39568092952750605
+    },
+    {
+      "team_id": 40,
+      "recruiting_roles": [
+        "BE",
+        "Design"
+      ],
+      "contest_field": "PLANNING_IDEA",
+      "contest_field_label": "기획/아이디어",
+      "intro": "정신건강 서비스를 만드는 팀입니다. BE, Design 역할을 모집 중이며, 온라인으로 주 2~3회 모입니다. 공모전 수상이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.21889331060582687,
+      "total_score": 0.3758938225767643
+    },
+    {
+      "team_id": 13,
+      "recruiting_roles": [
+        "CONTENT"
+      ],
+      "contest_field": "SOCIAL_CONTRIBUTION_EXCHANGE",
+      "contest_field_label": "사회공헌/교류",
+      "intro": "독서 서비스를 만드는 팀입니다. CONTENT 역할을 모집 중이며, 혼합으로 주 2~3회 모입니다. 포트폴리오 제작이 목표입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.23479643476174508,
+      "total_score": 0.37452603493502457
+    },
+    {
+      "team_id": 4,
+      "recruiting_roles": [
+        "RESEARCH",
+        "CONTENT"
+      ],
+      "contest_field": "COOKING_FOOD",
+      "contest_field_label": "요리/식품",
+      "intro": "중고거래 서비스를 만드는 팀입니다. RESEARCH, CONTENT 역할을 모집 중이며, 혼합으로 주 4회 이상 모입니다. 공모전 수상이 목표입니다. 초보자도 편하게 참여할 수 있는 분위기입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.37741769398987796,
+      "total_score": 0.3745071437912363
+    },
+    {
+      "team_id": 36,
+      "recruiting_roles": [
+        "Design"
+      ],
+      "contest_field": "MEDICAL_HEALTH",
+      "contest_field_label": "의료/보건",
+      "intro": "게임 서비스를 만드는 팀입니다. Design 역할을 모집 중이며, 온라인으로 주 2~3회 모입니다. 실무형 프로젝트 경험이 목표입니다. 초보자도 편하게 참여할 수 있는 분위기입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.23971426507153562,
+      "total_score": 0.3621110774301651
+    },
+    {
+      "team_id": 27,
+      "recruiting_roles": [
+        "BUSINESS"
+      ],
+      "contest_field": "MEDICAL_HEALTH",
+      "contest_field_label": "의료/보건",
+      "intro": "커머스 서비스를 만드는 팀입니다. BUSINESS 역할을 모집 중이며, 오프라인으로 주 2~3회 모입니다. 취미로 가볍게이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.2195511656389881,
+      "total_score": 0.3603852883246572
+    },
+    {
+      "team_id": 9,
+      "recruiting_roles": [
+        "RESEARCH",
+        "BUSINESS"
+      ],
+      "contest_field": "POLITICS_SOCIETY_LAW",
+      "contest_field_label": "정치/사회/법률",
+      "intro": "재테크 서비스를 만드는 팀입니다. RESEARCH, BUSINESS 역할을 모집 중이며, 오프라인으로 주 1회 모입니다. 실무형 프로젝트 경험이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.2587561475375317,
+      "total_score": 0.35584234770559464
+    },
+    {
+      "team_id": 49,
+      "recruiting_roles": [
+        "RESEARCH"
+      ],
+      "contest_field": "DESIGN_PHOTO_ART_VIDEO",
+      "contest_field_label": "디자인/사진/예술/영상",
+      "intro": "뷰티 서비스를 만드는 팀입니다. RESEARCH 역할을 모집 중이며, 혼합으로 주 1회 모입니다. 실무형 프로젝트 경험이 목표입니다. 초보자도 편하게 참여할 수 있는 분위기입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.2662861941129338,
+      "total_score": 0.3534120885609734
+    },
+    {
+      "team_id": 45,
+      "recruiting_roles": [
+        "ETC"
+      ],
+      "contest_field": "ENVIRONMENT_ENERGY",
+      "contest_field_label": "환경/에너지",
+      "intro": "모빌리티 서비스를 만드는 팀입니다. ETC 역할을 모집 중이며, 오프라인으로 주 2~3회 모입니다. 실무형 프로젝트 경험이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.23038008169337676,
+      "total_score": 0.3529870038006709
+    },
+    {
+      "team_id": 28,
+      "recruiting_roles": [
+        "MARKETING"
+      ],
+      "contest_field": "CONTENTS",
+      "contest_field_label": "콘텐츠",
+      "intro": "모빌리티 서비스를 만드는 팀입니다. MARKETING 역할을 모집 중이며, 오프라인으로 주 1회 모입니다. 공모전 수상이 목표입니다. 초보자도 편하게 참여할 수 있는 분위기입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.23500736830244232,
+      "total_score": 0.3489067488198796
+    },
+    {
+      "team_id": 19,
+      "recruiting_roles": [
+        "PM"
+      ],
+      "contest_field": "MANAGEMENT_CONSULTING_MARKETING",
+      "contest_field_label": "경영/컨설팅/마케팅",
+      "intro": "스포츠 서비스를 만드는 팀입니다. PM 역할을 모집 중이며, 온라인으로 주 2~3회 모입니다. 실무형 프로젝트 경험이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.23130252226789083,
+      "total_score": 0.3442987613168581
+    },
+    {
+      "team_id": 5,
+      "recruiting_roles": [
+        "PM"
+      ],
+      "contest_field": "COOKING_FOOD",
+      "contest_field_label": "요리/식품",
+      "intro": "여행 서비스를 만드는 팀입니다. PM 역할을 모집 중이며, 온라인으로 주 2~3회 모입니다. 취미로 가볍게이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.20192807093962828,
+      "total_score": 0.3360000446383
+    },
+    {
+      "team_id": 38,
+      "recruiting_roles": [
+        "RESEARCH"
+      ],
+      "contest_field": "EVENT_FESTIVAL",
+      "contest_field_label": "행사/페스티벌",
+      "intro": "자원봉사 서비스를 만드는 팀입니다. RESEARCH 역할을 모집 중이며, 오프라인으로 주 1회 모입니다. 공모전 수상이 목표입니다. 초보자도 편하게 참여할 수 있는 분위기입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.2392186821843508,
+      "total_score": 0.3253944262070224
+    },
+    {
+      "team_id": 37,
+      "recruiting_roles": [
+        "CONTENT",
+        "RESEARCH"
+      ],
+      "contest_field": "MEDICAL_HEALTH",
+      "contest_field_label": "의료/보건",
+      "intro": "육아 서비스를 만드는 팀입니다. CONTENT, RESEARCH 역할을 모집 중이며, 오프라인으로 주 4회 이상 모입니다. 취미로 가볍게이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.2036121791694687,
+      "total_score": 0.32363723220437307
+    },
+    {
+      "team_id": 42,
+      "recruiting_roles": [
+        "RESEARCH"
+      ],
+      "contest_field": "CONTENTS",
+      "contest_field_label": "콘텐츠",
+      "intro": "환경 서비스를 만드는 팀입니다. RESEARCH 역할을 모집 중이며, 혼합으로 주 1회 모입니다. 취미로 가볍게이 목표입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.23821156999073714,
+      "total_score": 0.3146958782378302
+    },
+    {
+      "team_id": 18,
+      "recruiting_roles": [
+        "ETC"
+      ],
+      "contest_field": "CULTURE_HISTORY",
+      "contest_field_label": "문화/역사",
+      "intro": "재테크 서비스를 만드는 팀입니다. ETC 역할을 모집 중이며, 온라인으로 주 2~3회 모입니다. 취미로 가볍게이 목표입니다. 초보자도 편하게 참여할 수 있는 분위기입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.29689830682951834,
+      "total_score": 0.30253671451003794
+    },
+    {
+      "team_id": 43,
+      "recruiting_roles": [
+        "BUSINESS"
+      ],
+      "contest_field": "DISTRIBUTION_LOGISTICS",
+      "contest_field_label": "유통/물류",
+      "intro": "여행 서비스를 만드는 팀입니다. BUSINESS 역할을 모집 중이며, 혼합으로 주 1회 모입니다. 공모전 수상이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.21679871371490456,
+      "total_score": 0.2965454306660696
+    },
+    {
+      "team_id": 1,
+      "recruiting_roles": [
+        "ETC"
+      ],
+      "contest_field": "SCIENCE_ENGINEERING_TECH_IT",
+      "contest_field_label": "과학/공학/기술/IT",
+      "intro": "독서 서비스를 만드는 팀입니다. ETC 역할을 모집 중이며, 혼합으로 주 2~3회 모입니다. 실무형 프로젝트 경험이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.2696094027539685,
+      "total_score": 0.28068406733101964
+    },
+    {
+      "team_id": 46,
+      "recruiting_roles": [
+        "ETC",
+        "Data"
+      ],
+      "contest_field": "SCIENCE_ENGINEERING_TECH_IT",
+      "contest_field_label": "과학/공학/기술/IT",
+      "intro": "게임 서비스를 만드는 팀입니다. ETC, Data 역할을 모집 중이며, 혼합으로 주 1회 모입니다. 취미로 가볍게이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.24004741181988729,
+      "total_score": 0.2788181643348271
+    },
+    {
+      "team_id": 6,
+      "recruiting_roles": [
+        "CONTENT"
+      ],
+      "contest_field": "PRESS_MEDIA",
+      "contest_field_label": "언론/미디어",
+      "intro": "에듀테크 서비스를 만드는 팀입니다. CONTENT 역할을 모집 중이며, 혼합으로 주 1회 모입니다. 실무형 프로젝트 경험이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.22964168423155398,
+      "total_score": 0.27402321206258695
+    },
+    {
+      "team_id": 47,
+      "recruiting_roles": [
+        "PM"
+      ],
+      "contest_field": "MEDICAL_HEALTH",
+      "contest_field_label": "의료/보건",
+      "intro": "예술 서비스를 만드는 팀입니다. PM 역할을 모집 중이며, 혼합으로 주 1회 모입니다. 취미로 가볍게이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.2760263325136945,
+      "total_score": 0.27328779058494845
+    },
+    {
+      "team_id": 7,
+      "recruiting_roles": [
+        "BE"
+      ],
+      "contest_field": "PLANNING_IDEA",
+      "contest_field_label": "기획/아이디어",
+      "intro": "푸드테크 서비스를 만드는 팀입니다. BE 역할을 모집 중이며, 혼합으로 주 4회 이상 모입니다. 취미로 가볍게이 목표입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.20583593298294814,
+      "total_score": 0.25886153247010096
+    },
+    {
+      "team_id": 17,
+      "recruiting_roles": [
+        "PM"
+      ],
+      "contest_field": "SCIENCE_ENGINEERING_TECH_IT",
+      "contest_field_label": "과학/공학/기술/IT",
+      "intro": "독서 서비스를 만드는 팀입니다. PM 역할을 모집 중이며, 혼합으로 주 2~3회 모입니다. 실무형 프로젝트 경험이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.22310681509884822,
+      "total_score": 0.24719370631526813
+    },
+    {
+      "team_id": 14,
+      "recruiting_roles": [
+        "PM",
+        "MARKETING"
+      ],
+      "contest_field": "EVENT_FESTIVAL",
+      "contest_field_label": "행사/페스티벌",
+      "intro": "푸드테크 서비스를 만드는 팀입니다. PM, MARKETING 역할을 모집 중이며, 온라인으로 주 4회 이상 모입니다. 취미로 가볍게이 목표입니다. 초보자도 편하게 참여할 수 있는 분위기입니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.25332956695660674,
+      "total_score": 0.23859231908271425
+    },
+    {
+      "team_id": 48,
+      "recruiting_roles": [
+        "RESEARCH"
+      ],
+      "contest_field": "POLITICS_SOCIETY_LAW",
+      "contest_field_label": "정치/사회/법률",
+      "intro": "재테크 서비스를 만드는 팀입니다. RESEARCH 역할을 모집 중이며, 혼합으로 주 2~3회 모입니다. 취미로 가볍게이 목표입니다. 실무 경험자 위주로 빠르게 진행합니다.",
+      "x_skill_fit": 0.0,
+      "y_interest_fit": 0.24472749486385922,
+      "total_score": 0.2
+    }
+  ]
+}
