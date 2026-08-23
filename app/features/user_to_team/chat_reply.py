@@ -40,8 +40,8 @@ def _build_chat_context(
         known.append(f"스킬: {', '.join(extracted.skills)}")
     if extracted.interests:
         known.append(f"관심 분야: {', '.join(extracted.interests)}")
-    if extracted.activity_goal:
-        known.append(f"활동 목표: {extracted.activity_goal}")
+    if extracted.optional.activity_goal:
+        known.append(f"활동 목표: {extracted.optional.activity_goal}")
     if extracted.activity_style:
         known.append(f"활동 방식: {extracted.activity_style}")
     if extracted.experience_level:

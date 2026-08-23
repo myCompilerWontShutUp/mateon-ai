@@ -34,6 +34,12 @@ class OptionalUserFields(BaseModel):
     # 안 들어간다. 새 선택 필드를 추가할 땐 여기 + 추출 프롬프트를 사람이 같이 고친다(자동
     # 추가 안 함 — 통제 없는 필드 추가는 노이즈 위험).
     activity_time: str | None = None  # 예: "평일 저녁", "주말"
+    # 선택 필드 2호(2026-08-21) - desired_roles/experience_level과 달리 REQUIRED_FIELDS에
+    # 없어 원래도 missing_fields를 유발하지 않았지만, 이 서브모델 밖에 있어 "미상" 같은 명시적
+    # 기본값 표기·문서화가 안 된 애매한 상태였다(팀 쪽 TeamSoftFields.activity_goal은 필수라
+    # 비대칭이지만, 유저 쪽은 매칭 점수도 없이 임베딩 텍스트에만 쓰여 필수로 승격할 근거가
+    # 약하다고 판단해 선택 필드로 공식 등록했다).
+    activity_goal: str | None = None  # 예: "포트폴리오용 프로젝트", "공모전 수상"
 
 
 class UserIntentFields(BaseModel):
@@ -44,7 +50,6 @@ class UserIntentFields(BaseModel):
     desired_roles: list[RoleCode] = Field(default_factory=list)
     skills: list[str] = Field(default_factory=list)
     interests: list[str] = Field(default_factory=list)
-    activity_goal: str | None = None
     activity_style: str | None = None
     experience_level: ExperienceLevel | None = None
     optional: OptionalUserFields = Field(default_factory=OptionalUserFields)

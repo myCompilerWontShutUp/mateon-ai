@@ -12,7 +12,7 @@ import random
 from app.schemas.contest import ContestField
 from app.schemas.role_codes import ExperienceLevel, RoleCode
 from app.schemas.team_extraction import TeamEmbeddingRefreshRequest, TeamSoftFields
-from app.schemas.user_intent import UserIntentFields
+from app.schemas.user_intent import OptionalUserFields, UserIntentFields
 
 _SEED = 20260820
 _NUM_TEAMS = 50
@@ -123,9 +123,9 @@ def generate_user_pool() -> dict[int, tuple[str, UserIntentFields]]:
             desired_roles=[role],
             skills=skills,
             interests=interests,
-            activity_goal=activity_goal,
             activity_style=activity_style,
             experience_level=experience_level,
+            optional=OptionalUserFields(activity_goal=activity_goal),
         )
         users[user_id] = (conversation_text, fields)
 

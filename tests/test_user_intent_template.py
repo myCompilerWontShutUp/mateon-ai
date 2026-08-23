@@ -53,3 +53,29 @@ def test_optional_field_never_triggers_missing_fields() -> None:
     fields = UserIntentFields(desired_roles=["BE"], experience_level="beginner")
     assert fields.optional.activity_time is None
     assert compute_missing_fields(fields) == []
+
+
+def test_render_uses_misang_for_absent_activity_goal() -> None:
+    fields = UserIntentFields(desired_roles=["BE"], experience_level="beginner")
+
+    rendered = render_intent_embedding_text("자기소개", fields)
+
+    assert "활동 목표: 미상" in rendered
+
+
+def test_render_includes_optional_activity_goal_when_present() -> None:
+    fields = UserIntentFields(
+        desired_roles=["BE"],
+        experience_level="beginner",
+        optional=OptionalUserFields(activity_goal="포트폴리오용 프로젝트"),
+    )
+
+    rendered = render_intent_embedding_text("자기소개", fields)
+
+    assert "활동 목표: 포트폴리오용 프로젝트" in rendered
+
+
+def test_activity_goal_never_triggers_missing_fields() -> None:
+    fields = UserIntentFields(desired_roles=["BE"], experience_level="beginner")
+    assert fields.optional.activity_goal is None
+    assert compute_missing_fields(fields) == []

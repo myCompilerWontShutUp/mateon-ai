@@ -39,7 +39,7 @@ from app.openai_client.extraction import extract_structured  # noqa: E402
 from app.schemas.contest import ContestField  # noqa: E402
 from app.schemas.role_codes import ExperienceLevel, RoleCode  # noqa: E402
 from app.schemas.team_extraction import TeamEmbeddingRefreshRequest, TeamSoftFields  # noqa: E402
-from app.schemas.user_intent import UserIntentFields  # noqa: E402
+from app.schemas.user_intent import OptionalUserFields, UserIntentFields  # noqa: E402
 from app.scoring.cluster import user_cluster_key  # noqa: E402
 from app.scoring.cluster_weights import compute_weight_lifts  # noqa: E402
 
@@ -122,9 +122,9 @@ async def _build_users() -> dict:
             desired_roles=[RoleCode(r) for r in u["desired_roles"]],
             skills=u["skills"],
             interests=u["interests"],
-            activity_goal=u["activity_goal"],
             activity_style=u["activity_style"],
             experience_level=ExperienceLevel(u["experience_level"]),
+            optional=OptionalUserFields(activity_goal=u["activity_goal"]),
         )
         embedding_text = render_intent_embedding_text(u["conversation_text"], fields)
         vector = await embed_text(embedding_text)
