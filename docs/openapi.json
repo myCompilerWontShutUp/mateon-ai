@@ -495,6 +495,110 @@
           }
         }
       }
+    },
+    "/contests/similarity-map": {
+      "post": {
+        "tags": [
+          "contest-similarity"
+        ],
+        "summary": "쿼리 공모전 1건 중심의 유사도 방사형 배치 (순위 기반, 시각화용)",
+        "operationId": "get_contest_similarity_map_contests_similarity_map_post",
+        "parameters": [
+          {
+            "name": "x-internal-secret",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Internal-Secret"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContestSimilarityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContestSimilarityResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/selection-events": {
+      "post": {
+        "tags": [
+          "quality"
+        ],
+        "summary": "선택 이벤트 로깅 (클러스터별 가중치 보정용, /proposals/*와 분리됨)",
+        "operationId": "log_selection_event_endpoint_selection_events_post",
+        "parameters": [
+          {
+            "name": "x-internal-secret",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Internal-Secret"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelectionEventRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelectionEventResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -734,6 +838,358 @@
         ],
         "title": "ContestField"
       },
+      "ContestSimilarityItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "embedding_vector": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 1536,
+            "minItems": 1536,
+            "title": "Embedding Vector"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "organizer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organizer"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "detail_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "embedding_vector",
+          "title"
+        ],
+        "title": "ContestSimilarityItem",
+        "description": "쿼리·후보 공모전이 공유하는 형태 — 둘 다 벡터(유사도 계산용)와 표시용 메타데이터가\n필요하다. `field`는 정규화된 `ContestField` 코드를 기대하지만, 코드가 아니어도(알 수 없는\n값이어도) 그대로 원문 echo만 하고 에러는 안 낸다 — field_label만 못 붙인다."
+      },
+      "ContestSimilarityPoint": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "organizer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organizer"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "field_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Label"
+          },
+          "detail_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail Url"
+          },
+          "similarity": {
+            "type": "number",
+            "title": "Similarity"
+          },
+          "rank_percentile": {
+            "type": "number",
+            "title": "Rank Percentile"
+          },
+          "radius": {
+            "type": "number",
+            "title": "Radius"
+          },
+          "x": {
+            "type": "number",
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "title": "Y"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "organizer",
+          "category",
+          "field",
+          "field_label",
+          "detail_url",
+          "similarity",
+          "rank_percentile",
+          "radius",
+          "x",
+          "y"
+        ],
+        "title": "ContestSimilarityPoint"
+      },
+      "ContestSimilarityQueryEcho": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "organizer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organizer"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "field_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Label"
+          },
+          "detail_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "organizer",
+          "category",
+          "field",
+          "field_label",
+          "detail_url"
+        ],
+        "title": "ContestSimilarityQueryEcho"
+      },
+      "ContestSimilarityReferenceRing": {
+        "properties": {
+          "percentile": {
+            "type": "number",
+            "title": "Percentile"
+          },
+          "similarity_at_percentile": {
+            "type": "number",
+            "title": "Similarity At Percentile"
+          },
+          "radius": {
+            "type": "number",
+            "title": "Radius"
+          }
+        },
+        "type": "object",
+        "required": [
+          "percentile",
+          "similarity_at_percentile",
+          "radius"
+        ],
+        "title": "ContestSimilarityReferenceRing",
+        "description": "절대 유사도가 아니라 백분위 기준 참고선 — \"상위 10%가 실제로 어느 유사도 값부터인지\"를\n같이 담아 화면에서 눈금처럼 쓸 수 있게 한다."
+      },
+      "ContestSimilarityRequest": {
+        "properties": {
+          "query": {
+            "$ref": "#/components/schemas/ContestSimilarityItem"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/ContestSimilarityItem"
+            },
+            "type": "array",
+            "title": "Candidates"
+          },
+          "top_n": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Top N",
+            "default": 500
+          }
+        },
+        "type": "object",
+        "required": [
+          "query",
+          "candidates"
+        ],
+        "title": "ContestSimilarityRequest"
+      },
+      "ContestSimilarityResponse": {
+        "properties": {
+          "query": {
+            "$ref": "#/components/schemas/ContestSimilarityQueryEcho"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/ContestSimilarityPoint"
+            },
+            "type": "array",
+            "title": "Points"
+          },
+          "max_radius": {
+            "type": "number",
+            "title": "Max Radius"
+          },
+          "min_radius": {
+            "type": "number",
+            "title": "Min Radius"
+          },
+          "radial_jitter": {
+            "type": "number",
+            "title": "Radial Jitter"
+          },
+          "reference_rings": {
+            "items": {
+              "$ref": "#/components/schemas/ContestSimilarityReferenceRing"
+            },
+            "type": "array",
+            "title": "Reference Rings"
+          },
+          "candidate_pool_total": {
+            "type": "integer",
+            "title": "Candidate Pool Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query",
+          "points",
+          "max_radius",
+          "min_radius",
+          "radial_jitter",
+          "reference_rings",
+          "candidate_pool_total"
+        ],
+        "title": "ContestSimilarityResponse"
+      },
       "ConversationMessage": {
         "properties": {
           "id": {
@@ -838,6 +1294,17 @@
               }
             ],
             "title": "Activity Time"
+          },
+          "activity_goal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activity Goal"
           }
         },
         "type": "object",
@@ -912,16 +1379,6 @@
           "target_summary": {
             "type": "string",
             "title": "Target Summary"
-          },
-          "selection_context": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/SelectionContext"
-              },
-              {
-                "type": "null"
-              }
-            ]
           }
         },
         "type": "object",
@@ -1171,6 +1628,38 @@
         ],
         "title": "SelectionContext"
       },
+      "SelectionEventRequest": {
+        "properties": {
+          "direction": {
+            "$ref": "#/components/schemas/MatchDirection"
+          },
+          "selected_candidate_id": {
+            "type": "integer",
+            "title": "Selected Candidate Id"
+          },
+          "selection_context": {
+            "$ref": "#/components/schemas/SelectionContext"
+          }
+        },
+        "type": "object",
+        "required": [
+          "direction",
+          "selected_candidate_id",
+          "selection_context"
+        ],
+        "title": "SelectionEventRequest"
+      },
+      "SelectionEventResponse": {
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "title": "Accepted",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "SelectionEventResponse"
+      },
       "ShownCandidate": {
         "properties": {
           "candidate_id": {
@@ -1328,17 +1817,6 @@
             },
             "type": "array",
             "title": "Interests"
-          },
-          "activity_goal": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Activity Goal"
           },
           "activity_style": {
             "anyOf": [

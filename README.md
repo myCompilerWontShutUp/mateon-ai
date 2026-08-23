@@ -27,9 +27,11 @@
 - [pytest](https://docs.pytest.org/) + [ruff](https://docs.astral.sh/ruff/) — 테스트/린트
 - [Docker](https://www.docker.com/) — 백엔드 로컬 테스트·배포용 컨테이너 이미지(아래 "Docker로
   실행" 참고)
-- **dev 전용**(프로덕션 이미지에서 제외): `numpy`/`umap-learn`(공모전 지형도 시각화),
-  `scikit-learn`(`umap-learn`의 하위 의존성이자 ML 사전 구축 실험용), `matplotlib`(ML 실험
-  결과 로컬 시각화)
+- **dev 전용**(프로덕션 이미지에서 제외): `numpy`/`scikit-learn`(ML 사전 구축 실험, 로지스틱
+  회귀), `matplotlib`(그 실험 결과 로컬 시각화). 공모전 유사도 지도는 실제 임베딩의 코사인
+  유사도만으로 순위 기반 반경에 점을 직접 배치하는 방식이라(PCA/UMAP 같은 차원축소 자체가
+  필요 없음) `umap-learn`은 더 이상 이 저장소 어디서도 안 쓰여 제거했다(CLAUDE.md "## 모니터링·
+  데이터 기반 가중치 보정" 7번 참고).
 
 ## 시작하기
 
@@ -146,6 +148,8 @@ supabase/          # 모니터링 테이블 SQL 마이그레이션 (judge_result
 - `docs/openapi.json` — 실제 구현에서 뽑은 OpenAPI 스펙 원본 (최종 계약 확정용)
 - `docs/backend-integration-team-embedding.md`, `docs/backend-integration-user-to-team.md`,
   `docs/backend-integration-team-to-user.md` — 백엔드(Java/Spring Boot) 기준 실제 연동 코드 예시
+- `docs/backend-integration-contest-similarity-draft.md` — 공모전 유사도 지도(`POST
+  /contests/similarity-map`) BE 전달용 draft(공모전 임베딩 소스 미확정 등 남은 결정 사항 포함)
 - `docs/monitoring/` — 모니터링·가중치 보정 관련 문서 모음(아래 "모니터링·데이터 기반 가중치
   보정" 섹션에서 각 문서를 따로 링크함)
 
@@ -242,7 +246,7 @@ uv run python scripts/run_eval.py                            # 결과: docs/moni
 | `run_eval_on_llm_pool.py` | 위 gpt-5.6-terra 풀로 `run_eval.py`와 동일 방식 재측정 | `docs/monitoring/hit-at-10-eval-report-llm-pool.md` |
 | `run_cluster_weight_batch.py` | 클러스터별 가중치 lift 계산 후 Supabase 기록 | `cluster_weight_config`(Supabase) |
 | `run_eval.py` | Hit@10/NDCG 4종 비교 리포트 생성 | `docs/monitoring/hit-at-10-eval-report.md` |
-| `generate_contest_graph_visualization.py` | 공모전 임베딩을 PCA+UMAP으로 2차원 축소해 분야별 색칠 | `data/contest_graph_visualization.json`(+ 임베딩 캐시) |
+| `generate_contest_similarity_visualization.py` | 쿼리 공모전 1건을 원점에 고정, 나머지를 실제 임베딩 코사인 유사도의 순위(rank) 기반 반경으로 방사형 배치(`POST /contests/similarity-map`과 동일 로직) | `data/contest_similarity_visualization.json` |
 | `train_cluster_weight_ml_pretrain.py` | 정식 ML(로지스틱 회귀) 사전 구축 — 혼합 데이터 학습 + 시각화 | `data/ml_pretrain_*.json`/`*.png`(gitignore) |
 | `train_cluster_weight_ml_pretrain_gpt56terra.py` | 위와 동일, gpt-5.6-terra 데이터만(Supabase 저장분 재사용) | `data/ml_pretrain_weight_comparison_gpt56terra.png`(gitignore) |
 | `eval_ml_pretrain_weights.py` | 학습된 ML 가중치를 실제 추천 스코어링에 꽂아 Hit@10/NDCG/선호 회복률 측정 | `data/ml_pretrain_weight_eval_report.md`(gitignore) |
