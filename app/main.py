@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from app.api.router import router
+from app.features.contest_embedding.router import router as contest_embedding_router
 from app.features.contest_extraction.router import router as contest_extraction_router
 from app.features.contest_similarity.router import router as contest_similarity_router
 from app.features.portfolio_summary.router import router as portfolio_summary_router
@@ -23,4 +24,5 @@ app.include_router(recommendation_router)
 app.include_router(contest_extraction_router)
 app.include_router(portfolio_summary_router)
 app.include_router(contest_similarity_router)
+app.include_router(contest_embedding_router)
 app.include_router(quality_router)

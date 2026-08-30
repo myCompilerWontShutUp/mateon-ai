@@ -149,7 +149,10 @@ supabase/          # 모니터링 테이블 SQL 마이그레이션 (judge_result
 - `docs/backend-integration-team-embedding.md`, `docs/backend-integration-user-to-team.md`,
   `docs/backend-integration-team-to-user.md` — 백엔드(Java/Spring Boot) 기준 실제 연동 코드 예시
 - `docs/backend-integration-contest-similarity-draft.md` — 공모전 유사도 지도(`POST
-  /contests/similarity-map`) BE 전달용 draft(공모전 임베딩 소스 미확정 등 남은 결정 사항 포함)
+  /contests/similarity-map`) BE 전달용 draft
+- `docs/backend-feedback-graph-api-v7.md` — 공모전 임베딩(`POST
+  /internal/contests/embedding:refresh`, 신규)·유사도 지도 명세서(BE 전달용, V5에서 이
+  두 엔드포인트만 추려 갱신)
 - `docs/monitoring/` — 모니터링·가중치 보정 관련 문서 모음(아래 "모니터링·데이터 기반 가중치
   보정" 섹션에서 각 문서를 따로 링크함)
 

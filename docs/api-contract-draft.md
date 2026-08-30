@@ -670,3 +670,34 @@ fire-and-forget이라 Supabase 기록 성공 여부와 무관하게 항상 `{"ac
 > 필드별 설명, 방향별(USER_TO_TEAM/TEAM_TO_USER) 차이, Java 예시, BE 체크리스트는 전부
 > [`docs/monitoring/selection-feedback-draft.md`](monitoring/selection-feedback-draft.md)
 > "변경 B" 하나에 모아뒀다 — 이 문서에는 요청/응답 형태만 남긴다.
+
+---
+
+## 12. 공모전 임베딩 계산 — `POST /internal/contests/embedding:refresh`
+
+공모전 유사도 지도(10번 섹션)에 넘길 `embedding_vector`를 만드는 엔드포인트다. 팀 임베딩
+계산(2번 섹션)과 같은 성격이지만, 공모전은 BE가 이미 구조화된 데이터(제목/설명)를 갖고 있어
+LLM 추출 단계가 없다 — 제목·설명을 결정론적으로 이어붙인 텍스트를 그대로 임베딩할 뿐이다.
+`event_id`는 AI 서버가 의미를 해석하지 않고 응답에 그대로 echo만 한다(어떤 요청에 대한
+결과인지 BE가 구분하기 위한 용도). 한 번의 요청은 공모전 한 건만 처리한다 — 기존 공모전을
+일괄로 채워 넣어야 한다면 이 엔드포인트를 반복 호출하면 된다.
+
+요청:
+```json
+{
+  "event_id": 337930,
+  "title": "경기도 1인가구 정책제안 아이디어 공모전",
+  "description": "경기도 1인가구의 삶의 질 향상을 위한 정책 아이디어를 공모합니다..."
+}
+```
+
+응답:
+```json
+{
+  "event_id": 337930,
+  "embedding_vector": [0.0102, -0.0041, "... 1536개"]
+}
+```
+
+> 상세 필드 설명·오류 응답 예시는
+> [`docs/backend-feedback-graph-api-v7.md`](backend-feedback-graph-api-v7.md) 1번 섹션 참고.
