@@ -548,6 +548,58 @@
         }
       }
     },
+    "/internal/contests/embedding:refresh": {
+      "post": {
+        "tags": [
+          "contest-embedding"
+        ],
+        "summary": "공모전 임베딩 계산 (저장 없음, 공모전 등록/수정 시 호출)",
+        "operationId": "refresh_contest_embedding_internal_contests_embedding_refresh_post",
+        "parameters": [
+          {
+            "name": "x-internal-secret",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Internal-Secret"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContestEmbeddingRefreshRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContestEmbeddingResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/selection-events": {
       "post": {
         "tags": [
@@ -667,6 +719,52 @@
           "SCHOOL"
         ],
         "title": "ContestCategory"
+      },
+      "ContestEmbeddingRefreshRequest": {
+        "properties": {
+          "event_id": {
+            "type": "integer",
+            "title": "Event Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "title",
+          "description"
+        ],
+        "title": "ContestEmbeddingRefreshRequest"
+      },
+      "ContestEmbeddingResult": {
+        "properties": {
+          "event_id": {
+            "type": "integer",
+            "title": "Event Id"
+          },
+          "embedding_vector": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 1536,
+            "minItems": 1536,
+            "title": "Embedding Vector"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "embedding_vector"
+        ],
+        "title": "ContestEmbeddingResult"
       },
       "ContestExtractionResult": {
         "properties": {
