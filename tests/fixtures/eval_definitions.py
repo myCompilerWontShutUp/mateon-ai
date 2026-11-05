@@ -9,6 +9,7 @@
 
 import random
 
+from app.schemas.activity import ActivityStyle
 from app.schemas.contest import ContestField
 from app.schemas.role_codes import ExperienceLevel, RoleCode
 from app.schemas.team_extraction import TeamEmbeddingRefreshRequest, TeamSoftFields
@@ -38,12 +39,24 @@ _DOMAINS = [
 ]
 
 _ACTIVITY_STYLES = ["온라인", "오프라인", "혼합"]
+# 소개 문장에는 위 한국어 표현을 그대로 쓰고, 구조화 필드에는 ActivityStyle 코드를 넣는다
+# (2026-11-05 enum 도입 — 문장과 난수 순서는 그대로라 재생성해도 소개 문장은 이전과 같다).
+_ACTIVITY_STYLE_CODES = {
+    "온라인": ActivityStyle.ONLINE,
+    "오프라인": ActivityStyle.OFFLINE,
+    "혼합": ActivityStyle.HYBRID,
+}
 _ACTIVITY_INTENSITIES = ["주 1회", "주 2~3회", "주 4회 이상"]
 _ACTIVITY_GOALS = ["공모전 수상", "포트폴리오 제작", "취미로 가볍게", "실무형 프로젝트 경험"]
 
+# 역할은 RoleCode 전체가 아니라 처음 10개(_SKILL_POOL의 키, 원래 enum 정의 순서와 같음)에서만
+# 뽑는다 — 2026-11-05에 RoleCode가 41개로 늘었는데 list(RoleCode)를 그대로 쓰면 같은 시드로도
+# 다른 fixture가 나오고, 스킬 풀이 없는 새 역할에서 KeyError가 난다.
+_EVAL_ROLES: list[RoleCode] = list(_SKILL_POOL)
+
 
 def _pick_roles(rng: random.Random, n: int) -> list[RoleCode]:
-    return rng.sample(list(RoleCode), k=n)
+    return rng.sample(_EVAL_ROLES, k=n)
 
 
 def generate_team_pool() -> dict[int, tuple[TeamEmbeddingRefreshRequest, TeamSoftFields]]:
@@ -84,7 +97,7 @@ def generate_team_pool() -> dict[int, tuple[TeamEmbeddingRefreshRequest, TeamSof
         )
         soft_fields = TeamSoftFields(
             activity_goal=activity_goal,
-            activity_style=activity_style,
+            activity_style=_ACTIVITY_STYLE_CODES[activity_style],
             activity_intensity=activity_intensity,
             beginner_friendly=beginner_friendly,
             team_atmosphere="화기애애함" if beginner_friendly else "몰입형",
@@ -101,7 +114,7 @@ def generate_user_pool() -> dict[int, tuple[str, UserIntentFields]]:
     users: dict[int, tuple[str, UserIntentFields]] = {}
 
     for user_id in range(1, _NUM_USERS + 1):
-        role = rng.choice(list(RoleCode))
+        role = rng.choice(_EVAL_ROLES)
         experience_level = rng.choice(list(ExperienceLevel))
         skills = rng.sample(_SKILL_POOL[role], k=min(2, len(_SKILL_POOL[role])))
         interests = rng.sample(_DOMAINS, k=2)
@@ -123,7 +136,7 @@ def generate_user_pool() -> dict[int, tuple[str, UserIntentFields]]:
             desired_roles=[role],
             skills=skills,
             interests=interests,
-            activity_style=activity_style,
+            activity_style=_ACTIVITY_STYLE_CODES[activity_style],
             experience_level=experience_level,
             optional=OptionalUserFields(activity_goal=activity_goal),
         )

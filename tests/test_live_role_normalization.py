@@ -8,8 +8,10 @@
 import pytest
 
 from app.features.user_to_team.extraction import extract_user_intent_fields
+from app.schemas.role_codes import RoleCode
 
-_ALLOWED_ROLES = {"BE", "FE", "Design", "PM", "Data"}
+# 하드코딩된 목록은 역할이 늘 때마다 낡는다(10개일 때도 5개만 적혀 있었다) — enum에서 읽는다.
+_ALLOWED_ROLES = {role.value for role in RoleCode}
 _ALLOWED_EXPERIENCE_LEVELS = {"beginner", "intermediate", "advanced"}
 
 

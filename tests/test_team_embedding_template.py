@@ -1,4 +1,5 @@
 from app.features.team_embedding.template import compute_missing_fields, render_team_embedding_text
+from app.schemas.activity import ActivityStyle
 from app.schemas.contest import ContestField
 from app.schemas.role_codes import RoleCode
 from app.schemas.team_extraction import OptionalTeamFields, TeamEmbeddingRefreshRequest, TeamSoftFields
@@ -18,7 +19,7 @@ def _request(**overrides) -> TeamEmbeddingRefreshRequest:
 def test_compute_missing_fields_all_present() -> None:
     soft_fields = TeamSoftFields(
         activity_goal="공모전 수상",
-        activity_style="주 2회 오프라인",
+        activity_style=ActivityStyle.OFFLINE,
         activity_intensity="high",
         beginner_friendly=True,
     )
@@ -35,7 +36,7 @@ def test_render_is_deterministic() -> None:
     request = _request()
     soft_fields = TeamSoftFields(
         activity_goal="공모전 수상",
-        activity_style="주 2회 오프라인",
+        activity_style=ActivityStyle.OFFLINE,
         activity_intensity="high",
         beginner_friendly=True,
         team_atmosphere="자유로운 분위기",
@@ -51,6 +52,8 @@ def test_render_is_deterministic() -> None:
     assert "Spring Boot" in first
     assert "공모전 수상" in first
     assert "초보자 환영" in first
+    # 활동 방식은 코드(OFFLINE)가 아니라 한글 라벨로 렌더링된다.
+    assert "활동 방식: 오프라인" in first
 
 
 def test_render_handles_missing_soft_fields() -> None:
@@ -75,7 +78,7 @@ def test_render_includes_optional_activity_time_when_present() -> None:
 def test_optional_field_never_triggers_missing_fields() -> None:
     soft_fields = TeamSoftFields(
         activity_goal="공모전 수상",
-        activity_style="주 2회 오프라인",
+        activity_style=ActivityStyle.OFFLINE,
         activity_intensity="high",
         beginner_friendly=True,
     )

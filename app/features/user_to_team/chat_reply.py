@@ -1,5 +1,6 @@
 from app.core.prompts import load_prompt
 from app.openai_client.extraction import extract_structured
+from app.schemas.activity import activity_style_label
 from app.schemas.llm_output import UserIntentChatReply
 from app.schemas.role_codes import role_code_translation_guide
 from app.schemas.user_intent import UserIntentFields
@@ -23,8 +24,10 @@ OPENING_GREETING = (
 )
 
 _FIELD_LABELS = {
-    "desired_roles": "희망 역할",
-    "experience_level": "개발 경험/실력 수준",
+    # 분야와 무관하게 쓰이는 문구여야 한다 — 이전엔 "개발 경험/실력 수준"이라 요리·문학 공모전
+    # 사용자에게도 개발 경험을 묻게 됐다. 역할은 도메인별로 나뉘어 있어 분야도 함께 묻는다.
+    "desired_roles": "참여하고 싶은 공모전 분야와 그 안에서 맡고 싶은 역할",
+    "experience_level": "그 분야에서의 경험/실력 수준",
     "activity_style": "선호하는 활동 방식",
     "activity_goal": "이번 활동으로 이루고 싶은 목표",
 }
@@ -43,7 +46,9 @@ def _build_chat_context(
     if extracted.optional.activity_goal:
         known.append(f"활동 목표: {extracted.optional.activity_goal}")
     if extracted.activity_style:
-        known.append(f"활동 방식: {extracted.activity_style}")
+        # 코드(ONLINE)를 그대로 넘기면 챗봇이 문장에 코드 값을 노출할 수 있어 한글 라벨로 넘긴다
+        # (역할 코드는 프롬프트의 번역 가이드가 처리한다).
+        known.append(f"활동 방식: {activity_style_label(extracted.activity_style)}")
     if extracted.experience_level:
         known.append(f"경험 수준: {extracted.experience_level}")
 
