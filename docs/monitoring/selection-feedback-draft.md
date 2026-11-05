@@ -37,10 +37,10 @@ AI 서버는 여전히 무상태이고 도메인 데이터를 저장하지 않�
 필드가 응답에 포함된다.
 
 ```java
-public record ComponentScores(
-        double similarity, double roleMatch, double deficitFit, double beginnerFit, double activityStyleMatch
-) {}
-public record RecommendationItem(Long candidateId, double score, String label, ComponentScores componentScores) {}
+// 키는 snake_case 그대로 받는다(similarity, role_match, deficit_fit, activity_style_match, beginner_fit,
+// cf_affinity, activity_time_match). 구성요소가 늘어도 BE 코드를 고치지 않도록 Map으로 받아
+// 그대로 되돌려 보낸다.
+public record RecommendationItem(Long candidateId, double score, String label, Map<String, Double> componentScores) {}
 public record RecommendationResponsePayload(List<RecommendationItem> recommendations) {}
 ```
 
@@ -55,7 +55,7 @@ public record RecommendationResponsePayload(List<RecommendationItem> recommendat
 "기존 json")으로 그대로 두고, 선택 이벤트만 별도 요청으로 보낸다.
 
 ```java
-public record ShownCandidate(Long candidateId, double totalScore, ComponentScores componentScores) {}
+public record ShownCandidate(Long candidateId, double totalScore, Map<String, Double> componentScores) {}
 
 public record SelectionContext(
         String idempotencyKey, Map<String, Object> chooserFields, List<ShownCandidate> shownCandidates
@@ -141,15 +141,21 @@ mateonAiRestClient.post()
   "selected_candidate_id": 17,
   "selection_context": {
     "idempotency_key": "b3f1...(UUID)",
-    "chooser_fields": { "desired_roles": ["BE"], "experience_level": "beginner" },
+    "chooser_fields": { "desired_roles": ["BE"], "experience_level": "advanced" },
     "shown_candidates": [
       {
-        "candidate_id": 17, "total_score": 0.91,
-        "component_scores": { "similarity": 0.8, "role_match": 1.0, "deficit_fit": 1.0, "beginner_fit": 0.5, "activity_style_match": 1.0 }
+        "candidate_id": 17, "total_score": 0.95,
+        "component_scores": {
+          "similarity": 1.0, "role_match": 1.0, "deficit_fit": 1.0, "activity_style_match": 1.0,
+          "beginner_fit": 1.0, "cf_affinity": 0.0, "activity_time_match": 0.5
+        }
       },
       {
-        "candidate_id": 42, "total_score": 0.14,
-        "component_scores": { "similarity": 0.1, "role_match": 0.0, "deficit_fit": 0.0, "beginner_fit": 1.0, "activity_style_match": 0.5 }
+        "candidate_id": 42, "total_score": 0.19,
+        "component_scores": {
+          "similarity": 0.0, "role_match": 0.0, "deficit_fit": 0.0, "activity_style_match": 0.0,
+          "beginner_fit": 1.0, "cf_affinity": 0.0, "activity_time_match": 0.5
+        }
       }
     ]
   }

@@ -1,10 +1,12 @@
 # mateon-ai ↔ mateon-backend API 계약 초안
 
-`CLAUDE.md`의 "구현 로드맵" 1단계에서 공유하기로 한 초안이며, 5단계(계약 최종 확정) 기준으로
-실제 구현과 맞춰 갱신했다. 실제 구현된 FastAPI 앱의 `/docs`(Swagger UI)와 `docs/openapi.json`
-(내보낸 스펙 원본)이 가장 정확한 최종 소스이고, 이 문서는 그걸 사람이 읽기 편하게 예시와 함께
-설명하는 보조 자료다 — 백엔드 팀은 이 문서로 먼저 감을 잡고, 정확한 타입/필수 여부는
-`docs/openapi.json`으로 교차 확인하면 된다.
+AI 서버가 먼저 정의해 공유하는 계약 초안이며, 실제 구현과 맞춰 갱신했다. 정확한 타입·필수 여부의
+기준은 [`openapi.json`](openapi.json)(코드에서 내보낸 스펙 원본 — `uv run python scripts/export_openapi.py`로
+다시 만든다)이고, 이 문서는 그걸 사람이 읽기 편하게 예시와 함께 설명하는 보조 자료다. 백엔드 팀은 이
+문서로 먼저 감을 잡고, 정확한 타입/필수 여부는 `docs/openapi.json`으로 교차 확인하면 된다.
+
+배포된 서버는 `/docs`·`/redoc`·`/openapi.json`을 노출하지 않는다(`API_DOCS_ENABLED` 기본값 false).
+Swagger UI는 로컬에서 `API_DOCS_ENABLED=true`로 서버를 띄웠을 때만 볼 수 있다.
 
 ## 핵심 원칙: AI 서버는 무상태(stateless)다
 
@@ -22,16 +24,20 @@ AI 서버는 데이터베이스를 갖지 않는다. 임베딩 벡터를 포함�
 
 - ID 타입: 아래 예시는 `user_id`/`team_id`/`contest_id`/`sender_id`/`receiver_id`/`intent_id`를
   정수(Long)로 가정했다 (Spring Data JPA 기본 전략). UUID를 쓴다면 타입을 맞춰야 한다.
-- 역할/경험 수준 코드 값: `RoleCode`(`app/schemas/role_codes.py`)로 `BE`/`FE`/`Design`/`PM`/`Data`/
-  `MARKETING`/`CONTENT`/`BUSINESS`/`RESEARCH`/`ETC`, `ExperienceLevel`로 `beginner`/
-  `intermediate`/`advanced`를 AI 서버가 임의로 정해서 쓰고 있다(둘 다 OpenAPI 스펙에 실제
-  enum으로 노출된다 — `docs/openapi.json`의 `RoleCode`/`ExperienceLevel` 컴포넌트 참고).
-  **2026-08-03부터 `desired_roles`뿐 아니라 `recruiting_roles`도 AI 서버가 자유 텍스트를 이
-  코드로 정규화해서 돌려준다** — 팀 임베딩 계산 시 백엔드가 원문 그대로 보낸 값(예: "데이터
-  분석", "기획")을 AI가 읽고 `metadata.recruiting_roles`에는 정규화된 코드(`Data`, `PM`)만
-  담는다(아래 2번 참고). 그래도 이 코드 목록 자체는 AI 서버가 mateon-backend 실제 코드(자유
-  텍스트 예시만 있고 고정 enum은 없음, 2026-08-03 확인)를 참고해 임의로 정한 초안이라, 안정화
-  되면 백엔드와 다시 맞춰야 한다.
+- 도메인 코드 값(역할·경험 수준·활동 방식·공모전 구분·분야): **2026-11-05부터 FE·BE가 AI 서버의
+  정의를 그대로 따른다.** 전체 목록과 한글 라벨은 [`domain-enums.md`](domain-enums.md)에 있다
+  (코드에서 자동 생성 — `scripts/generate_domain_doc.py`). `RoleCode`(132개)·`ExperienceLevel`·
+  `ActivityStyle`은 OpenAPI 스펙에도 enum으로 노출된다(`docs/openapi.json`의 같은 이름 컴포넌트).
+  - 역할은 IT만 다루던 것을 공모전 도메인 23개(IT, 요리, 문학, 건축, 정치·사회, 미디어 등) 아래
+    도메인별 역할 132개로 늘렸다(예: 요리 → 한식·양식·중식·메뉴 기획). 도메인 값 자체는 API에
+    나오지 않고, 팀은 다른 도메인의 역할도 모집할 수 있다. 처음 10개 역할 값은 그대로지만 일부는
+    겹치는 의미를 새 코드로 떼어내 범위가 좁아졌다(예: AI는 `Data`에서 `IT_AI`로). 그 전에 저장한
+    값은 2번(팀)·1번(유저)을 다시 호출해 재정규화하는 게 정확하다.
+  - `activity_style`은 자유 텍스트에서 `ONLINE`/`OFFLINE`/`HYBRID`로 바뀌었다. 온라인·오프라인
+    언급이 없으면 `null`이다. 그래서 팀 쪽은 `missing_fields`에 `activity_style`이 이전보다 자주
+    들어갈 수 있다.
+  - `desired_roles`·`recruiting_roles`는 백엔드가 자유 텍스트(예: "데이터 분석", "기획")를 보내도
+    AI 서버가 이 코드로 정규화해서 돌려준다(2026-08-03부터, 아래 2번 참고).
 - 에러 응답 포맷: FastAPI 기본 `{"detail": "..."}` 형태를 가정했다.
 
 **임베딩 벡터는 항상 정확히 1536개(float)여야 한다.** `text-embedding-3-small` 차원 기준으로
@@ -143,7 +149,7 @@ AI 서버는 mateon-backend만 호출하고 프론트엔드가 직접 부르는 
     "desired_roles": ["BE"],
     "skills": ["React", "TypeScript"],
     "interests": ["커머스"],
-    "activity_style": "주 2회 오프라인",
+    "activity_style": "OFFLINE",
     "experience_level": "beginner",
     "optional": { "activity_time": null, "activity_goal": "포트폴리오용 프로젝트" }
   },
@@ -202,8 +208,8 @@ AI 서버는 mateon-backend만 호출하고 프론트엔드가 직접 부르는 
   않는 것과 대칭이다).
 
 반면 `activity_goal`/`activity_style`/`activity_intensity`/`beginner_friendly`/팀 분위기처럼
-자유 서술로만 표현되는 값은 백엔드가 아예 보내지 않고, **AI 서버가 `intro_text`에서 GPT-5.6
-luna로 직접 추출**한다 — 이미 구조화된 값을 LLM이 다시 추측하게 하면 환각 위험만 커지기
+자유 서술로만 표현되는 값은 백엔드가 아예 보내지 않고, **AI 서버가 `intro_text`에서 생성
+모델(`OPENAI_LLM_MODEL`)로 직접 추출**한다 — 이미 구조화된 값을 LLM이 다시 추측하게 하면 환각 위험만 커지기
 때문이다.
 
 현재 팀 구성(누가 몇 명인지)은 별도 필드가 없다 — `intro_text`에 자연어로 포함시키면 된다
@@ -233,14 +239,20 @@ luna로 직접 추출**한다 — 이미 구조화된 값을 LLM이 다시 추�
     "recruiting_roles": ["Data", "PM"],
     "required_skills": ["Spring Boot", "PostgreSQL"],
     "activity_goal": "교내 공모전 수상",
-    "activity_style": "오프라인 모임",
-    "beginner_friendly": true
+    "activity_style": "OFFLINE",
+    "beginner_friendly": true,
+    "activity_time": "주 2회 저녁",
+    "contest_field": "MANAGEMENT_CONSULTING_MARKETING"
   }
 }
 ```
 
 `missing_fields`는 `intro_text`에서 추출을 시도했지만 명시적으로 드러나지 않아 못 채운 항목이다
 (예시에서는 활동 강도가 언급되지 않아 `activity_intensity`가 비었다).
+
+`metadata`는 키를 빼지 말고 통째로 저장해 두었다가 4번(역제안 추천)의 `query_metadata`로 그대로 보낸다.
+`contest_field`는 역할 일치도 같은 점수에는 쓰이지 않지만, 역제안 쪽 가중치 보정값을 찾는 키
+(`recruiting_roles` × `contest_field`)에 들어간다 — 빠지면 그 팀은 보정값을 받지 못한다.
 
 ---
 
@@ -257,7 +269,7 @@ luna로 직접 추출**한다 — 이미 구조화된 값을 LLM이 다시 추�
   "query_metadata": {
     "desired_roles": ["BE"],
     "skills": ["Spring Boot", "Kafka"],
-    "activity_style": "주 3~4회 오프라인",
+    "activity_style": "OFFLINE",
     "experience_level": "advanced"
   },
   "candidates": [
@@ -267,7 +279,7 @@ luna로 직접 추출**한다 — 이미 구조화된 값을 LLM이 다시 추�
       "metadata": {
         "recruiting_roles": ["BE"],
         "required_skills": ["Spring Boot", "Kafka"],
-        "activity_style": "주 3~4회 오프라인",
+        "activity_style": "OFFLINE",
         "beginner_friendly": false
       }
     },
@@ -277,7 +289,7 @@ luna로 직접 추출**한다 — 이미 구조화된 값을 LLM이 다시 추�
       "metadata": {
         "recruiting_roles": ["FE"],
         "required_skills": ["React"],
-        "activity_style": "온라인",
+        "activity_style": "ONLINE",
         "beginner_friendly": true
       }
     }
@@ -285,37 +297,46 @@ luna로 직접 추출**한다 — 이미 구조화된 값을 LLM이 다시 추�
 }
 ```
 
-응답:
+응답(위 요청을 실제 코드로 계산한 값 — `similarity`는 후보군 안에서 0~1로 정규화된 값이다):
 ```json
 {
   "recommendations": [
     {
-      "candidate_id": 17, "score": 0.91, "label": "BE 역할을 모집하고 있어요",
+      "candidate_id": 17, "score": 0.95, "label": "백엔드 개발 역할을 모집하고 있어요",
       "component_scores": {
-        "similarity": 0.8, "role_match": 1.0, "deficit_fit": 1.0,
-        "beginner_fit": 0.5, "activity_style_match": 1.0
+        "similarity": 1.0, "role_match": 1.0, "deficit_fit": 1.0,
+        "activity_style_match": 1.0, "beginner_fit": 1.0, "cf_affinity": 0.0,
+        "activity_time_match": 0.5
       }
     },
     {
-      "candidate_id": 42, "score": 0.14, "label": "초보자도 편하게 참여할 수 있는 팀이에요",
+      "candidate_id": 42, "score": 0.19, "label": "의미적으로 관심사가 잘 맞아요",
       "component_scores": {
-        "similarity": 0.1, "role_match": 0.0, "deficit_fit": 0.0,
-        "beginner_fit": 1.0, "activity_style_match": 0.5
+        "similarity": 0.0, "role_match": 0.0, "deficit_fit": 0.0,
+        "activity_style_match": 0.0, "beginner_fit": 1.0, "cf_affinity": 0.0,
+        "activity_time_match": 0.5
       }
     }
   ]
 }
 ```
 
-`label`은 가장 점수가 높은 구성요소를 실제 매칭된 값(역할/스킬/활동 방식 등)으로 채워 넣은
-문장이다 — 동점이면 가중치가 높은 구성요소를 우선한다. 모든 구성요소가 0이면(의미 있는 룰
-매칭이 하나도 없으면) "의미적으로 관심사가 잘 맞아요"처럼 유사도만 근거로 삼는 문구로
-대체된다.
+`label`은 **실제로 맞은** 구성요소 중 점수가 가장 높은 것을 매칭된 값(역할/스킬/활동 방식 등)으로
+채워 넣은 문장이다 — 동점이면 역할 → 스킬 → CF → 활동 방식 → 초보자 순이다. 역할과 활동 방식은
+코드가 아니라 [`domain-enums.md`](domain-enums.md)의 한글 라벨로 들어간다. 2026-11-05부터 다음은
+라벨 근거가 되지 않는다: 한쪽 활동 방식을 몰라 생긴 중립값(`activity_style_match` 0.5), 초보자가 아닌
+사용자에게 매겨지는 `beginner_fit` 1.0("해당 없음"). 그래서 초보자 문구는 초보 사용자 × 초보 환영
+팀일 때만 나온다(사용자의 `experience_level`을 모르면 나오지 않는다). 맞은 근거가 하나도 없으면
+"의미적으로 관심사가 잘 맞아요"처럼 유사도만 근거로 삼는 문구로 대체된다.
 
-`component_scores`는 2026-08-20 추가됐다(`similarity`/`role_match`/`deficit_fit`/
-`beginner_fit`/`activity_style_match`) — 백엔드가 이 후보를 선택했을 때 6번
-`selection_context.shown_candidates`로 그대로 되돌려 보내는 용도다(클러스터별 가중치 보정 입력
-데이터, `## 모니터링·데이터 기반 가중치 보정` 참고).
+`component_scores.role_match`는 희망 역할 중 팀이 모집하는 역할과 **정확히 같은 코드**의 비율이다. 같은
+공모전 도메인의 다른 역할(예: 백엔드 ↔ 웹 프론트엔드)은 0이다 — 도메인 단위 부분 점수를 검토했지만
+평가 데이터 전부에서 순위 품질이 떨어져 넣지 않았다(2026-11-05).
+
+`component_scores`의 키는 `similarity`/`role_match`/`deficit_fit`/`activity_style_match`/`beginner_fit`/
+`cf_affinity`/`activity_time_match` 7개다. 앞의 6개가 `score` 계산에 쓰이고, `activity_time_match`는
+참고용으로만 노출된다. 백엔드가 이 후보를 선택했을 때 11번 `POST /selection-events`의
+`selection_context.shown_candidates`로 그대로 되돌려 보내는 용도다(클러스터별 가중치 보정 입력 데이터).
 
 ## 4. 역제안 추천 — `POST /recommendations/team-to-user`
 
@@ -323,9 +344,10 @@ luna로 직접 추출**한다 — 이미 구조화된 값을 LLM이 다시 추�
 쓴다. `query_embedding_vector`는 **팀의 기존 `embedding_vector`**(2번에서 이미 계산해 백엔드가
 저장해둔 값)를 그대로 재사용한다 — 별도로 "deficit 임베딩"을 다시 계산하지 않는다. 팀
 embedding_text가 이미 모집 역할/요구 스킬 중심으로 렌더링돼 있어 "이 팀이 뭘 필요로 하는가"를
-충분히 대변하기 때문이다. `query_metadata`는 2번 응답의 `metadata`(recruiting_roles/
-required_skills/activity_style/beginner_friendly)를, `candidates[].metadata`는 후보 유저들의
-1번 응답 `extracted`(desired_roles/skills/experience_level/activity_style)를 넣는다 — 룰
+충분히 대변하기 때문이다. `query_metadata`는 2번 응답의 `metadata`를 **키를 빼지 말고 통째로**
+(recruiting_roles/required_skills/activity_style/beginner_friendly/activity_time/contest_field 등),
+`candidates[].metadata`는 후보 유저들의 1번 응답 `extracted`(desired_roles/skills/experience_level/
+activity_style)를 넣는다. `contest_field`가 빠지면 역제안 쪽 가중치 보정값을 찾지 못한다(2번 참고) — 룰
 스코어링 구성요소(역할 일치도/결핍 보완도/활동 방식 일치도/초보자 적합도)가 제안(3번)과 완전히
 동일하기 때문에 쓰는 필드도 동일하다(`portfolio_role_fit`처럼 방향별로 따로 있던 컴포넌트는
 2026-07-15에 제거했다 — 신호가 약한 `experience_level` 대리 지표라 후보군 정보 수준에 따라
@@ -338,8 +360,10 @@ required_skills/activity_style/beginner_friendly)를, `candidates[].metadata`는
   "query_metadata": {
     "recruiting_roles": ["BE"],
     "required_skills": ["Spring Boot", "Kafka"],
-    "activity_style": "주 3~4회 오프라인",
-    "beginner_friendly": false
+    "activity_style": "OFFLINE",
+    "beginner_friendly": false,
+    "activity_time": null,
+    "contest_field": "SCIENCE_ENGINEERING_TECH_IT"
   },
   "candidates": [
     {
@@ -349,7 +373,7 @@ required_skills/activity_style/beginner_friendly)를, `candidates[].metadata`는
         "desired_roles": ["BE"],
         "skills": ["Spring Boot", "Kafka"],
         "experience_level": "advanced",
-        "activity_style": "주 3~4회 오프라인"
+        "activity_style": "OFFLINE"
       }
     }
   ]
@@ -453,7 +477,7 @@ AI 서버가 아무것도 저장하지 않으므로, 이유 생성에 필요한 
 `img_file`, value는 공모전 포스터/캡처 이미지 파일 (`.jpg`/`.jpeg`/`.png`만 허용, 그 외
 확장자나 빈 파일은 `400`). 다른 엔드포인트와 마찬가지로 `X-Internal-Secret` 헤더가 필요하다.
 
-OCR을 별도 엔진으로 거치지 않고, Vision 입력을 지원하는 `gpt-5.6-luna`(`OPENAI_LLM_MODEL`)에
+OCR을 별도 엔진으로 거치지 않고, Vision 입력을 지원하는 생성 모델(`OPENAI_LLM_MODEL`, 현재 `gpt-6-luna`)에
 이미지를 base64 data URL로 그대로 실어 보내 텍스트 판독과 구조화 추출을 한 번에 수행한다 —
 이미지에 없는 정보는 추측하지 않고 선택 필드는 `null`로 남기도록 프롬프트에 명시했다. AI 서버는
 계산 결과만 반환하고 아무것도 저장하지 않는다 — 다른 엔드포인트와 동일한 무상태 원칙.
@@ -487,7 +511,7 @@ curl -X POST https://.../contests/extract-image \
 ```
 
 `category`/`field`는 각각 3개(`CONTEST`/`EXTERNAL`/`SCHOOL`)·21개 고정 enum 값만 허용한다 —
-`field`의 코드 목록은 `CLAUDE.md`의 "field 코드 목록" 참고, 원문과 매칭되는 코드가 없으면
+`field`의 코드 목록은 [`domain-enums.md`](domain-enums.md)의 "공모전 분야" 표 참고, 원문과 매칭되는 코드가 없으면
 `ETC`. `detail_url`/`image_url`은 형식 검증 없는 일반 문자열이다 — 이미지에서 OCR로 읽은 URL은
 스킴 누락이나 오타가 섞이기 쉬워, `HttpUrl` 강제 검증으로 인한 예기치 않은 `500`보다는 원문
 그대로 백엔드에 넘기고 정규화는 백엔드가 하는 쪽을 택했다. 파일 크기 상한은
@@ -535,10 +559,8 @@ curl -X POST https://.../portfolios/summarize \
 
 핵심 매칭 기능(제안/역제안)과 무관한 **부가 시각화 기능**이다 — 쿼리 공모전 1건을 중심에 두고,
 BE가 넘겨준 후보 공모전들을 "얼마나 비슷한가"에 따라 2차원에 배치할 좌표를 계산해 반환한다.
-다른 엔드포인트와 마찬가지로 무상태다 — 임베딩 벡터는 BE가 요청에 실어 보내야 한다(AI 서버는
-공모전 임베딩을 자체적으로 계산하거나 저장하지 않는다. 공모전 임베딩을 어디서 계산할지는 아직
-정해지지 않았다 — 팀 임베딩과 같은 방식으로 별도 `embedding:refresh` 류 엔드포인트가 필요할 수
-있다, 상세 문서 참고).
+다른 엔드포인트와 마찬가지로 무상태다 — 임베딩 벡터는 BE가 요청에 실어 보내야 한다. 공모전
+임베딩은 12번 `POST /internal/contests/embedding:refresh`로 계산해 BE가 저장해 둔 값을 쓴다.
 
 > 상세 배경·설계 근거·BE 체크리스트: [`backend-integration-contest-similarity-draft.md`](backend-integration-contest-similarity-draft.md)
 
@@ -635,7 +657,7 @@ FE가 절대 유사도 숫자를 참고선으로 보여줄 수 있게 한다.
 
 ## 11. 선택 이벤트 로깅 — `POST /selection-events`
 
-클러스터별 가중치 보정(`CLAUDE.md` "## 모니터링·데이터 기반 가중치 보정" 참고)용 신호를 기록한다.
+클러스터별 가중치 보정용 신호(사용자·팀이 추천 목록에서 실제로 무엇을 골랐는가)를 기록한다.
 2026-08-23에 `/proposals/*`(6·7번 섹션)에서 분리된 엔드포인트다 — 제안 생성(핵심 경로)과 이
 로깅(모니터링 경로)은 이제 완전히 독립된 요청이라, 한쪽만 재배포·롤백해도 다른 쪽에 영향이 없다.
 fire-and-forget이라 Supabase 기록 성공 여부와 무관하게 항상 `{"accepted": true}`를 반환한다.
@@ -647,15 +669,21 @@ fire-and-forget이라 Supabase 기록 성공 여부와 무관하게 항상 `{"ac
   "selected_candidate_id": 17,
   "selection_context": {
     "idempotency_key": "b3f1...(UUID)",
-    "chooser_fields": { "desired_roles": ["BE"], "experience_level": "beginner" },
+    "chooser_fields": { "desired_roles": ["BE"], "experience_level": "advanced" },
     "shown_candidates": [
       {
-        "candidate_id": 17, "total_score": 0.91,
-        "component_scores": { "similarity": 0.8, "role_match": 1.0, "deficit_fit": 1.0, "beginner_fit": 0.5, "activity_style_match": 1.0 }
+        "candidate_id": 17, "total_score": 0.95,
+        "component_scores": {
+          "similarity": 1.0, "role_match": 1.0, "deficit_fit": 1.0, "activity_style_match": 1.0,
+          "beginner_fit": 1.0, "cf_affinity": 0.0, "activity_time_match": 0.5
+        }
       },
       {
-        "candidate_id": 42, "total_score": 0.14,
-        "component_scores": { "similarity": 0.1, "role_match": 0.0, "deficit_fit": 0.0, "beginner_fit": 1.0, "activity_style_match": 0.5 }
+        "candidate_id": 42, "total_score": 0.19,
+        "component_scores": {
+          "similarity": 0.0, "role_match": 0.0, "deficit_fit": 0.0, "activity_style_match": 0.0,
+          "beginner_fit": 1.0, "cf_affinity": 0.0, "activity_time_match": 0.5
+        }
       }
     ]
   }

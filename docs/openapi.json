@@ -655,6 +655,15 @@
   },
   "components": {
     "schemas": {
+      "ActivityStyle": {
+        "type": "string",
+        "enum": [
+          "ONLINE",
+          "OFFLINE",
+          "HYBRID"
+        ],
+        "title": "ActivityStyle"
+      },
       "Body_extract_image_to_contest_contests_extract_image_post": {
         "properties": {
           "img_file": {
@@ -1660,6 +1669,28 @@
             },
             "type": "array",
             "title": "Candidates"
+          },
+          "behavior_embedding_vector": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array",
+                "maxItems": 1536,
+                "minItems": 1536
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Behavior Embedding Vector"
+          },
+          "interaction_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Interaction Count",
+            "default": 0
           }
         },
         "type": "object",
@@ -1690,13 +1721,135 @@
         "enum": [
           "BE",
           "FE",
+          "IT_MOBILE",
+          "IT_AI",
+          "Data",
+          "IT_DATA_VIZ",
+          "IT_SECURITY",
+          "IT_EMBEDDED",
           "Design",
           "PM",
-          "Data",
-          "MARKETING",
-          "CONTENT",
-          "BUSINESS",
+          "GAME_PROGRAMMING",
+          "GAME_PLANNING",
+          "GAME_ART",
+          "GAME_SOUND",
+          "GAME_ESPORTS",
+          "IDEA_PLANNING",
           "RESEARCH",
+          "IDEA_PITCHING",
+          "MARKETING",
+          "AD_PLANNING",
+          "AD_COPYWRITING",
+          "AD_SNS",
+          "AD_PERFORMANCE",
+          "DESIGN_GRAPHIC",
+          "DESIGN_PPT",
+          "DESIGN_PRODUCT",
+          "DESIGN_CHARACTER",
+          "DESIGN_WEBTOON",
+          "DESIGN_ILLUSTRATION",
+          "DESIGN_MOTION",
+          "VIDEO_DIRECTING",
+          "VIDEO_FILMING",
+          "VIDEO_EDITING",
+          "VIDEO_SCRIPT",
+          "VIDEO_GENAI",
+          "PHOTO",
+          "CONTENT",
+          "MEDIA_JOURNALIST",
+          "MEDIA_ANNOUNCER",
+          "MEDIA_CREATOR",
+          "MEDIA_BROADCAST",
+          "LIT_POETRY",
+          "LIT_NOVEL",
+          "LIT_ESSAY",
+          "LIT_SCENARIO",
+          "LIT_CHILDREN",
+          "LIT_REVIEW",
+          "LIT_STORY",
+          "LIT_EDITING",
+          "ACAD_PAPER",
+          "ACAD_STATISTICS",
+          "ACAD_SURVEY",
+          "ACAD_LIT_REVIEW",
+          "SCI_RESEARCH",
+          "SCI_BIO",
+          "ENG_MECHANICAL",
+          "ENG_ELECTRICAL",
+          "ENG_CHEMICAL",
+          "ENG_ENVIRONMENT",
+          "ENG_ROBOTICS",
+          "SCI_PATENT",
+          "ARCH_DESIGN",
+          "ARCH_INTERIOR",
+          "ARCH_LANDSCAPE",
+          "ARCH_URBAN",
+          "ARCH_STRUCTURE",
+          "ARCH_CONSTRUCTION",
+          "ARCH_MODELING",
+          "ARCH_PANEL",
+          "POLICY_PROPOSAL",
+          "POLICY_LAW",
+          "POLICY_DEBATE",
+          "POLICY_CAMPAIGN",
+          "BUSINESS",
+          "BIZ_FINANCE",
+          "BIZ_ECONOMICS",
+          "BIZ_TRADE",
+          "BIZ_CONSULTING",
+          "BIZ_LOGISTICS",
+          "BIZ_SALES",
+          "ARTS_VOCAL",
+          "ARTS_INSTRUMENT",
+          "ARTS_COMPOSING",
+          "ARTS_SOUND",
+          "ARTS_DANCE",
+          "ARTS_ACTING",
+          "ARTS_FINE_ART",
+          "ARTS_STAGE",
+          "ARTS_LIGHTING",
+          "ARTS_STAGE_ART",
+          "COOK_KOREAN",
+          "COOK_WESTERN",
+          "COOK_CHINESE",
+          "COOK_JAPANESE",
+          "COOK_BAKERY",
+          "COOK_RICE_CAKE",
+          "COOK_BEVERAGE",
+          "COOK_STYLING",
+          "COOK_MENU_PLANNING",
+          "COOK_FOOD_PRODUCT",
+          "FASHION_DESIGN",
+          "FASHION_PATTERN",
+          "FASHION_STYLING",
+          "FASHION_MODEL",
+          "FASHION_MD",
+          "BEAUTY_MAKEUP",
+          "BEAUTY_HAIR",
+          "BEAUTY_NAIL_SKIN",
+          "BEAUTY_PRODUCT",
+          "SPORTS_PLAYER",
+          "SPORTS_COACH",
+          "SPORTS_ANALYTICS",
+          "SPORTS_MANAGER",
+          "EDU_CURRICULUM",
+          "EDU_TEACHING",
+          "EDU_MENTORING",
+          "EDU_CONTENT",
+          "VOLUNTEER_FIELD",
+          "VOLUNTEER_PLANNING",
+          "GLOBAL_EXCHANGE",
+          "GLOBAL_TRANSLATION",
+          "EVENT_PLANNING",
+          "EVENT_OPERATION",
+          "EVENT_EXHIBITION",
+          "EVENT_OUTREACH",
+          "HEALTH_CLINICAL",
+          "HEALTH_PUBLIC",
+          "HEALTH_MENTAL",
+          "TRAVEL_PLANNING",
+          "TRAVEL_HERITAGE",
+          "TRAVEL_GUIDE",
           "ETC"
         ],
         "title": "RoleCode"
@@ -1919,13 +2072,12 @@
           "activity_style": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/ActivityStyle"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Activity Style"
+            ]
           },
           "experience_level": {
             "anyOf": [

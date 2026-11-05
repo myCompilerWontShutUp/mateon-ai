@@ -119,20 +119,17 @@ public record RecommendationRequestPayload(
         List<CandidateEmbeddingPayload> candidates
 ) {}
 
-public record ComponentScores(
-        double similarity, double roleMatch, double deficitFit, double beginnerFit, double activityStyleMatch
-) {}
-public record RecommendationItem(Long candidateId, double score, String label, ComponentScores componentScores) {}
+// 키는 snake_case 그대로(similarity, role_match, deficit_fit, activity_style_match, beginner_fit,
+// cf_affinity, activity_time_match). 구성요소가 늘어도 BE 코드를 고치지 않게 Map으로 받는다.
+public record RecommendationItem(Long candidateId, double score, String label, Map<String, Double> componentScores) {}
 public record RecommendationResponsePayload(List<RecommendationItem> recommendations) {}
 ```
 
-`componentScores`는 2026-08-20 추가됐다 — 사용자가 이 후보를 선택했을 때 2-4-1의
+`componentScores`는 사용자가 이 후보를 선택했을 때 `POST /selection-events`의
 `selectionContext.shownCandidates`로 그대로 되돌려 보내는 용도다(클러스터별 가중치 보정 입력
-데이터). **실제로는 고정 5개 필드가 아니라 `Map<String, Double>`에 가깝다** — "선택 필드"
-(CLAUDE.md 4번)가 늘어나면 키가 늘어난다. 지금은 위 5개에 `activityTimeMatch`(선택 필드
-`activity_time` 매칭 점수, 총점에는 영향 없음)가 추가돼 있다. 고정 record로 받으면 새 키가
-생겨도 역직렬화 자체는 깨지지 않지만(모르는 필드는 무시) 값을 못 읽으니, 그대로 되돌려 보낼
-목적이라면 `Map<String, Double>`으로 받는 걸 권장한다.
+데이터). 지금 키는 7개다: 총점에 쓰이는 `similarity`/`role_match`/`deficit_fit`/`activity_style_match`/
+`beginner_fit`/`cf_affinity`와, 참고용 `activity_time_match`(선택 필드 `activity_time` 매칭 점수, 총점에는
+영향 없음). 구성요소가 늘면 키도 늘어나므로 고정 record가 아니라 `Map<String, Double>`으로 받는다.
 
 ```java
 List<Team> candidateTeams = teamRepository.findRecruitingTeamsFor(user); // 백엔드 룰 필터링
