@@ -55,3 +55,30 @@ def graded_ndcg_at_k(ranked_ids: Sequence, relevance: dict, k: int) -> float:
     if idcg == 0.0:
         return 0.0
     return dcg / idcg
+
+
+def precision_at_k(ranked_ids: Sequence, relevant_ids: set, k: int) -> float:
+    """상위 k개 추천 중 정답(추천해도 무리가 없는 후보)의 비율 — "추천 k개 중 쓸 만한 게 몇 개인가".
+
+    분모는 항상 k다. 추천을 k개보다 적게 내놓은 방법이 유리해지지 않게, 비어 있는 자리는
+    틀린 것으로 센다.
+    """
+    if k <= 0:
+        return 0.0
+    return len(set(ranked_ids[:k]) & relevant_ids) / k
+
+
+def wilson_interval(successes: int, n: int, z: float = 1.96) -> tuple[float, float]:
+    """이항 비율(적중률)의 95% 신뢰구간 — Wilson score interval.
+
+    표본이 작거나(실제 사용자 11명) 비율이 0·1에 가까울 때도 구간이 [0, 1] 밖으로 나가지 않아
+    정규근사(p ± 1.96·√(p(1-p)/n))보다 이런 평가에 맞다. 두 방법의 구간이 크게 겹치면 그
+    차이는 이 표본 크기로는 주장하기 어렵다는 뜻이다.
+    """
+    if n <= 0:
+        return (0.0, 0.0)
+    p = successes / n
+    denominator = 1 + z * z / n
+    center = (p + z * z / (2 * n)) / denominator
+    half_width = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denominator
+    return (max(0.0, center - half_width), min(1.0, center + half_width))
