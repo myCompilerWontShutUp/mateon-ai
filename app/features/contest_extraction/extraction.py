@@ -5,7 +5,7 @@ from openai import BadRequestError
 
 from app.core.config import get_settings
 from app.core.prompts import load_prompt
-from app.openai_client.extraction import extract_structured
+from app.openai_client.extraction import extract_structured, is_config_error
 from app.schemas.contest import ContestExtractionResult
 
 _SYSTEM_PROMPT = load_prompt("contest_image_extraction")
@@ -60,6 +60,9 @@ async def extract_contest_from_image(img_file: UploadFile) -> ContestExtractionR
     except BadRequestError as exc:
         # 확장자는 맞지만 실제로는 디코딩 불가능한 이미지 바이트인 경우 OpenAI가 여기서
         # invalid_image_format류 400을 준다 — 그대로 흘려보내면 우리 쪽 500이 되므로 변환한다.
+        # 우리 설정(모델명·추론 강도) 문제로 거부된 경우는 파일 탓이 아니라 그대로 올린다.
+        if is_config_error(exc):
+            raise
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="img_file could not be processed as an image",

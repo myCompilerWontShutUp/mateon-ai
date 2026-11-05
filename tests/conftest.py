@@ -47,3 +47,16 @@ def _no_cluster_weight_lookup(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(user_to_team_recommend_module, "read_cluster_lifts", _empty_lifts)
     monkeypatch.setattr(team_to_user_recommend_module, "read_cluster_lifts", _empty_lifts)
+
+
+@pytest.fixture(autouse=True)
+def _no_cooccurrence_lookup(monkeypatch: pytest.MonkeyPatch) -> None:
+    """CF 동시발생 행렬 조회(read_cooccurrence)도 같은 이유로 빈 dict로 고정한다 — 기본
+    단위 테스트는 "CF 신호가 없는 상태"를 검증하고, CF 동작 자체를 보는 테스트만 로컬에서
+    다시 monkeypatch한다."""
+
+    def _empty_cooccurrence(*_args, **_kwargs) -> dict:
+        return {}
+
+    monkeypatch.setattr(user_to_team_recommend_module, "read_cooccurrence", _empty_cooccurrence)
+    monkeypatch.setattr(team_to_user_recommend_module, "read_cooccurrence", _empty_cooccurrence)

@@ -2,6 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from app.schemas.activity import ActivityStyle
 from app.schemas.common import EmbeddingVector
 from app.schemas.role_codes import ExperienceLevel, RoleCode
 
@@ -50,7 +51,8 @@ class UserIntentFields(BaseModel):
     desired_roles: list[RoleCode] = Field(default_factory=list)
     skills: list[str] = Field(default_factory=list)
     interests: list[str] = Field(default_factory=list)
-    activity_style: str | None = None
+    # 온라인/오프라인 여부만 담는다(app/schemas/activity.py 참고). 2026-11-05 전엔 자유 텍스트였다.
+    activity_style: ActivityStyle | None = None
     experience_level: ExperienceLevel | None = None
     optional: OptionalUserFields = Field(default_factory=OptionalUserFields)
 

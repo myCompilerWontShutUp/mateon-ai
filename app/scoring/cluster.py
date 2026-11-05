@@ -14,3 +14,14 @@ def user_cluster_key(desired_roles: list[str], experience_level: str | None) -> 
 def team_cluster_key(recruiting_roles: list[str], contest_field: str | None) -> str:
     primary_role = recruiting_roles[0] if recruiting_roles else _UNKNOWN
     return f"{primary_role}:{contest_field or _UNKNOWN}"
+
+
+def lift_key(direction: str, cluster_key: str) -> str:
+    """cluster_weight_config에 저장·조회할 때 쓰는 키 — 방향을 앞에 붙인다.
+
+    사용자 키(역할:경험 수준)와 팀 키(역할:공모전 분야)는 둘째 자리가 비면 똑같이 "역할:unknown"이
+    되어, 역제안(TEAM_TO_USER) 선택에서 나온 보정값이 제안(USER_TO_TEAM) 추천에 섞일 수 있었다
+    (2026-11-05 수정). 선택 이벤트 표의 chooser_cluster_key는 그대로 두고(방향은 별도 컬럼),
+    보정값을 계산·저장·조회할 때만 이 키를 쓴다.
+    """
+    return f"{direction}|{cluster_key}"

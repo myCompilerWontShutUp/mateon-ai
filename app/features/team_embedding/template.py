@@ -1,3 +1,4 @@
+from app.schemas.activity import activity_style_label
 from app.schemas.team_extraction import TeamEmbeddingRefreshRequest, TeamSoftFields
 
 REQUIRED_SOFT_FIELDS = ("activity_goal", "activity_style", "activity_intensity", "beginner_friendly")
@@ -21,7 +22,7 @@ def render_team_embedding_text(
         f"모집 역할: {', '.join(soft_fields.recruiting_roles) or '미정'}",
         f"요구 스킬: {', '.join(request.required_skills) or '미정'}",
         f"활동 목표: {soft_fields.activity_goal or '미정'}",
-        f"활동 방식: {soft_fields.activity_style or '미정'}",
+        f"활동 방식: {activity_style_label(soft_fields.activity_style) or '미정'}",
         f"활동 강도: {soft_fields.activity_intensity or '미정'}",
         f"공모전 분야: {soft_fields.contest_field.value if soft_fields.contest_field else '미정'}",
         f"초보자 가능 여부: {beginner_desc}",

@@ -10,6 +10,15 @@ class ContestCategory(StrEnum):
     SCHOOL = "SCHOOL"
 
 
+# 화면 표시용 라벨(docs/domain-enums.md). prompts/contest_image_extraction.txt의 구분 설명과 같은
+# 뜻이다 — EXTERNAL은 서포터즈·기자단·인턴형 대외활동을 포함한다.
+CONTEST_CATEGORY_LABELS: dict[ContestCategory, str] = {
+    ContestCategory.CONTEST: "공모전",
+    ContestCategory.EXTERNAL: "대외활동",
+    ContestCategory.SCHOOL: "교내활동",
+}
+
+
 class ContestField(StrEnum):
     TRAVEL_HOTEL_AIRLINE = "TRAVEL_HOTEL_AIRLINE"
     PRESS_MEDIA = "PRESS_MEDIA"

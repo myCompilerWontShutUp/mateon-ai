@@ -225,6 +225,12 @@ data/eval_llm_pool_users.json
 data/eval_llm_pool_ground_truth.json
 data/eval_llm_pool_synthetic_selections.json
 
+# 실제 사용자 프로필(개인정보) — 원본 캡처, 판독 결과, 그리고 이를 바탕으로 만든 평가 데이터.
+# 원본에 학과·자격증·경력 같은 식별 가능한 정보가 있어 절대 커밋하지 않는다.
+.sample/
+data/real_user_profiles.json
+data/eval_realistic_*.json
+
 # ML 사전 구축 실험(더미 데이터 학습 + 로컬 시각화) — 로컬 전용, 커밋하지 않는다
 # (scripts/train_cluster_weight_ml_pretrain.py)
 data/ml_pretrain_dummy_events.json

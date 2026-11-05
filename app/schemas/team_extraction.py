@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 
+from app.schemas.activity import ActivityStyle
 from app.schemas.contest import ContestField
 from app.schemas.role_codes import RoleCode
 
@@ -25,7 +26,9 @@ class OptionalTeamFields(BaseModel):
 
 class TeamSoftFields(BaseModel):
     activity_goal: str | None = None
-    activity_style: str | None = None
+    # 온라인/오프라인 여부만 담는다 — 유저 쪽 UserIntentFields.activity_style과 같은 enum이라야
+    # activity_style_match가 동작한다(app/schemas/activity.py 참고).
+    activity_style: ActivityStyle | None = None
     activity_intensity: str | None = None
     beginner_friendly: bool | None = None
     team_atmosphere: str | None = None

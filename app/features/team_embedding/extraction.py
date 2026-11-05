@@ -1,5 +1,6 @@
 from app.core.prompts import load_prompt
 from app.openai_client.extraction import extract_structured
+from app.schemas.activity import activity_style_prompt_listing
 from app.schemas.contest import CONTEST_FIELD_LABELS
 from app.schemas.role_codes import role_code_prompt_listing
 from app.schemas.team_extraction import TeamSoftFields
@@ -10,8 +11,11 @@ _CONTEST_FIELD_LISTING = ", ".join(
 )
 _SYSTEM_PROMPT = (
     load_prompt("team_soft_fields_extraction")
-    + f"\n\n역할 코드 목록: {_ROLE_CODE_LISTING}"
-    + f"\n공모전/행사 분야 코드 목록: {_CONTEST_FIELD_LISTING}"
+    + f"\n\n역할 코드 목록(공모전 도메인별):\n{_ROLE_CODE_LISTING}"
+    # 사용자 의도 추출과 같은 구분 규칙 — 양쪽이 같은 코드로 정규화돼야 역할 일치도가 맞는다.
+    + f"\n\n{load_prompt('role_code_rules')}"
+    + f"\n\n공모전/행사 분야 코드 목록: {_CONTEST_FIELD_LISTING}"
+    + f"\n\n활동 방식 코드 목록: {activity_style_prompt_listing()}"
 )
 
 

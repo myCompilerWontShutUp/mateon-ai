@@ -36,6 +36,11 @@ def _build_candidates(user_vector: list[float], user_metadata: dict, teams: dict
             "deficit_fit": deficit_fit_score(skills, meta.get("required_skills", [])),
             "activity_style_match": activity_style_match_score(activity_style, meta.get("activity_style")),
             "beginner_fit": beginner_fit_score(experience_level, meta.get("beginner_friendly")),
+            # 평가 픽스처에는 상호작용 이력이 없어 CF 신호가 존재하지 않는다 — 모든 후보가
+            # 0을 받으므로 총점이 `0.95 × 기존 점수`라는 단조 변환이 되고, 순위와 기존 평가
+            # 수치의 해석이 그대로 유지된다(WEIGHTS 주석 참고). CF를 포함한 비교는 별도
+            # 데모 평가(scripts/run_cf_demo_eval.py)에서 다룬다.
+            "cf_affinity": 0.0,
         }
         candidates.append(
             CandidateInput(candidate_id=int(team_id), raw_similarity=similarity, metadata_scores=metadata_scores)

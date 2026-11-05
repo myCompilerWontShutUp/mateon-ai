@@ -1,4 +1,5 @@
 from app.features.user_to_team.template import compute_missing_fields, render_intent_embedding_text
+from app.schemas.activity import ActivityStyle
 from app.schemas.user_intent import OptionalUserFields, UserIntentFields
 
 
@@ -17,7 +18,7 @@ def test_render_is_deterministic_and_preserves_intro() -> None:
         desired_roles=["BE"],
         skills=["React"],
         experience_level="beginner",
-        activity_style="주 2회 오프라인",
+        activity_style=ActivityStyle.OFFLINE,
     )
     intro = "저는 프론트엔드를 1년 해봤고 백엔드로 성장하고 싶습니다."
 
@@ -27,6 +28,7 @@ def test_render_is_deterministic_and_preserves_intro() -> None:
     assert first == second
     assert intro in first
     assert "BE" in first
+    assert "활동 방식: 오프라인" in first
 
 
 def test_render_uses_misang_for_absent_optional_field() -> None:

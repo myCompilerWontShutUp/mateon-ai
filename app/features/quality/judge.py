@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import random
 
 from pydantic import BaseModel, Field
 
@@ -62,8 +63,23 @@ def _write_judge_result(pipeline: str, verdict: JudgeVerdict, context: str, outp
     get_supabase_client().table("judge_results").insert(row).execute()
 
 
+def is_sampled(rate: float) -> bool:
+    """이번 생성물을 판정할지 무작위로 정한다. rate가 1.0 이상이면 항상, 0 이하이면 절대 판정."""
+    if rate >= 1.0:
+        return True
+    if rate <= 0.0:
+        return False
+    return random.random() < rate
+
+
 async def judge_and_log(pipeline: str, context: str, output_text: str) -> None:
-    """생성 직후 fire-and-forget으로 호출한다 — 응답 경로를 막지 않고, 실패해도 삼킨다."""
+    """생성 직후 fire-and-forget으로 호출한다 — 응답 경로를 막지 않고, 실패해도 삼킨다.
+
+    전수가 아니라 Settings.judge_sample_rate 비율로만 판정한다(표본 감사). 판정 모델 호출 비용이
+    생성 비용의 약 20배라서다 — 무작위 표본이라 judge_results의 실패율 추이는 그대로 추정된다.
+    """
+    if not is_sampled(get_settings().judge_sample_rate):
+        return
     try:
         verdict = await judge(pipeline, context, output_text)
         # supabase-py 클라이언트는 동기라, 이벤트 루프를 막지 않게 스레드에서 실행한다.

@@ -7,7 +7,7 @@ from openai import BadRequestError
 
 from app.core.config import get_settings
 from app.core.prompts import load_prompt
-from app.openai_client.extraction import extract_structured
+from app.openai_client.extraction import extract_structured, is_config_error
 from app.schemas.llm_output import PortfolioSummaryText
 from app.schemas.portfolio import PortfolioSummaryResult
 
@@ -77,6 +77,9 @@ async def summarize_portfolio_pdf(pdf_file: UploadFile) -> PortfolioSummaryResul
             response_model=PortfolioSummaryText,
         )
     except BadRequestError as exc:
+        # 공모전 이미지 추출기와 같은 규칙 — 설정 문제로 거부된 경우는 파일 탓으로 돌리지 않는다.
+        if is_config_error(exc):
+            raise
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="pdf_file could not be processed",

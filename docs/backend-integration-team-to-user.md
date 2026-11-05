@@ -27,16 +27,14 @@ public record RecommendationRequestPayload(
         List<CandidateEmbeddingPayload> candidates
 ) {}
 
-public record ComponentScores(
-        double similarity, double roleMatch, double deficitFit, double beginnerFit, double activityStyleMatch
-) {}
-public record RecommendationItem(Long candidateId, double score, String label, ComponentScores componentScores) {}
+// 키는 snake_case 그대로(similarity, role_match, deficit_fit, activity_style_match, beginner_fit,
+// cf_affinity, activity_time_match). 구성요소가 늘어도 BE 코드를 고치지 않게 Map으로 받는다.
+public record RecommendationItem(Long candidateId, double score, String label, Map<String, Double> componentScores) {}
 public record RecommendationResponsePayload(List<RecommendationItem> recommendations) {}
 ```
 
-`componentScores`는 2026-08-20 추가됐다 — 팀장이 이 후보를 선택했을 때 3-3-1의
-`selectionContext.shownCandidates`로 그대로 되돌려 보내는 용도다. 고정 5개 필드가 아니라
-"선택 필드"가 늘어나면 키도 늘어난다(지금은 `activityTimeMatch` 추가됨) — 자세한 내용은
+`componentScores`는 팀장이 이 후보를 선택했을 때 `POST /selection-events`의
+`selectionContext.shownCandidates`로 그대로 되돌려 보내는 용도다. 키 목록과 Map으로 받는 이유는
 `docs/backend-integration-user-to-team.md`의 2-2 참고.
 
 ```java
@@ -61,8 +59,13 @@ var queryMetadata = Map.of(
         "recruiting_roles", team.getEmbeddingMetadata().get("recruiting_roles"),
         "required_skills", team.getRequiredSkills(),
         "activity_style", team.getEmbeddingMetadata().get("activity_style"),
-        "beginner_friendly", team.getEmbeddingMetadata().get("beginner_friendly")
+        "beginner_friendly", team.getEmbeddingMetadata().get("beginner_friendly"),
+        // 점수에는 안 쓰이지만 역제안 쪽 가중치 보정값을 찾는 키(recruiting_roles × contest_field)에
+        // 들어간다 — 빠지면 이 팀은 보정값을 받지 못한다. activity_time은 참고 점수용이다.
+        "contest_field", team.getEmbeddingMetadata().get("contest_field"),
+        "activity_time", team.getEmbeddingMetadata().get("activity_time")
 );
+// Map.of는 null 값을 받지 않는다 — contest_field/activity_time이 null일 수 있으면 HashMap으로 만든다.
 
 var response = mateonAiRestClient.post()
         .uri("/recommendations/team-to-user")

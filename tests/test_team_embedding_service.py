@@ -1,6 +1,7 @@
 import pytest
 
 from app.features.team_embedding import service
+from app.schemas.activity import ActivityStyle
 from app.schemas.role_codes import RoleCode
 from app.schemas.team_extraction import TeamEmbeddingRefreshRequest, TeamSoftFields
 
@@ -12,7 +13,7 @@ def _mock_openai(monkeypatch: pytest.MonkeyPatch) -> None:
     ) -> TeamSoftFields:
         return TeamSoftFields(
             activity_goal="공모전 수상",
-            activity_style="주 2회 오프라인",
+            activity_style=ActivityStyle.OFFLINE,
             activity_intensity="high",
             beginner_friendly=True,
             team_atmosphere="자유로운 분위기",
@@ -38,5 +39,7 @@ async def test_compute_team_embedding_returns_result_without_storing_anything() 
     assert result.missing_fields == []
     assert len(result.embedding_vector) == 1536
     assert result.metadata["recruiting_roles"] == ["BE"]
+    # 유저 쪽 activity_style과 같은 코드라야 activity_style_match가 동작한다.
+    assert result.metadata["activity_style"] == "OFFLINE"
     assert not hasattr(result, "team_id")
     assert not hasattr(result, "last_embedded_at")

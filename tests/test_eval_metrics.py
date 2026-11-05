@@ -60,3 +60,34 @@ def test_graded_ndcg_ignores_ids_outside_relevance_dict() -> None:
     # relevance에 없는 id(비정답 후보)는 0점 취급 — 순위에 끼어 있어도 dcg에 기여하지 않는다.
     relevance = {7: 1.0}
     assert graded_ndcg_at_k([99, 7], relevance, k=2) < graded_ndcg_at_k([7, 99], relevance, k=2)
+
+
+def test_precision_at_k_counts_relevant_share_of_top_k() -> None:
+    from app.evaluation.metrics import precision_at_k
+
+    assert precision_at_k([1, 2, 3, 4], {1, 3}, k=3) == 2 / 3
+
+
+def test_precision_at_k_counts_missing_slots_as_misses() -> None:
+    """추천을 k개보다 적게 낸 방법이 유리해지면 안 된다."""
+    from app.evaluation.metrics import precision_at_k
+
+    assert precision_at_k([1], {1}, k=3) == 1 / 3
+
+
+def test_wilson_interval_contains_point_estimate_and_stays_in_unit_range() -> None:
+    from app.evaluation.metrics import wilson_interval
+
+    low, high = wilson_interval(45, 100)
+    assert low < 0.45 < high
+    # 경계값은 수학적으로 정확히 0·1이지만 부동소수점 오차가 남으므로 허용 오차로 비교한다.
+    assert abs(wilson_interval(0, 11)[0]) < 1e-12
+    assert abs(wilson_interval(11, 11)[1] - 1.0) < 1e-12
+
+
+def test_wilson_interval_is_wider_for_small_samples() -> None:
+    from app.evaluation.metrics import wilson_interval
+
+    small_low, small_high = wilson_interval(5, 11)
+    big_low, big_high = wilson_interval(45, 100)
+    assert (small_high - small_low) > (big_high - big_low)

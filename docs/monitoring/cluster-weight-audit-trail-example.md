@@ -1,5 +1,9 @@
 # 클러스터 가중치 보정 — 감사 추적(audit trail) 실례
 
+> 2026-08-20 당시 기록이다. 그 뒤 운영 배치는 실 선택 이벤트만 쓰고 합성 데이터는 운영 표에 기록하지
+> 않으며, 키에는 방향이 붙었다(예: `USER_TO_TEAM|BE:beginner`). 그래서 아래 과정은 지금 그대로 재현되지
+> 않는다. 현재 동작은 [`cluster-weight-correction-mechanism.md`](cluster-weight-correction-mechanism.md) 참고.
+
 이 문서의 목적은 "③(보정모델)이 ②(프로덕션)보다 점수가 몇 % 높다"를 증명하는 게 아니다 —
 [`hit-at-10-eval-report.md`](hit-at-10-eval-report.md)에 정직하게 적었듯, 지금 합성 데이터
 규모(50명)에서 순위가 실제로 바뀐 경우는 1건뿐이라 그 주장은 통계적으로 약하다.

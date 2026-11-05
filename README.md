@@ -16,10 +16,11 @@
 
 - **Python 3.13**, [FastAPI](https://fastapi.tiangolo.com/) + [Pydantic v2](https://docs.pydantic.dev/)
 - [uv](https://docs.astral.sh/uv/) — 패키지/환경 관리
-- [OpenAI SDK](https://github.com/openai/openai-python) — `gpt-5.6-luna`(구조화 추출/텍스트 생성),
-  `gpt-5.6-terra`(LLM-as-judge 판정, `OPENAI_JUDGE_MODEL`), `text-embedding-3-small`(임베딩,
-  1536차원) *(2026-08-21 — 기존 `gpt-4.1-mini`/`gpt-5.6-luna` 조합에서 성능·속도·토큰 사용량
-  개선을 위해 교체, 자세한 사유는 CLAUDE.md "## 모델 확정" 참고)*
+- [OpenAI SDK](https://github.com/openai/openai-python) — `gpt-6-luna`(구조화 추출/텍스트 생성),
+  `gpt-6.1-terra`(LLM-as-judge 판정, `OPENAI_JUDGE_MODEL`), `text-embedding-3-small`(임베딩,
+  1536차원) *(2026-11-05 — `gpt-5.6-luna`/`gpt-5.6-terra`에서 GPT-6 계열로 교체. `gpt-6-terra`라는
+  모델은 없어 판정은 같은 Terra 등급인 `gpt-6.1-terra`를 쓴다. 이전 교체 이력은 CLAUDE.md
+  "## 모델 확정" 참고)*
 - [tenacity](https://tenacity.readthedocs.io/) — OpenAI 호출 재시도
 - [Supabase](https://supabase.com/)(`supabase-py`) — judge 판정 로그·선택 이벤트 기록(쓰기 전용),
   클러스터별 가중치 설정값 읽기 전용. 도메인 데이터 저장소가 아니다(아래 "모니터링·데이터 기반
@@ -58,19 +59,23 @@ cp .env.example .env
 | 변수 | 설명 |
 |---|---|
 | `OPENAI_API_KEY` | OpenAI API 키 |
-| `OPENAI_LLM_MODEL` | 구조화 추출/텍스트 생성 모델 (기본값 `gpt-5.6-luna`) |
+| `OPENAI_LLM_MODEL` | 구조화 추출/텍스트 생성 모델 (기본값 `gpt-6-luna`) |
 | `OPENAI_EMBEDDING_MODEL` | 임베딩 모델 (기본값 `text-embedding-3-small`) |
-| `OPENAI_JUDGE_MODEL` | LLM-as-judge 전용 모델 (생성 모델과 분리, GPT-5 이상급 권장 — 기본값 없음, 미설정 시 시작 실패) |
-| `INTERNAL_SHARED_SECRET` | 모든 엔드포인트가 요구하는 `X-Internal-Secret` 헤더 값 |
-| `SUPABASE_URL` | 모니터링 전용 Supabase 프로젝트 URL (기본값 없음, 미설정 시 시작 실패) |
-| `SUPABASE_SERVICE_ROLE_KEY` | 위 프로젝트의 service_role 키 (기본값 없음, 미설정 시 시작 실패) |
+| `OPENAI_JUDGE_MODEL` | LLM-as-judge 전용 모델 (생성 모델과 분리, GPT-5 이상급 권장 — 기본값 없음, 비어 있으면 시작 실패) |
+| `INTERNAL_SHARED_SECRET` | 모든 엔드포인트가 요구하는 `X-Internal-Secret` 헤더 값 (기본값 없음, 비어 있으면 시작 실패) |
+| `SUPABASE_URL` | 모니터링 전용 Supabase 프로젝트 URL (기본값 없음, 비어 있으면 시작 실패) |
+| `SUPABASE_SERVICE_ROLE_KEY` | 위 프로젝트의 service_role 키 (기본값 없음, 비어 있으면 시작 실패) |
 | `MAX_CONTEST_IMAGE_BYTES` | 공모전 이미지 업로드 크기 상한, bytes (기본값 10MB) |
 | `MAX_PORTFOLIO_PDF_BYTES` | 포트폴리오 PDF 업로드 크기 상한, bytes (기본값 20MB) |
 | `PORTFOLIO_PDF_MAX_PAGES` | 포트폴리오 PDF에서 Vision 모델로 넘길 최대 페이지 수 (기본값 15) |
+| `JUDGE_SAMPLE_RATE` | 생성 텍스트(추천 사유·제안서)를 LLM-as-judge로 판정할 비율, 0~1 (기본값 0.2, 1이면 전수) |
+| `API_DOCS_ENABLED` | `/docs`·`/redoc`·`/openapi.json` 노출 여부 (기본값 false — 운영에서는 끄고 로컬에서만 켠다) |
+| `OPENAI_REASONING_EFFORT` | 생성 모델의 추론 강도 — `none`/`minimal`/`low`/`medium`/`high`/`xhigh`/`max` 중 하나(다른 값이면 시작 실패). 비우면 모델 기본값(gpt-6-luna는 medium) |
+| `CONFIG_CACHE_SECONDS` | Supabase 튜닝 설정값(클러스터 가중치) 캐시 시간, 초 (기본값 60) |
 
 `OPENAI_JUDGE_MODEL`/`SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY`는 도메인 매칭 기능과 무관하게
-품질 모니터링·가중치 보정 전용이지만, 다른 필수값과 동일하게 기본값이 없다 — 미설정 시 조용히
-넘어가지 않고 시작 시점에 바로 실패한다.
+품질 모니터링·가중치 보정 전용이지만, 다른 필수값과 동일하게 기본값이 없다 — 설정하지 않았거나 빈 값
+(`.env.example`을 복사하고 안 채운 경우 포함)이면 조용히 넘어가지 않고 시작 시점에 바로 실패한다.
 
 ### 서버 실행
 
@@ -88,8 +93,11 @@ uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
 실행 후 아래에서 확인 가능:
 
 - `GET /health` — 헬스체크
-- `GET /docs` — Swagger UI (대화형 API 문서)
-- `GET /openapi.json` — OpenAPI 스펙 원본
+- `GET /docs` — Swagger UI (대화형 API 문서, `API_DOCS_ENABLED=true`일 때만)
+- `GET /openapi.json` — OpenAPI 스펙 원본 (`API_DOCS_ENABLED=true`일 때만)
+
+API 문서는 인증 없이 열리므로 기본으로 꺼져 있다. 로컬에서는 `.env`에 `API_DOCS_ENABLED=true`를
+넣어 켠다. 백엔드 팀에 공유하는 계약 스펙은 이 설정과 무관하게 `docs/openapi.json`에 있다.
 
 ### 테스트
 
@@ -118,34 +126,46 @@ app/
   core/            # 설정(Settings), 프롬프트 로더, background.py(fire-and-forget 비동기 태스크)
   api/             # 헬스체크, 내부 인증 의존성
   openai_client/   # OpenAI 호출 래퍼 (구조화 추출/임베딩, 재시도 포함)
-  supabase_client/ # Supabase 클라이언트 래퍼 (모니터링 전용, 도메인 데이터 아님)
-  schemas/         # Pydantic 스키마 (요청 / LLM 출력 / 응답, 셋을 구분해서 관리)
-  scoring/         # 코사인 유사도, Score Engine, 공통 룰 유틸, cluster.py/cluster_weights.py/
-                   #   cluster_weight_store.py(클러스터별 가중치 보정)
+  supabase_client/ # Supabase 클라이언트 래퍼 (모니터링 전용, 도메인 데이터 아님). client.py는 배치용과
+                   #   짧은 타임아웃의 라이브 읽기용 두 가지, snapshots.py는 설정 표의 버전 기록·롤백 규칙
+  schemas/         # Pydantic 스키마 (요청 / LLM 출력 / 응답, 셋을 구분해서 관리)와 도메인 코드
+                   #   (role_codes.py·activity.py·contest.py, domain_doc.py가 docs/domain-enums.md 생성)
+  scoring/         # 코사인 유사도, Score Engine, 공통 룰 유틸(rules.py), 추천 라벨 근거(label_reason.py),
+                   #   클러스터별 가중치 보정(cluster.py/cluster_weights.py), 협업 필터링(cooccurrence.py),
+                   #   행동 기반 개인화(behavior_blend.py). *_store.py 두 개만 Supabase를 읽고 쓴다
+                   #   (cluster_weight_store.py·cooccurrence_store.py), live_lookup.py는 추천 요청 중
+                   #   조회의 대기 상한
   evaluation/      # Hit@10/NDCG 평가용 순수 계산 모듈(metrics/scoring_arms/simulation) — 실제
                    #   프로덕션 스코어링 코드를 재사용, 평가 로직을 따로 재구현하지 않음.
-                   #   ml_pretrain.py는 정식 ML(로지스틱 회귀) 사전 구축 실험 공유 로직
+                   #   ml_pretrain.py는 정식 ML(로지스틱 회귀) 사전 구축 실험 공유 로직,
+                   #   legacy_rule_matching.py는 백엔드의 옛 키워드 룰 매칭을 옮긴 비교 기준선
   features/
     team_embedding/    # 팀 임베딩 계산
     user_to_team/       # 제안(USER_TO_TEAM): 의도 추출, 추천, 제안 조립
     team_to_user/        # 역제안(TEAM_TO_USER): 추천, 제안 조립
     recommendation/       # 추천 이유 생성 (방향 공통)
     contest_extraction/    # 공모전 이미지 OCR+LLM 자동 입력
+    contest_embedding/      # 공모전 임베딩 계산
+    contest_similarity/     # 공모전 유사도 지도(쿼리 공모전 중심 방사형 배치)
     portfolio_summary/      # 포트폴리오 PDF OCR+LLM 경력 요약
     quality/                # LLM-as-judge 판정 + 선택 이벤트 로그(둘 다 Supabase 쓰기 전용)
-prompts/           # LLM 시스템 프롬프트 (.txt, 코드와 분리 관리)
+prompts/           # LLM 시스템 프롬프트 (.txt, 코드와 분리 관리). role_code_rules.txt는 사용자·팀 추출이
+                   #   함께 쓰는 역할 코드 구분 규칙
 tests/             # pytest — 단위 테스트 + tests/fixtures/ 실제 test_*.py가 로드하는 캐시 데이터
 scripts/           # 픽스처 생성 스크립트, 평가/시각화 배치, LLM-as-judge 검증 스크립트
 data/              # 스크립트 전용 원본/생성 데이터 (pytest가 로드하지 않음 — tests/fixtures와 구분)
 docs/              # 백엔드 연동용 API 계약 문서, docs/monitoring/ 모니터링 관련 리포트·초안
 supabase/          # 모니터링 테이블 SQL 마이그레이션 (judge_results/cluster_selection_events/
-                   #   cluster_weight_config/ml_pretrain_dummy_events)
+                   #   cluster_weight_config/ml_pretrain_dummy_events/event_cooccurrence)
 ```
 
 ## API 문서
 
 - `docs/api-contract-draft.md` — 엔드포인트별 요청/응답 예시와 설계 배경 설명
-- `docs/openapi.json` — 실제 구현에서 뽑은 OpenAPI 스펙 원본 (최종 계약 확정용)
+- `docs/domain-enums.md` — 역할·경험 수준·활동 방식·공모전 구분/분야 코드와 한글 라벨(FE·BE 공통,
+  코드에서 자동 생성 — 직접 고치지 말고 `scripts/generate_domain_doc.py`로 다시 만든다)
+- `docs/openapi.json` — 실제 구현에서 뽑은 OpenAPI 스펙 원본 (최종 계약 확정용, 스키마를 바꾸면
+  `uv run python scripts/export_openapi.py`로 다시 만든다)
 - `docs/backend-integration-team-embedding.md`, `docs/backend-integration-user-to-team.md`,
   `docs/backend-integration-team-to-user.md` — 백엔드(Java/Spring Boot) 기준 실제 연동 코드 예시
 - `docs/backend-integration-contest-similarity-draft.md` — 공모전 유사도 지도(`POST
@@ -153,6 +173,8 @@ supabase/          # 모니터링 테이블 SQL 마이그레이션 (judge_result
 - `docs/backend-feedback-graph-api-v7.md` — 공모전 임베딩(`POST
   /internal/contests/embedding:refresh`, 신규)·유사도 지도 명세서(BE 전달용, V5에서 이
   두 엔드포인트만 추려 갱신)
+- `docs/backend-feedback-cf-v8.md` — 협업 필터링·행동 기반 개인화 명세서(BE 전달용, 추가되는
+  요청 필드는 전부 선택이라 준비되는 순서대로 붙일 수 있음)
 - `docs/monitoring/` — 모니터링·가중치 보정 관련 문서 모음(아래 "모니터링·데이터 기반 가중치
   보정" 섹션에서 각 문서를 따로 링크함)
 
@@ -181,10 +203,11 @@ load_prompt()`로 읽는다. 생성된 텍스트(summary/message/reason)가 설�
 평가 금지, ID/점수 미언급 등)을 지키는지는 **LLM-as-judge**(`app/features/quality/judge.py`)가
 판정한다. 두 가지 경로로 동작한다:
 
-- **라이브 섀도 감사(자동)**: 제안/추천 이유 텍스트가 생성될 때마다 응답 경로를 막지 않는
-  fire-and-forget으로 자동 판정하고 Supabase(`judge_results`)에 기록한다. `passes=true`는
-  최소 기록만, `passes=false`는 입력·추론·위반 항목까지 상세 기록한다(30일 후 자동 익명화 —
-  아래 섹션 참고). 사람이 직접 실행할 필요는 없다.
+- **라이브 섀도 감사(자동)**: 생성된 제안/추천 이유 텍스트 중 `JUDGE_SAMPLE_RATE` 비율(기본 0.2,
+  1이면 전수)을 무작위로 골라, 응답 경로를 막지 않는 fire-and-forget으로 판정하고
+  Supabase(`judge_results`)에 기록한다. 표본이라 행 수를 생성 건수와 직접 비교하지 말고 실패율(비율)로
+  본다. `passes=true`는 최소 기록만, `passes=false`는 입력·추론·위반 항목까지 상세 기록한다(30일 후
+  자동 익명화 — 아래 섹션 참고). 사람이 직접 실행할 필요는 없다.
 - **수동 스크립트**: 특정 시점에 표본을 골라 직접 점검하고 싶을 때 아래를 실행한다(같은
   `judge.py` 모듈을 얇게 감싼 CLI).
 
@@ -202,15 +225,42 @@ uv run python scripts/judge_outputs.py
 위주로 정리한다.
 
 - **클러스터별 가중치 보정**: "클러스터"는 `RoleCode×ExperienceLevel`(유저)/
-  `recruiting_roles×ContestField`(팀) 같은 고정 ENUM 조합 키다. 실제(또는 아직 BE 미연동
-  구간에서는 합성) 선택 이벤트에서 클러스터별 lift를 계산해 `cluster_weight_config`에 버전과
-  함께 기록하고(`is_active` 플래그로 롤백 가능), 라이브 추천 엔드포인트가 요청마다 이 값을
-  읽어 `WEIGHTS`를 클러스터별로 미세 조정한다. 재계산은 온라인이 아니라 오프라인 배치다:
+  `recruiting_roles×ContestField`(팀) 같은 고정 ENUM 조합 키이고, 저장할 때는 방향을 앞에 붙인다
+  (`USER_TO_TEAM|BE:beginner`). **실제** 선택 이벤트에서 클러스터별 lift를 계산해
+  `cluster_weight_config`에 버전 단위로 기록하고, 라이브 추천 엔드포인트가 이 값을 읽어(짧게
+  캐시) `WEIGHTS`를 클러스터별로 미세 조정한다. 재계산은 온라인이 아니라 오프라인 배치다:
 
 ```bash
-uv run python scripts/generate_eval_synthetic_selections.py   # BE 연동 전 합성 이벤트 생성
-uv run python scripts/run_cluster_weight_batch.py              # 실 이벤트가 있으면 그걸 우선 사용
+uv run python scripts/run_cluster_weight_batch.py --dry-run       # 실 이벤트로 계산만
+uv run python scripts/run_cluster_weight_batch.py                 # 새 버전 기록·전환(스냅샷)
+uv run python scripts/run_cluster_weight_batch.py --activate-version 3   # 롤백
+uv run python scripts/run_cluster_weight_batch.py --deactivate-all        # 보정 끄기(기본 WEIGHTS)
+uv run python scripts/run_cluster_weight_batch.py --synthetic-demo        # 합성 데이터 시연(기록 안 함)
 ```
+
+  모드 플래그는 하나만 쓸 수 있다(예: `--activate-version`과 `--dry-run`을 함께 쓰면 거부한다).
+  클러스터당 이벤트가 20건(`--min-events`) 미만이면 보정하지 않는다. 합성 데이터는 운영 표에
+  기록하지 않고, 라이브 서버는 출처(source)에 `synthetic`이 들어간 행을 읽을 때도 무시한다
+  (2026-11-05 — 운영 표의 활성 행이 전부 합성 데모였던 문제 정리). 운영 표에 남은 합성 행을 끄려면
+  `scripts/deactivate_synthetic_rows.py`를 실행한다(`--dry-run`으로 먼저 확인). 라이브 조회는 짧은
+  타임아웃(연결 2초·응답 3초)과 요청당 4초 상한이 있고, 실패하면 직전 값(없으면 기본 `WEIGHTS`)으로
+  응답한다.
+
+- **협업 필터링(CF)**: 공모전 동시발생 행렬(`event_cooccurrence`, 마이그레이션
+  `supabase/migrations/20260901000000_create_event_cooccurrence.sql`)도 같은 방식으로 오프라인 배치가
+  계산해 버전 단위로 기록하고 라이브 추천이 읽는다. 입력은 BE의 상호작용 이력이다:
+
+```bash
+uv run python scripts/run_cooccurrence_batch.py --api-url https://<BE>/api/internal/interactions --dry-run
+uv run python scripts/run_cooccurrence_batch.py --api-url https://<BE>/api/internal/interactions
+uv run python scripts/run_cooccurrence_batch.py --interactions dump.json --source-kind real
+uv run python scripts/run_cooccurrence_batch.py --activate-version 3   # 롤백
+uv run python scripts/run_cooccurrence_batch.py --deactivate-all       # CF 끄기
+```
+
+  파일 입력은 `--source-kind real|synthetic`이 필수고, `synthetic`이면(API 입력에서도) 계산 결과만
+  출력하고 기록하지 않는다. BE 쪽 준비 사항은
+  [`docs/backend-feedback-cf-v8.md`](docs/backend-feedback-cf-v8.md) 참고.
 
 - **Hit@10/NDCG 평가**: 임베딩만 / 임베딩+메타데이터(프로덕션) / 임베딩+메타데이터+보정모델 /
   단순추론(LLM 직접 순위) 4종을 비교해 보정모델이 비용과 성능을 모두 잡는지 확인한다. 재현
@@ -219,17 +269,24 @@ uv run python scripts/run_cluster_weight_batch.py              # 실 이벤트�
 ```bash
 uv run python scripts/generate_eval_fixtures.py              # 팀·유저 50개씩, 실제 임베딩
 uv run python scripts/generate_eval_ground_truth.py          # 상위 모델로 정답 라벨 생성
-uv run python scripts/generate_eval_synthetic_selections.py
-uv run python scripts/run_cluster_weight_batch.py
+uv run python scripts/generate_eval_synthetic_selections.py  # ③ 보정모델용 합성 선택 이벤트
 uv run python scripts/run_eval.py                            # 결과: docs/monitoring/hit-at-10-eval-report.md
 ```
 
-  리포트의 핵심은 "보정모델이 프로덕션보다 점수가 높다"는 주장이 아니다 — 지금 데이터 규모에서는
-  그 효과가 작고 통계적으로 약하다는 걸 리포트 자체가 정직하게 밝힌다. 대신 클러스터별 보정값이
-  어디서 왔는지 끝까지 추적 가능하고, 잘못된 값이 들어가도 코드 배포 없이 즉시 롤백할 수 있다는
-  걸 실제 데이터로 보여주는 게 핵심이다 — 재현 사례:
-  [`docs/monitoring/cluster-weight-audit-trail-example.md`](docs/monitoring/cluster-weight-audit-trail-example.md).
-- **BE 전달용 계약 초안**: 위 기능이 요구하는 API 변경사항(`selection_context` 필드 등)을
+  `run_eval.py`는 ③의 lift를 합성 선택 이벤트로 로컬에서 계산하고 운영 표는 읽지도 쓰지도 않는다. ④가
+  LLM을 호출하므로 OpenAI 키가 있어야 한다. 리포트의 핵심은 "보정모델이 프로덕션보다 점수가 높다"는
+  주장이 아니다 — 지금 데이터 규모에서는 그 효과가 작고 통계적으로 약하다는 걸 리포트 자체가 정직하게
+  밝힌다. 대신 클러스터별 보정값이 어디서 왔는지 버전으로 추적할 수 있고, 잘못된 값이 들어가도 코드
+  배포 없이 롤백할 수 있다는 게 핵심이다 — 2026-08-20 당시 Supabase에서 재현한 기록:
+  [`docs/monitoring/cluster-weight-audit-trail-example.md`](docs/monitoring/cluster-weight-audit-trail-example.md)
+  (지금 배치는 합성 데이터를 운영 표에 쓰지 않아 그대로는 재현되지 않는다).
+  보정이 어떤 순서로 동작하는지는
+  [`docs/monitoring/cluster-weight-correction-mechanism.md`](docs/monitoring/cluster-weight-correction-mechanism.md)에
+  코드 위치와 함께 정리돼 있다.
+- **실사용자 기반 재측정**: 실제 사용자 11명의 프로필 원문과 그 형식을 따른 합성 89명으로, 서비스
+  채점 기준을 모르는 채점자의 정답과 비교해 다시 쟀다(기존 키워드 룰 매칭도 비교군에 포함) —
+  [`docs/monitoring/realistic-eval-report.md`](docs/monitoring/realistic-eval-report.md).
+- **BE 전달용 계약 초안**: 위 기능이 요구하는 API 변경사항(`POST /selection-events` 등)을
   한 문서로 모아둔 게
   [`docs/monitoring/selection-feedback-draft.md`](docs/monitoring/selection-feedback-draft.md)다.
 
@@ -253,7 +310,17 @@ uv run python scripts/run_eval.py                            # 결과: docs/moni
 | `train_cluster_weight_ml_pretrain.py` | 정식 ML(로지스틱 회귀) 사전 구축 — 혼합 데이터 학습 + 시각화 | `data/ml_pretrain_*.json`/`*.png`(gitignore) |
 | `train_cluster_weight_ml_pretrain_gpt56terra.py` | 위와 동일, gpt-5.6-terra 데이터만(Supabase 저장분 재사용) | `data/ml_pretrain_weight_comparison_gpt56terra.png`(gitignore) |
 | `eval_ml_pretrain_weights.py` | 학습된 ML 가중치를 실제 추천 스코어링에 꽂아 Hit@10/NDCG/선호 회복률 측정 | `data/ml_pretrain_weight_eval_report.md`(gitignore) |
+| `generate_synthetic_interactions.py` | CF 데모용 합성 상호작용 이력(잠재 구조를 의도적으로 심음) | `data/synthetic_interactions.json` |
+| `run_cooccurrence_batch.py` | 공모전 동시발생 행렬 계산 후 Supabase 기록 | `event_cooccurrence`(Supabase) |
+| `run_cf_demo_eval.py` | CF 교차 분야 발견율 측정 — 콘텐츠 기반이 못 찾는 걸 CF가 찾는지 | `docs/monitoring/cf-demo-eval-report.md` |
+| `generate_realistic_user_profiles.py` | 실사용자 11명 + 그 형식을 따른 합성 89명 프로필 생성(실제 사용자 글 포함) | `data/eval_realistic_profiles.json`(gitignore) |
+| `run_realistic_eval.py` | 프로필 원문 기준 재측정 — 의미만/파이프라인/LLM 직접/옛 룰 매칭 비교 | `docs/monitoring/realistic-eval-report.md`, `data/eval_realistic_*.json`(gitignore) |
+| `show_eval_summary.py` | 이미 만든 평가 리포트의 수치를 터미널에 모아 출력(재계산 없음, API 호출 없음) | 콘솔 출력 |
+| `generate_interest_fit_demo.py` | 흥미 × 역할·스킬 일치도 사분면 차트 프로토타입 데이터 | `data/interest_fit_demo.json` |
 | `judge_outputs.py` | LLM-as-judge 수동 점검 CLI | 콘솔 출력 |
+| `generate_domain_doc.py` | 도메인 코드 표 재생성(API 호출 없음) — 코드 값을 바꾼 뒤 실행 | `docs/domain-enums.md` |
+| `export_openapi.py` | BE 공유용 OpenAPI 스펙 재생성(API 호출 없음) — 요청/응답 스키마를 바꾼 뒤 실행 | `docs/openapi.json` |
+| `deactivate_synthetic_rows.py` | 운영 튜닝 설정 표의 합성 데이터 활성 행을 끔(삭제 안 함, `--dry-run` 지원) | `cluster_weight_config`·`event_cooccurrence`(Supabase) |
 
 `generate_eval_definitions_llm.py`부터 아래 ML 관련 스크립트까지는 `data/*.json`/`*.png` 산출물이
 비결정론적(LLM 생성 또는 매 학습마다 값이 조금씩 달라짐)이라 `.gitignore` 대상이다 — 다른
@@ -326,7 +393,7 @@ docker run -p 8000:8000 --env-file .env mateon-ai
 ```
 
 `.env` 파일에 위 "환경 변수" 표의 값을 채워서 넘기면 된다 — 기본값 없는 필수 설정값은
-미설정 시 컨테이너가 시작 시점에 바로 실패한다. `GET /health`는 인증 없이 컨테이너가 떴는지만
+설정하지 않았거나 비어 있으면 컨테이너가 시작 시점에 바로 실패한다. `GET /health`는 인증 없이 컨테이너가 떴는지만
 확인할 수 있고, 그 외 모든 엔드포인트는 `X-Internal-Secret` 헤더가 필요하다(`docs/api-contract-draft.md` 참고).
 
 ## 배포

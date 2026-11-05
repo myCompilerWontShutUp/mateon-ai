@@ -13,7 +13,16 @@ def test_role_match_full_overlap() -> None:
 
 
 def test_role_match_no_overlap() -> None:
+    # 같은 IT 도메인이어도 역할이 다르면 0이다 — 도메인 부분 점수는 평가셋에서 순위를 떨어뜨려 뺐다
+    # (app/features/user_to_team/scoring.py의 role_match_score 주석).
     assert role_match_score(["BE"], ["FE"]) == 0.0
+    assert role_match_score(["BE"], ["COOK_WESTERN"]) == 0.0
+
+
+def test_role_match_ignores_case_and_duplicate_roles() -> None:
+    # 중복을 세면 ["BE", "be", "PM"] 중 BE가 두 번 맞아 2/3이 된다.
+    assert role_match_score(["BE", "be", "PM"], ["BE"]) == 0.5
+    assert role_match_score(["design"], ["DESIGN"]) == 1.0
 
 
 def test_role_match_empty_inputs() -> None:
@@ -60,7 +69,8 @@ def test_label_for_uses_matched_roles_when_available() -> None:
         {"role_match": 1.0, "deficit_fit": 0.0},
         matched_roles=["BE", "FE"],
     )
-    assert label == "BE, FE 역할을 모집하고 있어요"
+    # 코드(BE/FE)가 아니라 한글 라벨로 보여준다(app/schemas/role_codes.py의 role_label).
+    assert label == "백엔드 개발, 웹 프론트엔드 개발 역할을 모집하고 있어요"
 
 
 def test_label_for_uses_matched_skills_when_available() -> None:
@@ -80,7 +90,9 @@ def test_label_for_uses_activity_style_text() -> None:
 
 
 def test_label_for_beginner_fit_needs_beginner_friendly_flag() -> None:
-    label = label_for({"beginner_fit": 1.0, "role_match": 0.0}, beginner_friendly=True)
+    label = label_for(
+        {"beginner_fit": 1.0, "role_match": 0.0}, beginner_friendly=True, seeker_is_beginner=True
+    )
     assert label == "초보자도 편하게 참여할 수 있는 팀이에요"
 
 
@@ -99,7 +111,7 @@ def test_beginner_unfriendly_team_cannot_beat_beginner_friendly_at_half_similari
     anti_beginner_full_match = combine_score(
         similarity=1.0,
         metadata_scores={
-            "role_match": 1.0, "deficit_fit": 1.0, "activity_style_match": 1.0, "beginner_fit": 0.0,
+            "role_match": 1.0, "deficit_fit": 1.0, "activity_style_match": 1.0, "beginner_fit": 0.0, "cf_affinity": 0.0,
         },
         weights=WEIGHTS,
         penalty_rules=PENALTY_RULES,
@@ -107,7 +119,7 @@ def test_beginner_unfriendly_team_cannot_beat_beginner_friendly_at_half_similari
     beginner_friendly_half_similarity = combine_score(
         similarity=0.5,
         metadata_scores={
-            "role_match": 1.0, "deficit_fit": 1.0, "activity_style_match": 1.0, "beginner_fit": 1.0,
+            "role_match": 1.0, "deficit_fit": 1.0, "activity_style_match": 1.0, "beginner_fit": 1.0, "cf_affinity": 0.0,
         },
         weights=WEIGHTS,
         penalty_rules=PENALTY_RULES,
@@ -127,7 +139,7 @@ def test_beginner_unfriendly_team_loses_even_with_full_similarity_swing() -> Non
     anti_beginner = combine_score(
         similarity=1.0,
         metadata_scores={
-            "role_match": 1.0, "deficit_fit": 0.0, "activity_style_match": 0.5, "beginner_fit": 0.0,
+            "role_match": 1.0, "deficit_fit": 0.0, "activity_style_match": 0.5, "beginner_fit": 0.0, "cf_affinity": 0.0,
         },
         weights=WEIGHTS,
         penalty_rules=PENALTY_RULES,
@@ -135,7 +147,7 @@ def test_beginner_unfriendly_team_loses_even_with_full_similarity_swing() -> Non
     beginner_friendly = combine_score(
         similarity=0.0,
         metadata_scores={
-            "role_match": 1.0, "deficit_fit": 0.0, "activity_style_match": 0.5, "beginner_fit": 1.0,
+            "role_match": 1.0, "deficit_fit": 0.0, "activity_style_match": 0.5, "beginner_fit": 1.0, "cf_affinity": 0.0,
         },
         weights=WEIGHTS,
         penalty_rules=PENALTY_RULES,
