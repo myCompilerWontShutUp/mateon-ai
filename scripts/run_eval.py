@@ -26,15 +26,21 @@ from app.evaluation.simulation import SIMULATED_TRUE_PREFERENCE_WEIGHTS, true_pr
 from app.features.user_to_team.scoring import WEIGHTS as PRODUCTION_WEIGHTS  # noqa: E402
 from app.openai_client.client import get_openai_client  # noqa: E402
 from app.scoring.cluster import user_cluster_key  # noqa: E402
-from app.scoring.cluster_weight_store import read_cluster_lifts  # noqa: E402
+from app.scoring.cluster_weights import compute_weight_lifts  # noqa: E402
+
+# ③ 보정모델의 입력. 합성 선택 이벤트에 들어 있는 컴포넌트(cf_affinity 도입 전 5개)만 쓴다.
+_LIFT_COMPONENTS = ["similarity", "role_match", "deficit_fit", "beginner_fit", "activity_style_match"]
 
 # 부록 "스트레스 테스트" 전용 — 실 lift가 아니다. 클러스터별 소수 이벤트 샘플의 노이즈를 걷어내고
 # "노이즈가 완전히 사라질 만큼 데이터가 쌓이면 이론적으로 어디까지 갈 수 있는가"라는 상한을 보기
 # 위해, adjust_weights(WEIGHTS, lift) 결과가 SIMULATED_TRUE_PREFERENCE_WEIGHTS와 정확히 같아지도록
 # lift를 역산했다(사람이 감으로 정한 값이 아니라 두 가중치 dict의 비율에서 대수적으로 도출됨:
 # lift_i = target_i/base_i - 1). CLAUDE.md "## 모니터링·데이터 기반 가중치 보정" 3번 항목 참고.
+# cf_affinity는 가상 선호에 없는 구성요소라 target이 0이다 — lift -1로 가중치를 0으로 만들어야 나머지
+# 다섯이 가상 선호와 정확히 같아진다(평가 픽스처는 CF 점수가 전부 0이라 순위에는 영향이 없다).
 STRESS_TEST_LIFTS = {
-    name: (SIMULATED_TRUE_PREFERENCE_WEIGHTS[name] / PRODUCTION_WEIGHTS[name]) - 1.0 for name in PRODUCTION_WEIGHTS
+    name: (SIMULATED_TRUE_PREFERENCE_WEIGHTS.get(name, 0.0) / PRODUCTION_WEIGHTS[name]) - 1.0
+    for name in PRODUCTION_WEIGHTS
 }
 from scripts.generate_eval_ground_truth import _team_summary_lines, _user_summary  # noqa: E402
 
@@ -73,11 +79,12 @@ async def main() -> None:
     teams = _load("eval_teams.json")
     users = _load("eval_users.json")
     ground_truth = _load("eval_ground_truth.json")
-    # 1번 항목 구현 이후: 로컬 JSON이 아니라 실제 cluster_weight_config(Supabase)에서 읽는다 —
-    # scripts/run_cluster_weight_batch.py가 먼저 이 테이블에 기록해둬야 한다. 라이브
-    # recommend_teams/recommend_users가 요청마다 쓰는 것과 완전히 같은 함수라, 이 평가가 실제
-    # 프로덕션 읽기 경로까지 검증한다.
-    cluster_lifts = read_cluster_lifts()
+    # ③ 보정모델의 lift는 합성 선택 이벤트로 로컬에서 계산한다(run_eval_on_llm_pool.py와 같은
+    # 방식). 예전엔 운영 cluster_weight_config를 읽었는데, 그 때문에 합성 데모 lift가 운영 표에
+    # 활성으로 남아 라이브 추천까지 보정하고 있었다(2026-11-05 정리). 계산 공식은
+    # 라이브 배치(scripts/run_cluster_weight_batch.py)와 같은 compute_weight_lifts다.
+    synthetic_events = _load("eval_synthetic_selections.json")
+    cluster_lifts = compute_weight_lifts(synthetic_events, components=_LIFT_COMPONENTS)
 
     arm_keys = ("embedding_only", "production", "corrected", "naive_llm")
     records: list[dict] = []  # 유저별 원본 기록 — 전체/영향군 분리 집계에 재사용한다.
@@ -222,13 +229,13 @@ async def main() -> None:
         "좁혀봤을 때 격차가 더 뚜렷해지는 것(아래 \"클러스터 보정이 실제로 적용된 유저만\" 참고)도",
         "결국 이 소수 사례에서 나온다 — 50명 규모 합성 데이터에서는 통계적으로 견고한 \"③이 ②보다",
         "우수하다\"는 근거로 보기 어렵다. **이 리포트의 핵심은 점수 우위 증명이 아니다** —",
-        "클러스터별 가중치 보정이 실제로 라이브 요청 경로에서 작동하고(합성 데이터 기준), 그 값이",
-        "어디서 왔는지 끝까지 추적 가능하며, 잘못된 값이 들어가도 코드 배포 없이 즉시 롤백할 수",
-        "있다는 걸 증명하는 자료다 — 구체적인 실측 사례는",
-        "[`cluster-weight-audit-trail-example.md`](cluster-weight-audit-trail-example.md) 참고",
-        "(선택 이벤트 → lift 계산 → Supabase 기록 → 실제 점수 변화 → 나쁜 값 주입 후 롤백까지",
-        "전 과정을 실제 데이터로 재현). 지금 효과가 작은 게 노이즈 때문인지, 메커니즘 자체의",
-        "상한 때문인지는 아래 \"부록 — 설계된 스트레스 테스트 시나리오\"에서 따로 확인할 수 있다.",
+        "클러스터별 가중치 보정 공식이 어떻게 작동하는지 합성 선택 이벤트로 오프라인에서 보여주는",
+        "자료다. 운영에서는 실 선택 이벤트만으로 같은 공식을 계산하고(클러스터당 20건 이상), 그 값이",
+        "어디서 왔는지 버전으로 추적하며 코드 배포 없이 롤백할 수 있다 — 2026-08-20 당시 Supabase에서",
+        "재현했던 기록은 [`cluster-weight-audit-trail-example.md`](cluster-weight-audit-trail-example.md)",
+        "참고(지금 운영 배치는 합성 데이터를 쓰지 않아 그대로는 재현되지 않는다). 지금 효과가 작은 게",
+        "노이즈 때문인지, 메커니즘 자체의 상한 때문인지는 아래 \"부록 — 설계된 스트레스 테스트",
+        "시나리오\"에서 따로 확인할 수 있다.",
     ]
     lines.append("")
     lines.append("## 전체 평균")
@@ -262,7 +269,9 @@ async def main() -> None:
             lines.append("")
             lines.append(
                 f"(참고: 나머지 {len(unaffected)}명은 소속 클러스터에 lift가 없어 ②와 ③ 결과가 "
-                "100% 동일하다 — min_events=2 미만인 클러스터, `app/scoring/cluster_weights.py` 참고.)"
+                "100% 동일하다 — 합성 이벤트가 2건 미만인 클러스터, `app/scoring/cluster_weights.py` 참고. "
+                "이 평가는 min_events=2를 쓴다 — 운영 배치 기본값 20을 쓰면 합성 이벤트로는 lift가 하나도 "
+                "안 나와 ③이 ②와 같아진다.)"
             )
 
     lines += [
@@ -338,18 +347,12 @@ async def main() -> None:
         "  (`scripts/generate_eval_ground_truth.py`, `tests/fixtures/eval_ground_truth.json`).",
         "  **표본 검수는 아직 진행 전이다** — 발표 전에 몇 건 사람이 직접 봐서 라벨이 말이",
         "  되는지 확인 권장.",
-        "- **③(보정모델)은 이제 실제 `cluster_weight_config`(Supabase)에서 읽는다** — 로컬",
-        "  JSON이 아니라 라이브 `recommend_teams`/`recommend_users`(`app/features/*/recommend.py`)와",
-        "  완전히 같은 `read_cluster_lifts()` 함수를 쓴다(`app/scoring/cluster_weight_store.py`).",
-        "  즉 이 평가가 실제 프로덕션 읽기 경로까지 검증한다.",
-        "- `cluster_weight_config`는 여전히 `scripts/run_cluster_weight_batch.py`가 합성 선택",
-        "  이벤트(`tests/fixtures/eval_synthetic_selections.json`)로 채운 값이다 — BE 연동 후",
-        "  실 `cluster_selection_events`가 쌓이면, 같은 배치 스크립트를 다시 돌리는 것만으로",
-        "  자동으로 실 데이터를 쓰게 된다(코드 변경 불필요, source 태그가 자동으로",
-        "  'offline_batch_real_...'로 바뀜).",
+        "- **③(보정모델)의 lift는 합성 선택 이벤트(`tests/fixtures/eval_synthetic_selections.json`)로",
+        "  로컬에서 계산한다** — 공식은 운영 배치(`scripts/run_cluster_weight_batch.py`)와 같은",
+        "  `compute_weight_lifts`다. 운영 `cluster_weight_config`는 읽지도 쓰지도 않는다(2026-11-05부터,",
+        "  합성 데모 lift가 운영 표에 남아 라이브 추천을 보정하던 문제를 정리하면서 분리).",
         "- 재현 순서: `generate_eval_fixtures.py` → `generate_eval_ground_truth.py` →",
-        "  `generate_eval_synthetic_selections.py` → `run_cluster_weight_batch.py` →",
-        "  `run_eval.py`.",
+        "  `generate_eval_synthetic_selections.py` → `run_eval.py`.",
     ]
 
     REPORT_PATH.write_text("\n".join(lines), encoding="utf-8")

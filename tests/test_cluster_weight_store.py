@@ -1,143 +1,264 @@
 import pytest
 
+from app.core.config import get_settings
 from app.scoring import cluster_weight_store
+from app.supabase_client import snapshots
+from app.supabase_client.client import LIVE_READ_FAILURE_BACKOFF_SECONDS
+from tests.supabase_fake import FakeSupabase
+
+TABLE = "cluster_weight_config"
+# 운영 표의 부분 유니크 인덱스(uq_cluster_weight_config_active)와 같은 제약.
+UNIQUE_ACTIVE = {TABLE: ("cluster_key", "component")}
 
 
-class _FakeResult:
-    def __init__(self, data: list[dict]) -> None:
-        self.data = data
+class _Clock:
+    def __init__(self) -> None:
+        self.now = 1_000.0
+
+    def __call__(self) -> float:
+        return self.now
 
 
-class _FakeQuery:
-    def __init__(self, sink: dict, table_state: list[dict]) -> None:
-        self._sink = sink
-        self._table_state = table_state
-        self._filters: dict = {}
-        self._select_cols: str | None = None
-        self._update_payload: dict | None = None
-        self._insert_payload: dict | None = None
-
-    def select(self, cols: str) -> "_FakeQuery":
-        self._select_cols = cols
-        return self
-
-    def eq(self, key: str, value) -> "_FakeQuery":
-        self._filters[key] = value
-        return self
-
-    def update(self, payload: dict) -> "_FakeQuery":
-        self._update_payload = payload
-        return self
-
-    def insert(self, payload: dict) -> "_FakeQuery":
-        self._insert_payload = payload
-        return self
-
-    def execute(self) -> _FakeResult:
-        if self._insert_payload is not None:
-            row = {"id": f"row-{len(self._table_state)}", **self._insert_payload}
-            self._table_state.append(row)
-            self._sink.setdefault("inserts", []).append(self._insert_payload)
-            return _FakeResult([row])
-
-        if self._update_payload is not None:
-            matched = [
-                r for r in self._table_state if all(r.get(k) == v for k, v in self._filters.items())
-            ]
-            for row in matched:
-                row.update(self._update_payload)
-            self._sink.setdefault("updates", []).append((dict(self._filters), self._update_payload))
-            return _FakeResult(matched)
-
-        matched = [
-            r for r in self._table_state if all(r.get(k) == v for k, v in self._filters.items())
-        ]
-        return _FakeResult(matched)
+@pytest.fixture(autouse=True)
+def _fresh_cache():
+    cluster_weight_store.clear_cache()
+    yield
+    cluster_weight_store.clear_cache()
 
 
-class _FakeClient:
-    def __init__(self, sink: dict, table_state: list[dict]) -> None:
-        self._sink = sink
-        self._table_state = table_state
+@pytest.fixture
+def clock(monkeypatch: pytest.MonkeyPatch) -> _Clock:
+    clock = _Clock()
+    monkeypatch.setattr(cluster_weight_store, "_monotonic", clock)
+    # 개발자 .env의 CONFIG_CACHE_SECONDS와 무관하게 TTL을 고정한다.
+    settings = get_settings().model_copy(update={"config_cache_seconds": 60})
+    monkeypatch.setattr(cluster_weight_store, "get_settings", lambda: settings)
+    return clock
 
-    def table(self, name: str) -> _FakeQuery:
-        self._sink["table"] = name
-        return _FakeQuery(self._sink, self._table_state)
+
+def _use(monkeypatch: pytest.MonkeyPatch, db: FakeSupabase) -> FakeSupabase:
+    monkeypatch.setattr(cluster_weight_store, "get_supabase_client", lambda: db)
+    monkeypatch.setattr(cluster_weight_store, "get_supabase_read_client", lambda: db)
+    return db
 
 
-def test_read_cluster_lifts_reconstructs_nested_dict(monkeypatch: pytest.MonkeyPatch) -> None:
-    sink: dict = {}
-    table_state = [
-        {"cluster_key": "BE:beginner", "component": "beginner_fit", "weight_value": 0.5, "is_active": True},
-        {"cluster_key": "BE:beginner", "component": "role_match", "weight_value": 0.3, "is_active": True},
-        {"cluster_key": "FE:advanced", "component": "similarity", "weight_value": 0.2, "is_active": True},
-        {"cluster_key": "FE:advanced", "component": "similarity", "weight_value": 0.9, "is_active": False},
-    ]
-    monkeypatch.setattr(
-        cluster_weight_store, "get_supabase_client", lambda: _FakeClient(sink, table_state)
-    )
+def _fail_reads(monkeypatch: pytest.MonkeyPatch) -> list[int]:
+    attempts: list[int] = []
 
-    lifts = cluster_weight_store.read_cluster_lifts()
+    def _raise():
+        attempts.append(1)
+        raise RuntimeError("network down")
 
-    assert lifts == {
-        "BE:beginner": {"beginner_fit": 0.5, "role_match": 0.3},
-        "FE:advanced": {"similarity": 0.2},
+    monkeypatch.setattr(cluster_weight_store, "get_supabase_read_client", _raise)
+    return attempts
+
+
+def _row(cluster_key, component, value, *, active=True, source="offline_batch_real_2026-11-05", version=1):
+    return {
+        "cluster_key": cluster_key,
+        "component": component,
+        "weight_value": value,
+        "is_active": active,
+        "source": source,
+        "version": version,
     }
 
 
-def test_read_cluster_lifts_returns_empty_on_failure(monkeypatch: pytest.MonkeyPatch) -> None:
-    def _raise():
-        raise RuntimeError("network down")
+def test_read_cluster_lifts_reconstructs_nested_dict(monkeypatch: pytest.MonkeyPatch) -> None:
+    _use(
+        monkeypatch,
+        FakeSupabase(
+            {
+                TABLE: [
+                    _row("USER_TO_TEAM|BE:beginner", "beginner_fit", 0.5),
+                    _row("USER_TO_TEAM|BE:beginner", "role_match", 0.3),
+                    _row("USER_TO_TEAM|FE:advanced", "similarity", 0.2),
+                    _row("USER_TO_TEAM|FE:advanced", "similarity", 0.9, active=False),
+                ]
+            }
+        ),
+    )
 
-    monkeypatch.setattr(cluster_weight_store, "get_supabase_client", _raise)
+    assert cluster_weight_store.read_cluster_lifts() == {
+        "USER_TO_TEAM|BE:beginner": {"beginner_fit": 0.5, "role_match": 0.3},
+        "USER_TO_TEAM|FE:advanced": {"similarity": 0.2},
+    }
+
+
+def test_read_ignores_synthetic_rows_even_when_active(monkeypatch: pytest.MonkeyPatch) -> None:
+    """2026-11-05 운영 표의 활성 행이 전부 합성 데모였던 사고 — 라이브는 합성 출처를 쓰지 않는다."""
+    _use(
+        monkeypatch,
+        FakeSupabase(
+            {
+                TABLE: [
+                    _row("USER_TO_TEAM|BE:beginner", "role_match", 0.4, source="offline_batch_synthetic_demo_2026-08-20"),
+                    _row("USER_TO_TEAM|FE:beginner", "role_match", 0.2),
+                ]
+            }
+        ),
+    )
+
+    assert cluster_weight_store.read_cluster_lifts() == {"USER_TO_TEAM|FE:beginner": {"role_match": 0.2}}
+
+
+def test_read_pages_past_the_server_row_cap(monkeypatch: pytest.MonkeyPatch) -> None:
+    """PostgREST는 한 응답에 max-rows까지만 준다 — 페이지로 나눠 읽지 않으면 조용히 잘린다."""
+    monkeypatch.setattr(snapshots, "PAGE_SIZE", 2)
+    rows = [_row(f"USER_TO_TEAM|R{i}:beginner", "role_match", 0.1) for i in range(5)]
+    _use(monkeypatch, FakeSupabase({TABLE: rows}, max_rows=2))
+
+    assert len(cluster_weight_store.read_cluster_lifts()) == 5
+
+
+def test_read_returns_empty_on_failure_without_cache(monkeypatch: pytest.MonkeyPatch) -> None:
+    _fail_reads(monkeypatch)
 
     assert cluster_weight_store.read_cluster_lifts() == {}
 
 
-def test_write_cluster_lifts_inserts_version_1_when_no_existing_row(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    sink: dict = {}
-    table_state: list[dict] = []
-    monkeypatch.setattr(
-        cluster_weight_store, "get_supabase_client", lambda: _FakeClient(sink, table_state)
+def test_cache_expires_and_failures_back_off(monkeypatch: pytest.MonkeyPatch, clock: _Clock) -> None:
+    db = _use(monkeypatch, FakeSupabase({TABLE: [_row("USER_TO_TEAM|BE:beginner", "role_match", 0.3)]}))
+    first = cluster_weight_store.read_cluster_lifts()
+    calls_after_first = len(db.calls)
+
+    # 캐시 시간 안에서는 다시 조회하지 않는다.
+    clock.now += 59
+    assert cluster_weight_store.read_cluster_lifts() == first
+    assert len(db.calls) == calls_after_first
+
+    # 만료되면 다시 읽어 새 값을 쓴다.
+    db.tables[TABLE][0]["weight_value"] = 0.7
+    clock.now += 2
+    assert cluster_weight_store.read_cluster_lifts() == {"USER_TO_TEAM|BE:beginner": {"role_match": 0.7}}
+
+    # 만료 뒤 조회가 실패하면 마지막으로 성공한 값을 쓰고, 한동안은 다시 시도하지 않는다.
+    attempts = _fail_reads(monkeypatch)
+    clock.now += 61
+    assert cluster_weight_store.read_cluster_lifts() == {"USER_TO_TEAM|BE:beginner": {"role_match": 0.7}}
+    clock.now += LIVE_READ_FAILURE_BACKOFF_SECONDS - 1
+    assert cluster_weight_store.read_cluster_lifts() == {"USER_TO_TEAM|BE:beginner": {"role_match": 0.7}}
+    assert attempts == [1]
+
+    clock.now += 2
+    cluster_weight_store.read_cluster_lifts()
+    assert attempts == [1, 1]
+
+
+def test_concurrent_refresh_does_not_wait(monkeypatch: pytest.MonkeyPatch) -> None:
+    """다른 요청이 이미 Supabase를 읽는 중이면 기다리지 않고 직전 값(없으면 빈 dict)을 쓴다."""
+    db = _use(monkeypatch, FakeSupabase({TABLE: [_row("USER_TO_TEAM|BE:beginner", "role_match", 0.3)]}))
+
+    with cluster_weight_store._refresh_lock:
+        assert cluster_weight_store.read_cluster_lifts() == {}
+    assert db.calls == []
+
+
+def test_write_records_a_snapshot_version_and_switches(monkeypatch: pytest.MonkeyPatch) -> None:
+    db = _use(
+        monkeypatch,
+        FakeSupabase(
+            {
+                TABLE: [
+                    {**_row("USER_TO_TEAM|BE:beginner", "role_match", 0.2, version=2), "id": "old-1"},
+                    # 새 배치에 없는 클러스터의 옛 lift도 함께 꺼져야 한다(살아남지 않게).
+                    {**_row("USER_TO_TEAM|PM:advanced", "similarity", 0.1, version=2), "id": "old-2"},
+                ]
+            },
+            unique_active=UNIQUE_ACTIVE,
+        ),
     )
 
-    cluster_weight_store.write_cluster_lifts({"BE:beginner": {"role_match": 0.4}}, source="test")
+    version = cluster_weight_store.write_cluster_lifts(
+        {"USER_TO_TEAM|BE:beginner": {"role_match": 0.4}}, source="offline_batch_real_2026-11-05"
+    )
 
-    inserted = sink["inserts"][0]
-    assert inserted["cluster_key"] == "BE:beginner"
-    assert inserted["component"] == "role_match"
-    assert inserted["weight_type"] == "override"
-    assert inserted["weight_value"] == 0.4
-    assert inserted["version"] == 1
-    assert inserted["is_active"] is True
-    assert inserted["source"] == "test"
-
-
-def test_write_cluster_lifts_deactivates_old_row_and_increments_version(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    sink: dict = {}
-    table_state = [
-        {
-            "id": "existing-1",
-            "cluster_key": "BE:beginner",
-            "component": "role_match",
-            "weight_value": 0.2,
-            "version": 1,
-            "is_active": True,
-        }
+    assert version == 3
+    rows = db.tables[TABLE]
+    old = {r["id"]: r for r in rows if r["id"].startswith("old-")}
+    assert old["old-1"]["is_active"] is False and old["old-2"]["is_active"] is False  # 지우지 않고 끔
+    active = [r for r in rows if r["is_active"]]
+    assert [(r["cluster_key"], r["component"], r["weight_value"], r["version"]) for r in active] == [
+        ("USER_TO_TEAM|BE:beginner", "role_match", 0.4, 3)
     ]
-    monkeypatch.setattr(
-        cluster_weight_store, "get_supabase_client", lambda: _FakeClient(sink, table_state)
+    assert active[0]["weight_type"] == "override"
+    # 새 버전을 꺼진 채로 넣은 뒤 → 이전 버전을 끄고 → 새 버전을 켠다.
+    assert [op for _, op in db.calls] == ["select", "insert", "update", "update"]
+
+
+def test_failed_insert_leaves_the_previous_version_active(monkeypatch: pytest.MonkeyPatch) -> None:
+    db = _use(
+        monkeypatch,
+        FakeSupabase(
+            {TABLE: [{**_row("USER_TO_TEAM|BE:beginner", "role_match", 0.2, version=2), "id": "old"}]},
+            unique_active=UNIQUE_ACTIVE,
+            fail_on=("insert", 1),
+        ),
     )
 
-    cluster_weight_store.write_cluster_lifts({"BE:beginner": {"role_match": 0.4}}, source="test")
+    with pytest.raises(RuntimeError):
+        cluster_weight_store.write_cluster_lifts(
+            {"USER_TO_TEAM|BE:beginner": {"role_match": 0.4}}, source="offline_batch_real_2026-11-05"
+        )
 
-    old_row = next(r for r in table_state if r["id"] == "existing-1")
-    assert old_row["is_active"] is False  # 지워지지 않고 비활성화만 됨 — 롤백 가능
+    assert [r["id"] for r in db.tables[TABLE] if r["is_active"]] == ["old"]
 
-    new_row = sink["inserts"][0]
-    assert new_row["version"] == 2
-    assert new_row["is_active"] is True
+
+def test_write_refuses_synthetic_sources_and_empty_lifts(monkeypatch: pytest.MonkeyPatch) -> None:
+    db = _use(monkeypatch, FakeSupabase())
+
+    with pytest.raises(ValueError):
+        cluster_weight_store.write_cluster_lifts({"k": {"role_match": 0.1}}, source="offline_batch_synthetic_x")
+    with pytest.raises(ValueError):
+        cluster_weight_store.write_cluster_lifts({}, source="offline_batch_real_x")
+    assert db.calls == []
+
+
+def test_activate_version_rolls_back(monkeypatch: pytest.MonkeyPatch) -> None:
+    db = _use(
+        monkeypatch,
+        FakeSupabase(
+            {
+                TABLE: [
+                    {**_row("USER_TO_TEAM|BE:beginner", "role_match", 0.2, version=1, active=False), "id": "v1"},
+                    {**_row("USER_TO_TEAM|BE:beginner", "role_match", 0.9, version=2), "id": "v2"},
+                ]
+            },
+            unique_active=UNIQUE_ACTIVE,
+        ),
+    )
+
+    cluster_weight_store.activate_version(1)
+
+    state = {r["id"]: r["is_active"] for r in db.tables[TABLE]}
+    assert state == {"v1": True, "v2": False}
+    with pytest.raises(ValueError):
+        cluster_weight_store.activate_version(99)
+
+
+def test_activate_version_refuses_a_synthetic_version(monkeypatch: pytest.MonkeyPatch) -> None:
+    db = _use(
+        monkeypatch,
+        FakeSupabase(
+            {
+                TABLE: [
+                    {**_row("k", "role_match", 0.2, version=1, active=False, source="offline_batch_synthetic_demo"), "id": "v1"},
+                    {**_row("k", "role_match", 0.9, version=2), "id": "v2"},
+                ]
+            }
+        ),
+    )
+
+    with pytest.raises(ValueError):
+        cluster_weight_store.activate_version(1)
+    assert {r["id"]: r["is_active"] for r in db.tables[TABLE]} == {"v1": False, "v2": True}
+
+
+def test_deactivate_all_turns_every_active_row_off(monkeypatch: pytest.MonkeyPatch) -> None:
+    db = _use(
+        monkeypatch,
+        FakeSupabase({TABLE: [_row("a", "role_match", 0.2), _row("b", "role_match", 0.3, active=False)]}),
+    )
+
+    assert cluster_weight_store.deactivate_all() == 1
+    assert not any(r["is_active"] for r in db.tables[TABLE])

@@ -41,7 +41,7 @@ async def test_recommend_users_ranks_better_role_match_higher() -> None:
 
     assert [item.candidate_id for item in response.recommendations] == [101, 102]
     assert response.recommendations[0].score > response.recommendations[1].score
-    assert response.recommendations[0].label == "BE 역할에 지원 가능해요"
+    assert response.recommendations[0].label == "백엔드 개발 역할에 지원 가능해요"
 
 
 async def test_activity_time_is_exposed_but_does_not_affect_score_or_label() -> None:
